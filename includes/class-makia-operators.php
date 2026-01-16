@@ -35,12 +35,13 @@ class MakIA_Operators {
         // Capacidades del operario
         $capabilities = array(
             'read' => true,
-            'makia_manage_bookings' => true,
+            'makia_manage_bookings' => true, // Capacidad base para acceder al menú
             'makia_view_bookings' => true,
             'makia_edit_bookings' => true,
             'makia_add_notes' => true,
             'makia_view_notes' => true,
             'makia_view_audit' => true,
+            'upload_files' => true, // Por si necesitan subir imágenes en el futuro
         );
         
         // Crear el rol
@@ -121,8 +122,8 @@ class MakIA_Operators {
                 $counter++;
             }
             
-            // Generar contraseña aleatoria
-            $password = wp_generate_password(12, true, true);
+            // Usar contraseña proporcionada o generar una aleatoria
+            $password = isset($user_data['user_pass']) ? $user_data['user_pass'] : wp_generate_password(12, true, true);
             
             // Datos del usuario
             $userdata = array(
@@ -258,11 +259,13 @@ class MakIA_Operators {
         }
         
         $email = sanitize_email($_POST['email']);
+        $password = $_POST['password']; // Se sanitiza dentro de wp_insert_user
         $display_name = sanitize_text_field($_POST['display_name']);
         $first_name = sanitize_text_field($_POST['first_name']);
         $last_name = sanitize_text_field($_POST['last_name']);
         
         $user_data = array(
+            'user_pass' => $password,
             'display_name' => $display_name,
             'first_name' => $first_name,
             'last_name' => $last_name
@@ -390,13 +393,19 @@ class MakIA_Operators {
                     </div>
                 </div>
                 
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Email *</label>
-                    <input type="email" id="makia-operator-email" class="regular-text" placeholder="operario@restaurante.com" style="width: 100%;">
-                    <p style="margin: 8px 0 0 0; font-size: 13px; color: #666;">
-                        Se creará una cuenta con este email y se enviará un correo con las credenciales de acceso.
-                    </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Email *</label>
+                        <input type="email" id="makia-operator-email" class="regular-text" placeholder="operario@restaurante.com" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Contraseña *</label>
+                        <input type="password" id="makia-operator-password" class="regular-text" placeholder="Mínimo 8 caracteres" style="width: 100%;">
+                    </div>
                 </div>
+                <p style="margin: -10px 0 20px 0; font-size: 13px; color: #666;">
+                    El operario usará este email y contraseña para acceder al panel de reservas.
+                </p>
                 
                 <div style="display: flex; gap: 10px;">
                     <button type="button" class="button button-primary" id="makia-save-operator-btn" style="background: #46b450; border-color: #46b450;">
@@ -489,14 +498,20 @@ class MakIA_Operators {
                 var firstName = $('#makia-operator-first-name').val().trim();
                 var lastName = $('#makia-operator-last-name').val().trim();
                 var email = $('#makia-operator-email').val().trim();
+                var password = $('#makia-operator-password').val().trim();
                 
-                if (!firstName || !lastName || !email) {
+                if (!firstName || !lastName || !email || !password) {
                     alert('Por favor, completa todos los campos');
                     return;
                 }
                 
                 if (!isValidEmail(email)) {
                     alert('Por favor, ingresa un email válido');
+                    return;
+                }
+                
+                if (password.length < 8) {
+                    alert('La contraseña debe tener al menos 8 caracteres');
                     return;
                 }
                 
@@ -508,6 +523,7 @@ class MakIA_Operators {
                     data: {
                         action: 'makia_add_operator',
                         email: email,
+                        password: password,
                         display_name: firstName + ' ' + lastName,
                         first_name: firstName,
                         last_name: lastName,
@@ -590,6 +606,7 @@ class MakIA_Operators {
                 $('#makia-operator-first-name').val('');
                 $('#makia-operator-last-name').val('');
                 $('#makia-operator-email').val('');
+                $('#makia-operator-password').val('');
             }
             
             function isValidEmail(email) {

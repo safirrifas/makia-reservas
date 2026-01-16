@@ -26,6 +26,7 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 action: 'makia_add_booking_note',
+                makia_note_nonce: makiaAdminConfig.noteNonce,
                 booking_id: bookingId,
                 note: note
             },
@@ -90,6 +91,7 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 action: 'makia_get_booking_notes',
+                makia_note_nonce: makiaAdminConfig.noteNonce,
                 booking_id: bookingId
             },
             success: function(response) {

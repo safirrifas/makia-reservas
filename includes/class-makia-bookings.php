@@ -725,6 +725,18 @@ class MakIA_Bookings {
         );
         
         if ($result !== false) {
+            // Registrar en auditoría
+            MakIA_Audit::log_action(
+                'booking_status_updated',
+                'booking',
+                $booking_id,
+                array(
+                    'old_status' => $booking->status,
+                    'new_status' => $new_status,
+                    'method' => 'admin_panel'
+                )
+            );
+
             // Enviar email de notificación al cliente
             $this->send_status_update_email($booking_id, $new_status);
             
@@ -1642,6 +1654,18 @@ class MakIA_Bookings {
         );
         
         if ($result !== false) {
+            // Registrar en auditoría
+            MakIA_Audit::log_action(
+                'booking_status_updated',
+                'booking',
+                $booking_id,
+                array(
+                    'old_status' => $booking->status,
+                    'new_status' => $new_status,
+                    'method' => 'admin_panel'
+                )
+            );
+
             // Enviar email de notificación al cliente
             $this->send_status_update_email($booking_id, $new_status);
             
@@ -1670,6 +1694,12 @@ class MakIA_Bookings {
      * Agregar nota interna a una reserva (AJAX)
      */
     public function add_booking_note_ajax() {
+        // Verificar nonce
+        if (!isset($_POST['makia_note_nonce']) || !wp_verify_nonce($_POST['makia_note_nonce'], 'makia_add_note_action')) {
+            wp_send_json_error('Acción no autorizada');
+        }
+
+
         global $wpdb;
         
         // Verificar permisos
@@ -1685,11 +1715,12 @@ class MakIA_Bookings {
         }
         
         $notes_table = $wpdb->prefix . 'makia_booking_notes';
+        $current_user_id = get_current_user_id();
         $result = $wpdb->insert(
             $notes_table,
             array(
                 'booking_id' => $booking_id,
-                'user_id' => get_current_user_id(),
+                'user_id' => $current_user_id,
                 'note' => $note,
                 'created_at' => current_time('mysql')
             ),
@@ -1697,11 +1728,24 @@ class MakIA_Bookings {
         );
         
         if ($result) {
+            $note_id = $wpdb->insert_id;
             $user = wp_get_current_user();
+
+            // Registrar en auditoría
+            MakIA_Audit::log_action(
+                'note_added',
+                'note',
+                $note_id,
+                array(
+                    'booking_id' => $booking_id,
+                    'note_preview' => mb_strimwidth($note, 0, 50, '...')
+                )
+            );
+
             wp_send_json_success(array(
                 'message' => 'Nota agregada correctamente',
                 'note' => array(
-                    'id' => $wpdb->insert_id,
+                    'id' => $note_id,
                     'note' => $note,
                     'user_name' => $user->display_name,
                     'created_at' => current_time('mysql')
@@ -1716,6 +1760,12 @@ class MakIA_Bookings {
      * Obtener notas de una reserva (AJAX)
      */
     public function get_booking_notes_ajax() {
+        // Verificar nonce
+        if (!isset($_POST['makia_note_nonce']) || !wp_verify_nonce($_POST['makia_note_nonce'], 'makia_get_notes_action')) {
+            wp_send_json_error('Acción no autorizada');
+        }
+
+
         global $wpdb;
         
         // Verificar permisos

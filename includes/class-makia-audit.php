@@ -510,6 +510,13 @@ class MakIA_Audit {
      * Handler AJAX para obtener log de auditoría
      */
     public function get_audit_log_ajax() {
+        // Verificar nonce
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'makia_admin_nonce')) {
+            wp_send_json_error(array('message' => 'Acción no autorizada'));
+            return;
+        }
+
+
         check_ajax_referer('makia_admin_nonce', 'nonce');
         
         if (!current_user_can('manage_options')) {
@@ -542,6 +549,13 @@ class MakIA_Audit {
      * Handler AJAX para obtener auditoría de una reserva
      */
     public function get_booking_audit_ajax() {
+        // Verificar nonce
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'makia_admin_nonce')) {
+            wp_send_json_error(array('message' => 'Acción no autorizada'));
+            return;
+        }
+
+
         check_ajax_referer('makia_admin_nonce', 'nonce');
         
         if (!current_user_can('makia_manage_bookings')) {

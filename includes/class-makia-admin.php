@@ -18,7 +18,7 @@ class MakIA_Admin {
         add_menu_page(
             'MakIA Reservas',
             'MakIA Reservas',
-            'manage_options',
+            'makia_manage_bookings',
             'makia',
             array($this, 'render_main_page'),
             'dashicons-calendar-alt',
@@ -30,7 +30,7 @@ class MakIA_Admin {
             'makia',
             'Operarios',
             'Operarios',
-            'manage_options',
+            'manage_options', // Solo el admin gestiona operarios
             'makia-operators',
             array('MakIA_Operators', 'render_operators_page')
         );
@@ -40,7 +40,7 @@ class MakIA_Admin {
             'makia',
             'Auditoría',
             'Auditoría',
-            'manage_options',
+            'makia_view_audit', // Operarios pueden ver auditoría si tienen la cap
             'makia-audit',
             array('MakIA_Audit', 'render_audit_page')
         );
@@ -77,7 +77,38 @@ class MakIA_Admin {
             array('jquery'),
             MAKIA_VERSION,
             true
-        );
+	        );
+	        
+	        // JavaScript de administración
+	        wp_enqueue_script(
+	            'makia-admin',
+	            MAKIA_PLUGIN_URL . 'assets/js/makia-admin.js',
+	            array('jquery'),
+	            MAKIA_VERSION,
+	            true
+	        );
+	        
+	        // JavaScript de notas de reserva
+	        wp_enqueue_script(
+	            'makia-booking-notes',
+	            MAKIA_PLUGIN_URL . 'assets/js/makia-booking-notes.js',
+	            array('jquery'),
+	            MAKIA_VERSION,
+	            true
+	        );
+	        
+	        // Localizar scripts de administración
+	        wp_localize_script('makia-admin', 'makiaAdminConfig', array(
+	            'ajaxUrl' => admin_url('admin-ajax.php'),
+	            'adminNonce' => wp_create_nonce('makia_admin_nonce'),
+	            'noteNonce' => wp_create_nonce('makia_add_note_action') // Usar el nonce de añadir nota para ambos
+	        ));
+	        
+	        // Localizar scripts de notas
+	        wp_localize_script('makia-booking-notes', 'makiaAdminConfig', array(
+	            'ajaxUrl' => admin_url('admin-ajax.php'),
+	            'noteNonce' => wp_create_nonce('makia_add_note_action')
+	        ));
     }
     
     /**
