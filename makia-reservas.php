@@ -1,0 +1,299 @@
+<?php
+/**
+ * Plugin Name: MakIA - Sistema de Reservas
+ * Plugin URI: https://contacpro.app
+ * Description: Sistema completo de reservas con IA para restaurantes. Incluye formulario de reservas, gestión de horarios, control de capacidad, plantillas personalizables con vista previa en vivo, y lista negra de usuarios.
+ * Version: 4.2.0
+ * Author: MakIA Team
+ * Author URI: https://contacpro.app
+ * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: makia-reservas
+ * Domain Path: /languages
+ * Requires at least: 5.0
+ * Requires PHP: 7.4
+ */
+
+// Evitar acceso directo
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Definir constantes del plugin
+define('MAKIA_VERSION', '4.2.0');
+define('MAKIA_PLUGIN_FILE', __FILE__);
+define('MAKIA_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('MAKIA_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('MAKIA_API_URL', 'https://contacpro.app/api');
+
+// Cargar clases
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-logger.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-license-manager.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-admin.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-shortcodes.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-special-days.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-bookings.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-templates.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-blacklist.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-capacity.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-capacity-ui.php';
+
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-design.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-button-settings.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-schedule.php';
+
+// Sistema de notas, operarios y auditoría
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-audit.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-notes.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-operators.php';
+
+/**
+ * Activación del plugin
+ */
+function makia_activate() {
+    // Crear tabla de reservas
+    MakIA_Bookings::create_table();
+    
+    // Crear tablas de plantillas y lista negra
+    global $wpdb;
+    $charset_collate = $wpdb->get_charset_collate();
+    
+    // Tabla de plantillas
+    $templates_table = $wpdb->prefix . 'makia_notification_templates';
+    $sql_templates = "CREATE TABLE IF NOT EXISTS {$templates_table} (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        template_type varchar(50) NOT NULL,
+        template_name varchar(100) NOT NULL,
+        subject varchar(200) DEFAULT NULL,
+        body text NOT NULL,
+        variables text DEFAULT NULL,
+        is_active tinyint(1) DEFAULT 1,
+        created_at datetime DEFAULT CURRENT_TIMESTAMP,
+        updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY template_type (template_type),
+        KEY is_active (is_active)
+    ) $charset_collate;";
+    
+    // Tabla de lista negra
+    $blacklist_table = $wpdb->prefix . 'makia_blacklist';
+    $sql_blacklist = "CREATE TABLE IF NOT EXISTS {$blacklist_table} (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        email varchar(100) DEFAULT NULL,
+        phone varchar(20) DEFAULT NULL,
+        reason varchar(255) NOT NULL,
+        no_show_count int(11) DEFAULT 0,
+        banned_by bigint(20) NOT NULL,
+        banned_at datetime DEFAULT CURRENT_TIMESTAMP,
+        notes text DEFAULT NULL,
+        is_active tinyint(1) DEFAULT 1,
+        unbanned_at datetime DEFAULT NULL,
+        unbanned_by bigint(20) DEFAULT NULL,
+        PRIMARY KEY (id),
+        KEY email (email),
+        KEY phone (phone),
+        KEY is_active (is_active)
+    ) $charset_collate;";
+    
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql_templates);
+    dbDelta($sql_blacklist);
+    
+    // Insertar plantillas por defecto si no existen
+    $existing_templates = $wpdb->get_var("SELECT COUNT(*) FROM {$templates_table}");
+    if ($existing_templates == 0) {
+        makia_insert_default_templates();
+    }
+    
+    // Crear opciones
+    add_option('makia_license_key', '');
+    add_option('makia_license_status', 'inactive');
+    add_option('makia_restaurant_name', '');
+    add_option('makia_restaurant_email', '');
+    add_option('makia_restaurant_phone', '');
+    add_option('makia_restaurant_address', '');
+    add_option('makia_max_capacity', 50);
+    add_option('makia_max_per_reservation', 12);
+    
+    // Crear estructura de horarios por defecto
+    $default_hours = array(
+        'monday' => array('enabled' => true, 'slots' => array(
+            array('open' => '12:00', 'close' => '16:00'),
+            array('open' => '20:00', 'close' => '23:00')
+        )),
+        'tuesday' => array('enabled' => true, 'slots' => array(
+            array('open' => '12:00', 'close' => '16:00'),
+            array('open' => '20:00', 'close' => '23:00')
+        )),
+        'wednesday' => array('enabled' => false, 'slots' => array()),
+        'thursday' => array('enabled' => true, 'slots' => array(
+            array('open' => '12:00', 'close' => '16:00'),
+            array('open' => '20:00', 'close' => '23:00')
+        )),
+        'friday' => array('enabled' => true, 'slots' => array(
+            array('open' => '12:00', 'close' => '16:00'),
+            array('open' => '20:00', 'close' => '23:00')
+        )),
+        'saturday' => array('enabled' => true, 'slots' => array(
+            array('open' => '12:00', 'close' => '16:00'),
+            array('open' => '20:00', 'close' => '23:00')
+        )),
+        'sunday' => array('enabled' => true, 'slots' => array(
+            array('open' => '12:00', 'close' => '16:00'),
+            array('open' => '20:00', 'close' => '23:00')
+        ))
+    );
+    add_option('makia_business_hours', $default_hours);
+    
+    flush_rewrite_rules();
+}
+register_activation_hook(__FILE__, 'makia_activate');
+
+/**
+ * Insertar plantillas por defecto
+ */
+function makia_insert_default_templates() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'makia_notification_templates';
+    
+    $templates = array(
+        array(
+            'type' => 'email_customer_pending',
+            'name' => 'Email Cliente - Pendiente',
+            'subject' => 'Reserva pendiente de confirmación - {restaurante}',
+            'body' => "Hola {nombre},\n\nHemos recibido tu solicitud de reserva en {restaurante}.\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\nMotivo: {motivo}\nNotas: {notas}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nTu reserva está PENDIENTE DE CONFIRMACIÓN.\nTe enviaremos un email cuando el restaurante la apruebe.\n\n🔗 GESTIONAR RESERVA:\nPuedes modificar o cancelar tu reserva en cualquier momento:\n{enlace_gestion}\n\nSi tienes alguna pregunta, puedes contactarnos en:\nEmail: {email_restaurante}\nTeléfono: {telefono_restaurante}\n\nGracias por elegir {restaurante}.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPowered by MakIA Reservas - https://contacpro.app",
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","motivo":"Motivo de la reserva","notas":"Notas especiales","restaurante":"Nombre del restaurante","email_restaurante":"Email del restaurante","telefono_restaurante":"Teléfono del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+        ),
+        array(
+            'type' => 'email_customer_approved',
+            'name' => 'Email Cliente - Aprobada',
+            'subject' => '✅ Reserva confirmada - {restaurante}',
+            'body' => "Hola {nombre},\n\n¡Buenas noticias! Tu reserva ha sido CONFIRMADA.\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n¡Te esperamos en {restaurante}!\n\n🔗 GESTIONAR RESERVA:\nSi necesitas modificar o cancelar tu reserva:\n{enlace_gestion}\n\nO contáctanos directamente:\nEmail: {email_restaurante}\nTeléfono: {telefono_restaurante}\n\nGracias por elegirnos.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPowered by MakIA Reservas - https://contacpro.app",
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","restaurante":"Nombre del restaurante","email_restaurante":"Email del restaurante","telefono_restaurante":"Teléfono del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+        ),
+        array(
+            'type' => 'email_restaurant',
+            'name' => 'Email Restaurante - Nueva Reserva',
+            'subject' => 'Nueva reserva pendiente de aprobación',
+            'body' => "Nueva solicitud de reserva en {restaurante}:\n\nDATOS DEL CLIENTE:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNombre: {nombre}\nEmail: {email}\nTeléfono: {telefono}\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\nMotivo: {motivo}\nNotas: {notas}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPara gestionar esta reserva, accede al panel de administración:\n{url_admin}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nMakIA Reservas - https://contacpro.app",
+            'variables' => '{"nombre":"Nombre del cliente","email":"Email del cliente","telefono":"Teléfono del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","motivo":"Motivo de la reserva","notas":"Notas especiales","restaurante":"Nombre del restaurante","url_admin":"URL del panel admin"}'
+        ),
+        array(
+            'type' => 'sms',
+            'name' => 'SMS - Confirmación',
+            'subject' => null,
+            'body' => 'Hola {nombre}, tu reserva para el {fecha} a las {hora} ha sido confirmada. Gestionar: {enlace_gestion} - {restaurante}',
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+        ),
+        array(
+            'type' => 'whatsapp',
+            'name' => 'WhatsApp - Confirmación',
+            'subject' => null,
+            'body' => 'Hola {nombre}, tu reserva para el {fecha} a las {hora} en {restaurante} ha sido confirmada. ¡Te esperamos! 🍽️\n\nGestionar reserva: {enlace_gestion}',
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+        ),
+        array(
+            'type' => 'whatsapp_reminder',
+            'name' => 'WhatsApp - Recordatorio',
+            'subject' => null,
+            'body' => 'Hola {nombre}, te recordamos tu reserva para el {fecha} a las {hora}. ¡Te esperamos!\n\nGestionar: {enlace_gestion} - {restaurante}',
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+        )
+    );
+    
+    foreach ($templates as $template) {
+        $wpdb->insert(
+            $table,
+            array(
+                'template_type' => $template['type'],
+                'template_name' => $template['name'],
+                'subject' => $template['subject'],
+                'body' => $template['body'],
+                'variables' => $template['variables'],
+                'is_active' => 1
+            ),
+            array('%s', '%s', '%s', '%s', '%s', '%d')
+        );
+    }
+}
+
+/**
+ * Desactivación del plugin
+ */
+function makia_deactivate() {
+    flush_rewrite_rules();
+}
+register_deactivation_hook(__FILE__, 'makia_deactivate');
+
+/**
+ * Inicializar el plugin
+ */
+function makia_init() {
+    // Cargar traducciones
+    load_plugin_textdomain('makia-reservas', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    
+    // Inicializar clases con variable global
+    global $makia_license_manager;
+    $makia_license_manager = new MakIA_License_Manager();
+    new MakIA_Admin();
+    new MakIA_Shortcodes();
+    new MakIA_Blacklist(); // Inicializar para hooks AJAX
+}
+add_action('plugins_loaded', 'makia_init');
+
+/**
+ * Cargar assets del frontend
+ */
+function makia_enqueue_scripts() {
+    // Solo cargar si hay shortcode en la página
+    global $post;
+    if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'makia_reservas')) {
+        wp_enqueue_style(
+            'makia-styles',
+            MAKIA_PLUGIN_URL . 'assets/css/makia-styles.css',
+            array(),
+            MAKIA_VERSION
+        );
+        
+        wp_enqueue_script(
+            'makia-booking',
+            MAKIA_PLUGIN_URL . 'assets/js/makia-booking.js',
+            array('jquery'),
+            MAKIA_VERSION,
+            true
+        );
+        
+        // Pasar datos al JavaScript
+        wp_localize_script('makia-booking', 'makiaData', array(
+            'apiUrl' => MAKIA_API_URL,
+            'nonce' => wp_create_nonce('makia_booking'),
+            'restaurantName' => get_option('makia_restaurant_name', ''),
+            'maxCapacity' => get_option('makia_max_capacity', 50),
+            'maxPerReservation' => get_option('makia_max_per_reservation', 12),
+            'businessHours' => get_option('makia_business_hours', array())
+        ));
+    }
+}
+add_action('wp_enqueue_scripts', 'makia_enqueue_scripts');
+
+/**
+ * Agregar enlaces en la página de plugins
+ */
+function makia_plugin_action_links($links) {
+    $settings_link = '<a href="' . admin_url('admin.php?page=makia-settings') . '">' . __('Configuración', 'makia-reservas') . '</a>';
+    $license_link = '<a href="' . admin_url('admin.php?page=makia-license') . '">' . __('Licencia', 'makia-reservas') . '</a>';
+    array_unshift($links, $settings_link, $license_link);
+    return $links;
+}
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'makia_plugin_action_links');
+
+/**
+ * Verificar licencia en cada carga de admin
+ */
+function makia_check_license_status() {
+    global $makia_license_manager;
+    if (isset($makia_license_manager)) {
+        $makia_license_manager->verify_license();
+    }
+}
+add_action('admin_init', 'makia_check_license_status');

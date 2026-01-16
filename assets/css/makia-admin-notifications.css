@@ -1,0 +1,96 @@
+/**
+ * Notificaciones del panel admin
+ */
+.makia-notification {
+    position: fixed;
+    top: 32px;
+    right: 20px;
+    z-index: 999999;
+    padding: 15px 20px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 14px;
+    font-weight: 500;
+    display: none;
+    max-width: 400px;
+}
+
+.makia-notification-success {
+    background: #46b450;
+    color: #fff;
+}
+
+.makia-notification-error {
+    background: #dc3232;
+    color: #fff;
+}
+
+/**
+ * Botones de contacto telefónico
+ */
+.makia-phone-actions {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.makia-phone-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.makia-phone-btn-call {
+    background: #2271b1;
+    color: #fff;
+}
+
+.makia-phone-btn-call:hover {
+    background: #135e96;
+    color: #fff;
+}
+
+.makia-phone-btn-sms {
+    background: #46b450;
+    color: #fff;
+}
+
+.makia-phone-btn-sms:hover {
+    background: #399946;
+    color: #fff;
+}
+
+.makia-phone-btn-whatsapp {
+    background: #25d366;
+    color: #fff;
+}
+
+.makia-phone-btn-whatsapp:hover {
+    background: #1da851;
+    color: #fff;
+}
+
+/* Móvil */
+@media (max-width: 782px) {
+    .makia-notification {
+        top: 46px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .makia-phone-actions {
+        flex-wrap: wrap;
+    }
+    
+    .makia-phone-btn {
+        flex: 1;
+        min-width: 80px;
+        justify-content: center;
+    }
+}

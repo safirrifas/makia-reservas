@@ -1,0 +1,680 @@
+/**
+ * MakIA Admin - Diseño Mejorado
+ * Versión 3.2.5 - Panel Moderno
+ */
+
+/* Header Principal Mejorado */
+.makia-admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.makia-admin-header-logo {
+    width: 60px;
+    height: 60px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.makia-admin-header-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.makia-admin-header-content {
+    flex: 1;
+}
+
+.makia-admin-header h1 {
+    color: #fff;
+    margin: 0 0 5px 0;
+    font-size: 28px;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.makia-admin-header p {
+    color: rgba(255,255,255,0.9);
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Pestañas Mejoradas */
+.makia-tabs-nav {
+    display: flex;
+    gap: 10px;
+    margin: 0 0 30px 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+    background: #fff;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.makia-tabs-nav li {
+    margin: 0;
+}
+
+.makia-tabs-nav button {
+    background: transparent;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.makia-tabs-nav button:hover {
+    background: #f5f5f5;
+    color: #2271b1;
+}
+
+.makia-tabs-nav button.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.makia-tabs-nav button .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Tarjetas de Estadísticas Mejoradas */
+.makia-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.makia-stat-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    border-left: 4px solid #667eea;
+}
+
+.makia-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.makia-stat-card h3 {
+    margin: 0 0 15px 0;
+    color: #666;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.makia-stat-card .stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.makia-stat-card .stat-label {
+    font-size: 12px;
+    color: #999;
+}
+
+/* Colores específicos para cada estadística */
+.makia-stat-card:nth-child(1) {
+    border-left-color: #667eea;
+}
+
+.makia-stat-card:nth-child(1) .stat-value {
+    color: #667eea;
+}
+
+.makia-stat-card:nth-child(2) {
+    border-left-color: #f0b849;
+}
+
+.makia-stat-card:nth-child(2) .stat-value {
+    color: #f0b849;
+}
+
+.makia-stat-card:nth-child(3) {
+    border-left-color: #46b450;
+}
+
+.makia-stat-card:nth-child(3) .stat-value {
+    color: #46b450;
+}
+
+.makia-stat-card:nth-child(4) {
+    border-left-color: #764ba2;
+}
+
+.makia-stat-card:nth-child(4) .stat-value {
+    color: #764ba2;
+}
+
+/* Filtros Mejorados */
+.tablenav.top {
+    background: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+.tablenav.top select {
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    padding: 10px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.tablenav.top select:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Tabla Mejorada (Desktop) */
+.wp-list-table {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.wp-list-table thead th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    font-weight: 600;
+    padding: 15px;
+    text-align: left;
+    border: none;
+}
+
+.wp-list-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.wp-list-table tbody tr:hover {
+    background: #f9f9f9;
+}
+
+.wp-list-table tbody td {
+    padding: 15px;
+    vertical-align: middle;
+}
+
+/* Botones Mejorados */
+.button-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.button-small {
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* Tarjetas Móviles Mejoradas */
+.makia-mobile-bookings {
+    display: none;
+}
+
+.makia-booking-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 4px solid #667eea;
+}
+
+.makia-booking-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.makia-booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.makia-booking-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+}
+
+.makia-booking-status {
+    font-size: 24px;
+}
+
+.makia-booking-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.makia-info-item {
+    background: #f9f9f9;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.makia-info-label {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.makia-info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Botones de Teléfono Mejorados */
+.makia-phone-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.makia-phone-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.makia-phone-btn-call {
+    background: #2271b1;
+    color: #fff;
+}
+
+.makia-phone-btn-call:hover {
+    background: #135e96;
+    transform: scale(1.05);
+}
+
+.makia-phone-btn-sms {
+    background: #46b450;
+    color: #fff;
+}
+
+.makia-phone-btn-sms:hover {
+    background: #399c3d;
+    transform: scale(1.05);
+}
+
+.makia-phone-btn-whatsapp {
+    background: #25D366;
+    color: #fff;
+}
+
+.makia-phone-btn-whatsapp:hover {
+    background: #1faa52;
+    transform: scale(1.05);
+}
+
+/* Botones de Acción Mejorados */
+.makia-booking-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 15px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.makia-btn-approve,
+.makia-btn-reject,
+.makia-btn-delete {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.makia-btn-approve {
+    background: #46b450;
+    color: #fff;
+}
+
+.makia-btn-approve:hover {
+    background: #399c3d;
+    transform: scale(1.05);
+}
+
+.makia-btn-reject {
+    background: #dc3232;
+    color: #fff;
+}
+
+.makia-btn-reject:hover {
+    background: #b32d2e;
+    transform: scale(1.05);
+}
+
+.makia-btn-delete {
+    background: #999;
+    color: #fff;
+}
+
+.makia-btn-delete:hover {
+    background: #666;
+    transform: scale(1.05);
+}
+
+/* Responsive Móvil */
+@media (max-width: 782px) {
+    .makia-admin-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .makia-admin-header h1 {
+        font-size: 22px;
+    }
+    
+    .makia-tabs-nav {
+        flex-direction: column;
+    }
+    
+    .makia-tabs-nav button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .wp-list-table {
+        display: none !important;
+    }
+    
+    .makia-mobile-bookings {
+        display: block !important;
+    }
+    
+    .tablenav.bottom {
+        display: none !important;
+    }
+    
+    .makia-booking-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Modal Mejorado */
+.makia-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+}
+
+.makia-modal-content {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.makia-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.makia-modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #667eea;
+    font-weight: 700;
+}
+
+.makia-modal-close {
+    background: none;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+    color: #999;
+    transition: all 0.3s ease;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.makia-modal-close:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+/* Sección de Notas Internas Mejorada */
+.makia-internal-notes-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.makia-internal-notes-section h4 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #667eea;
+    font-weight: 700;
+}
+
+#makia-notes-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.makia-note-item {
+    background: #f9f9f9;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 3px solid #667eea;
+}
+
+.makia-note-author {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 13px;
+}
+
+.makia-note-date {
+    font-size: 11px;
+    color: #999;
+    margin-left: 10px;
+}
+
+.makia-note-text {
+    margin-top: 8px;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#makia-add-note-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+#makia-add-note-form textarea:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#makia-add-note-form button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#makia-add-note-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Botones de Recordatorio Mejorados */
+.makia-reminder-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.makia-send-reminder {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #fff;
+}
+
+.makia-send-reminder-sms {
+    background: #46b450;
+}
+
+.makia-send-reminder-sms:hover {
+    background: #399c3d;
+    transform: scale(1.05);
+}
+
+.makia-send-reminder-whatsapp {
+    background: #25D366;
+}
+
+.makia-send-reminder-whatsapp:hover {
+    background: #1faa52;
+    transform: scale(1.05);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.makia-booking-card,
+.makia-stat-card {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Scrollbar personalizado */
+#makia-notes-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+#makia-notes-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+#makia-notes-list::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 4px;
+}
+
+#makia-notes-list::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+}

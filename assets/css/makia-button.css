@@ -1,0 +1,415 @@
+/**
+ * MakIA Reservas - Estilos del Botón de Reservas
+ * Incluye botón normal y botón flotante
+ */
+
+/* ==========================================================================
+   Variables CSS
+   ========================================================================== */
+
+:root {
+    --makia-btn-color: #2c5530;
+    --makia-btn-text-color: #ffffff;
+    --makia-btn-radius: 8px;
+    --makia-btn-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    --makia-btn-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.3);
+    --makia-transition: all 0.3s ease;
+}
+
+/* ==========================================================================
+   Botón de Reservas - Base
+   ========================================================================== */
+
+.makia-booking-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: var(--makia-transition);
+    line-height: 1.4;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.makia-booking-button:hover {
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+.makia-booking-button:active {
+    transform: translateY(0);
+}
+
+.makia-booking-button:focus {
+    outline: 2px solid var(--makia-btn-color);
+    outline-offset: 2px;
+}
+
+/* Icono del botón */
+.makia-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.makia-btn-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ==========================================================================
+   Tamaños del Botón
+   ========================================================================== */
+
+.makia-booking-button.makia-size-small {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.makia-booking-button.makia-size-small .makia-btn-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.makia-booking-button.makia-size-medium {
+    padding: 12px 24px;
+    font-size: 15px;
+}
+
+.makia-booking-button.makia-size-large {
+    padding: 16px 32px;
+    font-size: 17px;
+}
+
+.makia-booking-button.makia-size-large .makia-btn-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ==========================================================================
+   Estilos del Botón
+   ========================================================================== */
+
+/* Estilo Sólido */
+.makia-booking-button.makia-style-solid {
+    background-color: var(--makia-btn-color);
+    color: var(--makia-btn-text-color);
+    border-radius: var(--makia-btn-radius);
+    box-shadow: var(--makia-btn-shadow);
+}
+
+.makia-booking-button.makia-style-solid:hover {
+    box-shadow: var(--makia-btn-shadow-hover);
+    filter: brightness(1.1);
+    color: var(--makia-btn-text-color);
+}
+
+/* Estilo Contorno (Outline) */
+.makia-booking-button.makia-style-outline {
+    background: transparent;
+    border: 2px solid var(--makia-btn-color);
+    color: var(--makia-btn-color);
+    border-radius: var(--makia-btn-radius);
+}
+
+.makia-booking-button.makia-style-outline:hover {
+    background: var(--makia-btn-color);
+    color: var(--makia-btn-text-color);
+}
+
+/* Estilo Gradiente */
+.makia-booking-button.makia-style-gradient {
+    background: linear-gradient(135deg, var(--makia-btn-color) 0%, #1a3a1d 100%);
+    color: var(--makia-btn-text-color);
+    border-radius: var(--makia-btn-radius);
+    box-shadow: var(--makia-btn-shadow);
+}
+
+.makia-booking-button.makia-style-gradient:hover {
+    box-shadow: var(--makia-btn-shadow-hover);
+}
+
+/* ==========================================================================
+   Botón Flotante
+   ========================================================================== */
+
+.makia-floating-button {
+    position: fixed;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    background-color: var(--makia-btn-color);
+    color: var(--makia-btn-text-color);
+    border-radius: var(--makia-btn-radius);
+    box-shadow: var(--makia-btn-shadow);
+    cursor: pointer;
+    transition: var(--makia-transition);
+}
+
+.makia-floating-button:hover {
+    transform: scale(1.05);
+    box-shadow: var(--makia-btn-shadow-hover);
+    text-decoration: none;
+    color: var(--makia-btn-text-color);
+}
+
+.makia-floating-button:focus {
+    outline: 2px solid var(--makia-btn-text-color);
+    outline-offset: 2px;
+}
+
+/* Icono flotante */
+.makia-floating-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.makia-floating-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Texto flotante */
+.makia-floating-text {
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   Posiciones del Botón Flotante
+   ========================================================================== */
+
+.makia-floating-button.makia-floating-right {
+    bottom: 30px;
+    right: 30px;
+}
+
+.makia-floating-button.makia-floating-left {
+    bottom: 30px;
+    left: 30px;
+}
+
+.makia-floating-button.makia-floating-center {
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.makia-floating-button.makia-floating-center:hover {
+    transform: translateX(-50%) scale(1.05);
+}
+
+/* ==========================================================================
+   Estilos del Botón Flotante
+   ========================================================================== */
+
+.makia-floating-button.makia-style-outline {
+    background: transparent;
+    border: 2px solid var(--makia-btn-color);
+    color: var(--makia-btn-color);
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.makia-floating-button.makia-style-outline:hover {
+    background: var(--makia-btn-color);
+    color: var(--makia-btn-text-color);
+}
+
+.makia-floating-button.makia-style-gradient {
+    background: linear-gradient(135deg, var(--makia-btn-color) 0%, #1a3a1d 100%);
+}
+
+/* ==========================================================================
+   Animaciones del Botón Flotante
+   ========================================================================== */
+
+/* Estado oculto */
+.makia-floating-button.makia-floating-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Animación Fade */
+.makia-floating-button.makia-animation-fade {
+    transition: opacity 0.4s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.makia-floating-button.makia-animation-fade.makia-floating-hidden {
+    opacity: 0;
+}
+
+.makia-floating-button.makia-animation-fade.makia-floating-visible {
+    opacity: 1;
+}
+
+/* Animación Slide */
+.makia-floating-button.makia-animation-slide {
+    transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.3s ease;
+}
+
+.makia-floating-button.makia-animation-slide.makia-floating-right.makia-floating-hidden {
+    transform: translateX(100px);
+    opacity: 0;
+}
+
+.makia-floating-button.makia-animation-slide.makia-floating-left.makia-floating-hidden {
+    transform: translateX(-100px);
+    opacity: 0;
+}
+
+.makia-floating-button.makia-animation-slide.makia-floating-center.makia-floating-hidden {
+    transform: translateX(-50%) translateY(100px);
+    opacity: 0;
+}
+
+.makia-floating-button.makia-animation-slide.makia-floating-visible {
+    opacity: 1;
+}
+
+.makia-floating-button.makia-animation-slide.makia-floating-right.makia-floating-visible,
+.makia-floating-button.makia-animation-slide.makia-floating-left.makia-floating-visible {
+    transform: translateX(0);
+}
+
+.makia-floating-button.makia-animation-slide.makia-floating-center.makia-floating-visible {
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Animación Scale */
+.makia-floating-button.makia-animation-scale {
+    transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.3s ease;
+}
+
+.makia-floating-button.makia-animation-scale.makia-floating-hidden {
+    transform: scale(0);
+    opacity: 0;
+}
+
+.makia-floating-button.makia-animation-scale.makia-floating-center.makia-floating-hidden {
+    transform: translateX(-50%) scale(0);
+}
+
+.makia-floating-button.makia-animation-scale.makia-floating-visible {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.makia-floating-button.makia-animation-scale.makia-floating-center.makia-floating-visible {
+    transform: translateX(-50%) scale(1);
+}
+
+/* ==========================================================================
+   Responsive - Móvil
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* Botón normal */
+    .makia-booking-button.makia-size-large {
+        padding: 14px 28px;
+        font-size: 16px;
+    }
+    
+    /* Botón flotante */
+    .makia-floating-button {
+        padding: 12px 20px;
+        font-size: 14px;
+        bottom: 20px;
+    }
+    
+    .makia-floating-button.makia-floating-right {
+        right: 20px;
+    }
+    
+    .makia-floating-button.makia-floating-left {
+        left: 20px;
+    }
+    
+    .makia-floating-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    /* Ocultar texto en móvil si es muy largo */
+    .makia-floating-button.makia-compact-mobile .makia-floating-text {
+        display: none;
+    }
+    
+    .makia-floating-button.makia-compact-mobile {
+        padding: 14px;
+        border-radius: 50%;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Botón flotante siempre muestra texto en móvil */
+    .makia-floating-button {
+        padding: 12px 18px;
+        font-size: 13px;
+        gap: 8px;
+    }
+    
+    /* Texto siempre visible */
+    .makia-floating-button .makia-floating-text {
+        display: inline;
+    }
+    
+    /* Icono más pequeño en móvil */
+    .makia-floating-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Ocultar en móvil si está configurado */
+@media (max-width: 768px) {
+    .makia-floating-button.makia-hide-mobile {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   Accesibilidad
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .makia-booking-button,
+    .makia-floating-button {
+        transition: none;
+    }
+    
+    .makia-floating-button.makia-animation-fade,
+    .makia-floating-button.makia-animation-slide,
+    .makia-floating-button.makia-animation-scale {
+        transition: opacity 0.1s ease;
+    }
+}
+
+/* Alto contraste */
+@media (prefers-contrast: high) {
+    .makia-booking-button,
+    .makia-floating-button {
+        border: 2px solid currentColor;
+    }
+}
+
+/* ==========================================================================
+   Print - Ocultar botón flotante al imprimir
+   ========================================================================== */
+
+@media print {
+    .makia-floating-button {
+        display: none !important;
+    }
+}

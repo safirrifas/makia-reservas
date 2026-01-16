@@ -1,0 +1,266 @@
+<?php
+/**
+ * MakIA Design Templates Manager
+ * Gestiona las plantillas de diseño del formulario de reservas
+ */
+
+class MakIA_Design {
+    
+    /**
+     * Constructor
+     */
+    public function __construct() {
+        // Cargar CSS de plantillas en el frontend
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_template_styles'));
+        
+        // AJAX para guardar plantilla seleccionada
+        add_action('wp_ajax_makia_save_template', array($this, 'save_template_ajax'));
+    }
+    
+    /**
+     * Obtener plantillas disponibles
+     */
+    public static function get_available_templates() {
+        return array(
+            'modern' => array(
+                'name' => 'Moderno Minimalista',
+                'description' => 'Diseño limpio y contemporáneo con líneas suaves y espacios amplios',
+                'colors' => array('#4A90E2', '#ffffff', '#fafafa'),
+                'style' => 'Minimalista, espacioso, profesional'
+            ),
+            'elegant' => array(
+                'name' => 'Elegante Clásico',
+                'description' => 'Estilo refinado con tipografía serif y detalles dorados',
+                'colors' => array('#d4af37', '#fdfcfb', '#2c2c2c'),
+                'style' => 'Clásico, sofisticado, luxury'
+            ),
+            'vibrant' => array(
+                'name' => 'Colorido Vibrante',
+                'description' => 'Gradientes modernos y colores vivos para un look contemporáneo',
+                'colors' => array('#667eea', '#764ba2', '#ffffff'),
+                'style' => 'Moderno, dinámico, llamativo'
+            ),
+            'dark' => array(
+                'name' => 'Oscuro Premium',
+                'description' => 'Fondo oscuro con acentos dorados para experiencia premium',
+                'colors' => array('#1a1a1a', '#d4af37', '#2a2a2a'),
+                'style' => 'Premium, exclusivo, elegante'
+            ),
+            'rustic' => array(
+                'name' => 'Rústico Acogedor',
+                'description' => 'Tonos cálidos y naturales para ambiente acogedor',
+                'colors' => array('#8b7355', '#f5f1e8', '#5a4a3a'),
+                'style' => 'Natural, cálido, tradicional'
+            ),
+            'corporate' => array(
+                'name' => 'Profesional Corporativo',
+                'description' => 'Diseño serio y confiable con estructura clara',
+                'colors' => array('#003d7a', '#ffffff', '#f9f9f9'),
+                'style' => 'Corporativo, confiable, estructurado'
+            )
+        );
+    }
+    
+    /**
+     * Obtener plantilla activa
+     */
+    public static function get_active_template() {
+        return get_option('makia_active_template', 'modern');
+    }
+    
+    /**
+     * Guardar plantilla seleccionada
+     */
+    public static function save_template($template_id) {
+        $templates = self::get_available_templates();
+        
+        if (isset($templates[$template_id])) {
+            update_option('makia_active_template', $template_id);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Cargar estilos de plantillas en el frontend
+     */
+    public function enqueue_template_styles() {
+        // Solo cargar en páginas con shortcode de reservas
+        if (has_shortcode(get_post()->post_content, 'makia_booking_form')) {
+            wp_enqueue_style(
+                'makia-booking-templates',
+                plugins_url('assets/css/makia-booking-templates.css', dirname(__FILE__)),
+                array(),
+                '1.0.0'
+            );
+        }
+    }
+    
+    /**
+     * Handler AJAX para guardar plantilla
+     */
+    public function save_template_ajax() {
+        // Verificar nonce
+        check_ajax_referer('makia_admin_nonce', 'nonce');
+        
+        // Verificar permisos
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => 'No tienes permisos'));
+            return;
+        }
+        
+        $template_id = sanitize_text_field($_POST['template_id']);
+        
+        if (self::save_template($template_id)) {
+            wp_send_json_success(array(
+                'message' => 'Plantilla guardada correctamente',
+                'template' => $template_id
+            ));
+        } else {
+            wp_send_json_error(array('message' => 'Plantilla no válida'));
+        }
+    }
+    
+    /**
+     * Renderizar pestaña de diseño en el panel admin
+     */
+    public static function render_design_tab() {
+        $templates = self::get_available_templates();
+        $active_template = self::get_active_template();
+        ?>
+        
+        <div class="makia-design-tab">
+            <h2 style="color: #667eea; margin-bottom: 10px;">Diseño del Formulario</h2>
+            <p style="color: #666; margin-bottom: 30px;">Selecciona una plantilla profesional para el formulario de reservas del frontend.</p>
+            
+            <div class="makia-templates-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 30px;">
+                
+                <?php foreach ($templates as $template_id => $template): ?>
+                <div class="makia-template-card <?php echo ($active_template === $template_id) ? 'active' : ''; ?>" 
+                     data-template="<?php echo esc_attr($template_id); ?>"
+                     style="background: #fff; border: 2px solid <?php echo ($active_template === $template_id) ? '#667eea' : '#e0e0e0'; ?>; border-radius: 12px; padding: 25px; cursor: pointer; transition: all 0.3s ease; position: relative;">
+                    
+                    <?php if ($active_template === $template_id): ?>
+                    <div style="position: absolute; top: 15px; right: 15px; background: #667eea; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                        ACTIVA
+                    </div>
+                    <?php endif; ?>
+                    
+                    <h3 style="margin: 0 0 12px 0; color: #333; font-size: 20px; font-weight: 600;">
+                        <?php echo esc_html($template['name']); ?>
+                    </h3>
+                    
+                    <p style="color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 18px;">
+                        <?php echo esc_html($template['description']); ?>
+                    </p>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <strong style="font-size: 13px; color: #555;">Estilo:</strong>
+                        <span style="font-size: 13px; color: #777;"><?php echo esc_html($template['style']); ?></span>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <strong style="font-size: 13px; color: #555; display: block; margin-bottom: 8px;">Paleta de colores:</strong>
+                        <div style="display: flex; gap: 8px;">
+                            <?php foreach ($template['colors'] as $color): ?>
+                            <div style="width: 40px; height: 40px; background: <?php echo esc_attr($color); ?>; border-radius: 6px; border: 1px solid #ddd;"></div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="button button-primary makia-select-template" 
+                            data-template="<?php echo esc_attr($template_id); ?>"
+                            style="width: 100%; padding: 10px; background: <?php echo ($active_template === $template_id) ? '#46b450' : '#667eea'; ?>; border: none; border-radius: 6px; color: #fff; font-weight: 600; cursor: pointer;">
+                        <?php echo ($active_template === $template_id) ? 'Plantilla Activa' : 'Seleccionar Plantilla'; ?>
+                    </button>
+                </div>
+                <?php endforeach; ?>
+                
+            </div>
+            
+            <div class="makia-design-info" style="background: #f9f9f9; padding: 25px; border-radius: 8px; border-left: 4px solid #667eea;">
+                <h3 style="margin: 0 0 12px 0; color: #667eea; font-size: 18px;">Información Importante</h3>
+                <ul style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+                    <li>La plantilla seleccionada se aplicará automáticamente al formulario de reservas del frontend</li>
+                    <li>Los cambios son instantáneos y no requieren recargar la página</li>
+                    <li>Todas las plantillas son responsive y se adaptan a dispositivos móviles</li>
+                    <li>El diseño no afecta la funcionalidad del formulario, solo su apariencia</li>
+                </ul>
+            </div>
+        </div>
+        
+        <script>
+        jQuery(document).ready(function($) {
+            // Hover effect en tarjetas
+            $('.makia-template-card').hover(
+                function() {
+                    if (!$(this).hasClass('active')) {
+                        $(this).css({
+                            'transform': 'translateY(-5px)',
+                            'box-shadow': '0 8px 25px rgba(0,0,0,0.1)',
+                            'border-color': '#667eea'
+                        });
+                    }
+                },
+                function() {
+                    if (!$(this).hasClass('active')) {
+                        $(this).css({
+                            'transform': 'translateY(0)',
+                            'box-shadow': 'none',
+                            'border-color': '#e0e0e0'
+                        });
+                    }
+                }
+            );
+            
+            // Seleccionar plantilla
+            $('.makia-select-template').on('click', function() {
+                var $button = $(this);
+                var templateId = $button.data('template');
+                var $card = $button.closest('.makia-template-card');
+                
+                // Deshabilitar botón
+                $button.prop('disabled', true).text('Aplicando...');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'makia_save_template',
+                        template_id: templateId,
+                        nonce: '<?php echo wp_create_nonce('makia_admin_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Actualizar UI
+                            $('.makia-template-card').removeClass('active').css('border-color', '#e0e0e0');
+                            $('.makia-template-card .button-primary').css('background', '#667eea').text('Seleccionar Plantilla');
+                            $('.makia-template-card > div[style*="ACTIVA"]').remove();
+                            
+                            $card.addClass('active').css('border-color', '#667eea');
+                            $card.prepend('<div style="position: absolute; top: 15px; right: 15px; background: #667eea; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;">ACTIVA</div>');
+                            $button.css('background', '#46b450').text('Plantilla Activa');
+                            
+                            // Mostrar notificación
+                            alert('Plantilla aplicada correctamente');
+                        } else {
+                            alert('Error: ' + response.data.message);
+                            $button.prop('disabled', false).text('Seleccionar Plantilla');
+                        }
+                    },
+                    error: function() {
+                        alert('Error al guardar la plantilla');
+                        $button.prop('disabled', false).text('Seleccionar Plantilla');
+                    }
+                });
+            });
+        });
+        </script>
+        
+        <?php
+    }
+}
+
+// Inicializar
+new MakIA_Design();

@@ -1,0 +1,427 @@
+/* Menú Hamburguesa MakIA - Desplegable y Pegable */
+/* Versión mejorada con soporte táctil para móviles */
+
+/* Contenedor principal */
+.makia-admin-wrap {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Botón Hamburguesa */
+.makia-hamburger-btn {
+    position: fixed;
+    top: 32px;
+    left: 160px;
+    z-index: 100000;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.makia-hamburger-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.makia-hamburger-btn:active {
+    transform: translateY(0);
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+}
+
+/* Sidebar del Menú */
+.makia-sidebar {
+    position: fixed;
+    top: 32px;
+    left: 160px;
+    width: 280px;
+    height: calc(100vh - 32px);
+    background: #fff;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease, visibility 0.3s ease;
+    z-index: 99999;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    visibility: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.makia-sidebar.open {
+    transform: translateX(0);
+    visibility: visible;
+}
+
+.makia-sidebar.pinned {
+    transform: translateX(0);
+    position: fixed;
+    visibility: visible;
+}
+
+/* Header del Sidebar */
+.makia-sidebar-header {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.makia-sidebar-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.makia-pin-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.makia-pin-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.makia-pin-btn.pinned {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* Navegación del Sidebar */
+.makia-sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.makia-sidebar-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.makia-sidebar-nav li {
+    margin: 0;
+}
+
+.makia-sidebar-nav button {
+    width: 100%;
+    padding: 15px 25px;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 15px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.makia-sidebar-nav button:hover {
+    background: #f9f9f9;
+    border-left-color: #667eea;
+}
+
+.makia-sidebar-nav button:active {
+    background: #f0f0f0;
+}
+
+.makia-sidebar-nav button.active {
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+    border-left-color: #667eea;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.makia-sidebar-nav button .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+/* Contenido Principal */
+.makia-main-content {
+    flex: 1;
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+    padding: 20px;
+    width: 100%;
+}
+
+.makia-sidebar.pinned ~ .makia-main-content {
+    margin-left: 280px;
+}
+
+/* Overlay cuando el menú está abierto pero no pegado */
+.makia-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.makia-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Header Principal (sin menú de pestañas) */
+.makia-admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.makia-admin-header-logo {
+    background: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.makia-admin-header-logo img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+.makia-admin-header-content h1 {
+    margin: 0 0 5px 0;
+    color: #fff;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.makia-admin-header-content p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+}
+
+/* Eliminar el menú de pestañas horizontal antiguo */
+.makia-tabs-nav {
+    display: none !important;
+}
+
+/* Contenido de pestañas */
+.makia-tab-content {
+    display: none;
+}
+
+.makia-tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar personalizado para sidebar */
+.makia-sidebar-nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.makia-sidebar-nav::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.makia-sidebar-nav::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 3px;
+}
+
+.makia-sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+}
+
+/* Prevenir scroll del body cuando el menú está abierto en móvil */
+/* El bloqueo de scroll se maneja dinámicamente via JavaScript */
+/* para preservar la posición de scroll correctamente */
+
+/* ==================== RESPONSIVE MÓVIL ==================== */
+@media screen and (max-width: 782px) {
+    /* Botón hamburguesa en móvil - posición más accesible */
+    .makia-hamburger-btn {
+        left: 10px;
+        top: 56px;
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+        border-radius: 10px;
+        z-index: 100001;
+    }
+    
+    /* Sidebar en móvil - pantalla completa */
+    .makia-sidebar {
+        left: 0;
+        top: 46px;
+        height: calc(100vh - 46px);
+        width: 85%;
+        max-width: 320px;
+        z-index: 100000;
+    }
+    
+    .makia-sidebar.pinned ~ .makia-main-content {
+        margin-left: 0;
+    }
+    
+    /* Ocultar botón pin en móvil */
+    .makia-pin-btn {
+        display: none !important;
+    }
+    
+    /* Header más compacto en móvil */
+    .makia-admin-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+        margin-left: 60px;
+    }
+    
+    .makia-admin-header-content h1 {
+        font-size: 22px;
+    }
+    
+    /* Botones de navegación más grandes para touch */
+    .makia-sidebar-nav button {
+        padding: 18px 25px;
+        font-size: 16px;
+        min-height: 54px;
+    }
+    
+    /* Contenido principal con margen para el botón */
+    .makia-main-content {
+        padding: 15px;
+        padding-top: 70px;
+    }
+    
+    /* Overlay más oscuro en móvil */
+    .makia-overlay.show {
+        background: rgba(0, 0, 0, 0.6);
+    }
+}
+
+/* Pantallas muy pequeñas */
+@media screen and (max-width: 480px) {
+    .makia-hamburger-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        top: 52px;
+        left: 8px;
+    }
+    
+    .makia-sidebar {
+        width: 90%;
+        max-width: 300px;
+    }
+    
+    .makia-sidebar-nav button {
+        padding: 16px 20px;
+        font-size: 15px;
+    }
+    
+    .makia-admin-header {
+        margin-left: 50px;
+        padding: 15px;
+    }
+    
+    .makia-admin-header-content h1 {
+        font-size: 18px;
+    }
+}
+
+/* Indicador de menú pegado - solo en escritorio */
+@media screen and (min-width: 783px) {
+    .makia-sidebar.pinned::before {
+        content: "📌 Menú Pegado";
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        z-index: 10;
+    }
+}
+
+/* Mejoras de accesibilidad táctil */
+@media (hover: none) and (pointer: coarse) {
+    .makia-hamburger-btn:hover {
+        transform: none;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .makia-sidebar-nav button:hover {
+        background: transparent;
+        border-left-color: transparent;
+    }
+    
+    .makia-sidebar-nav button.active:hover {
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+        border-left-color: #667eea;
+    }
+}

@@ -1,0 +1,212 @@
+/**
+ * MakIA Reservas - Modal Responsive para Móvil
+ * Sin scroll, compacto, mensaje de confirmación cubre todo el formulario
+ */
+
+/* Modal responsive en móvil */
+@media (max-width: 768px) {
+    /* Overlay */
+    #makia-modal-overlay {
+        padding: 0 !important;
+        align-items: flex-end !important;
+    }
+    
+    /* Contenedor del modal */
+    .makia-modal-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        max-height: 95vh !important;
+        margin: 0 !important;
+        border-radius: 20px 20px 0 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Header del modal */
+    .makia-modal-header {
+        padding: 15px 20px !important;
+        position: sticky !important;
+        top: 0 !important;
+        background: #fff !important;
+        z-index: 10 !important;
+        border-bottom: 1px solid #eee !important;
+    }
+    
+    .makia-modal-header h2 {
+        font-size: 18px !important;
+        margin: 0 !important;
+    }
+    
+    #makia-close-modal {
+        font-size: 28px !important;
+        width: 32px !important;
+        height: 32px !important;
+        line-height: 28px !important;
+    }
+    
+    /* Body del modal */
+    .makia-modal-body {
+        padding: 20px !important;
+    }
+    
+    /* Formulario compacto */
+    #makia-booking-form {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+    
+    .makia-form-group {
+        margin-bottom: 0 !important;
+    }
+    
+    .makia-form-group label {
+        font-size: 13px !important;
+        margin-bottom: 6px !important;
+        display: block !important;
+    }
+    
+    .makia-form-group input,
+    .makia-form-group select,
+    .makia-form-group textarea {
+        width: 100% !important;
+        padding: 10px 12px !important;
+        font-size: 15px !important;
+        border: 1px solid #ddd !important;
+        border-radius: 8px !important;
+        box-sizing: border-box !important;
+    }
+    
+    .makia-form-group textarea {
+        min-height: 60px !important;
+        resize: vertical !important;
+    }
+    
+    /* Grid de 2 columnas para campos cortos */
+    .makia-form-row {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+    
+    /* Checkbox de privacidad */
+    .makia-checkbox-group {
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        font-size: 12px !important;
+    }
+    
+    .makia-checkbox-group input[type="checkbox"] {
+        width: auto !important;
+        margin-top: 2px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    /* Botón de envío */
+    #makia-submit-btn {
+        width: 100% !important;
+        padding: 14px !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        border-radius: 8px !important;
+        background: #2271b1 !important;
+        color: #fff !important;
+        cursor: pointer !important;
+        margin-top: 8px !important;
+    }
+    
+    #makia-submit-btn:active {
+        opacity: 0.8 !important;
+    }
+    
+    /* Mensaje de confirmación - CUBRE TODO EL FORMULARIO */
+    #makia-booking-messages {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 1000 !important;
+        padding: 20px !important;
+        border-radius: 20px 20px 0 0 !important;
+    }
+    
+    #makia-booking-messages:empty {
+        display: none !important;
+    }
+    
+    .makia-message {
+        width: 100% !important;
+        max-width: 400px !important;
+        padding: 30px 20px !important;
+        border-radius: 12px !important;
+        text-align: center !important;
+        font-size: 15px !important;
+        line-height: 1.6 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    }
+    
+    .makia-success {
+        background: #d4edda !important;
+        color: #155724 !important;
+        border: 2px solid #46b450 !important;
+    }
+    
+    .makia-success strong {
+        display: block !important;
+        font-size: 20px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .makia-success::before {
+        content: "✅" !important;
+        display: block !important;
+        font-size: 48px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .makia-error {
+        background: #f8d7da !important;
+        color: #721c24 !important;
+        border: 2px solid #dc3232 !important;
+    }
+    
+    .makia-error strong {
+        display: block !important;
+        font-size: 18px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .makia-error::before {
+        content: "❌" !important;
+        display: block !important;
+        font-size: 48px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    /* Posicionar el modal body relativamente para el mensaje absoluto */
+    .makia-modal-body {
+        position: relative !important;
+    }
+}
+
+/* Ajustes adicionales para pantallas muy pequeñas */
+@media (max-width: 375px) {
+    .makia-form-row {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .makia-modal-body {
+        padding: 15px !important;
+    }
+    
+    #makia-booking-form {
+        gap: 10px !important;
+    }
+}

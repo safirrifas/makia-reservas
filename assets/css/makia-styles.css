@@ -1,0 +1,532 @@
+/**
+ * MakIA Reservas - Estilos del Plugin
+ * Version: 3.2.0
+ * Inspirado en asadorcentral.com
+ */
+
+/* ==========================================================================
+   BOTÓN DE RESERVA (CTA)
+   ========================================================================== */
+
+.makia-reserve-button {
+    display: inline-block;
+    padding: 15px 40px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.makia-reserve-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================================================
+   OVERLAY Y MODAL
+   ========================================================================== */
+
+.makia-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: 999999;
+    overflow-y: auto;
+    padding: 20px;
+    animation: makia-fadeIn 0.3s ease;
+}
+
+.makia-modal-overlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes makia-fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.makia-modal-container {
+    background: #ffffff;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: makia-slideUp 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes makia-slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Botón de cierre */
+.makia-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 35px;
+    height: 35px;
+    border: none;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    color: #333;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.makia-modal-close:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: rotate(90deg);
+}
+
+/* Encabezado del modal (versión original) */
+.makia-modal-header {
+    padding: 30px;
+    border-radius: 12px 12px 0 0;
+    text-align: center;
+    color: #ffffff;
+    background: linear-gradient(135deg, #2c5530 0%, #1a3a1d 100%);
+}
+
+.makia-modal-header h2 {
+    margin: 0 0 10px 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.makia-modal-header p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.95;
+}
+
+/* Modal compacto - sin cabecera */
+.makia-modal-container.makia-compact {
+    max-height: 95vh;
+}
+
+.makia-modal-container.makia-compact .makia-modal-body {
+    padding: 20px 25px 15px;
+}
+
+.makia-modal-container.makia-compact .makia-modal-close {
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Cuerpo del modal */
+.makia-modal-body {
+    padding: 30px;
+}
+
+/* Pie del modal */
+.makia-modal-footer {
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+    text-align: center;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* Pie compacto */
+.makia-modal-footer.makia-compact-footer {
+    padding: 8px 15px;
+    font-size: 10px;
+    color: #aaa;
+}
+
+.makia-modal-footer a {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.makia-modal-footer a:hover {
+    text-decoration: underline;
+}
+
+.makia-plugin-logo {
+    display: inline-block;
+    margin-top: 5px;
+}
+
+/* ==========================================================================
+   FORMULARIO
+   ========================================================================== */
+
+.makia-booking-form {
+    width: 100%;
+}
+
+.makia-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.makia-form-group {
+    margin-bottom: 12px;
+}
+
+.makia-form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #333;
+}
+
+.makia-form-group input[type="text"],
+.makia-form-group input[type="email"],
+.makia-form-group input[type="tel"],
+.makia-form-group input[type="date"],
+.makia-form-group input[type="time"],
+.makia-form-group input[type="number"],
+.makia-form-group select,
+.makia-form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.makia-form-group input:focus,
+.makia-form-group select:focus,
+.makia-form-group textarea:focus {
+    outline: none;
+    border-color: var(--makia-primary-color);
+    box-shadow: 0 0 0 3px var(--makia-primary-light);
+}
+
+.makia-form-group textarea {
+    resize: vertical;
+    min-height: 50px;
+}
+
+/* Checkbox */
+.makia-checkbox {
+    display: flex;
+    align-items: flex-start;
+}
+
+.makia-checkbox label {
+    display: flex;
+    align-items: flex-start;
+    font-weight: normal;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.makia-checkbox input[type="checkbox"] {
+    margin-right: 8px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.makia-checkbox a {
+    color: var(--makia-primary-color);
+    text-decoration: none;
+}
+
+.makia-checkbox a:hover {
+    text-decoration: underline;
+}
+
+/* Botón de envío */
+.makia-submit-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+    color: #ffffff;
+    background-color: var(--makia-primary-color);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.makia-submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.makia-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.makia-btn-loading {
+    display: none;
+}
+
+.makia-submit-btn.loading .makia-btn-text {
+    display: none;
+}
+
+.makia-submit-btn.loading .makia-btn-loading {
+    display: inline;
+}
+
+/* Mensajes */
+.makia-message {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.makia-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.makia-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Mensaje de éxito */
+.makia-success-container {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.makia-success-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--makia-primary-color);
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 50px;
+    margin: 0 auto 20px;
+}
+
+.makia-success-container h3 {
+    color: var(--makia-primary-color);
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.makia-success-container p {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+#makia-reservation-details {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.makia-new-booking-btn {
+    padding: 12px 30px;
+    background: var(--makia-primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.makia-new-booking-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================================================
+   ESTILOS DE COLOR (4 TEMAS)
+   ========================================================================== */
+
+/* Estilo 1: Dorado/Marrón (Asador Central) */
+.makia-style-gold {
+    --makia-primary-color: #b8956a;
+    --makia-primary-dark: #9a7a52;
+    --makia-primary-light: rgba(184, 149, 106, 0.1);
+}
+
+.makia-style-gold .makia-reserve-button {
+    background: #b8956a;
+    color: #ffffff;
+}
+
+.makia-style-gold .makia-modal-header {
+    background: linear-gradient(135deg, #b8956a 0%, #9a7a52 100%);
+}
+
+/* Estilo 2: Azul Moderno */
+.makia-style-blue {
+    --makia-primary-color: #3498db;
+    --makia-primary-dark: #2980b9;
+    --makia-primary-light: rgba(52, 152, 219, 0.1);
+}
+
+.makia-style-blue .makia-reserve-button {
+    background: #3498db;
+    color: #ffffff;
+}
+
+.makia-style-blue .makia-modal-header {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+/* Estilo 3: Verde Elegante */
+.makia-style-green {
+    --makia-primary-color: #27ae60;
+    --makia-primary-dark: #229954;
+    --makia-primary-light: rgba(39, 174, 96, 0.1);
+}
+
+.makia-style-green .makia-reserve-button {
+    background: #27ae60;
+    color: #ffffff;
+}
+
+.makia-style-green .makia-modal-header {
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+}
+
+/* Estilo 4: Rojo Clásico */
+.makia-style-red {
+    --makia-primary-color: #e74c3c;
+    --makia-primary-dark: #c0392b;
+    --makia-primary-light: rgba(231, 76, 60, 0.1);
+}
+
+.makia-style-red .makia-reserve-button {
+    background: #e74c3c;
+    color: #ffffff;
+}
+
+.makia-style-red .makia-modal-header {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .makia-modal-container {
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .makia-modal-header {
+        border-radius: 0;
+    }
+    
+    .makia-modal-footer {
+        border-radius: 0;
+    }
+    
+    .makia-form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .makia-modal-header h2 {
+        font-size: 24px;
+    }
+    
+    .makia-modal-body {
+        padding: 20px;
+    }
+    
+    .makia-reserve-button {
+        width: 100%;
+        padding: 12px 30px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .makia-modal-overlay {
+        padding: 0;
+    }
+    
+    .makia-modal-header {
+        padding: 20px;
+    }
+    
+    .makia-modal-header h2 {
+        font-size: 20px;
+    }
+    
+    .makia-modal-header p {
+        font-size: 13px;
+    }
+    
+    .makia-submit-btn {
+        font-size: 16px;
+        padding: 14px;
+    }
+}
+
+/* ==========================================================================
+   UTILIDADES
+   ========================================================================== */
+
+.makia-hidden {
+    display: none !important;
+}
+
+.makia-error {
+    color: #e74c3c;
+    background: #fadbd8;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #f5c6cb;
+}

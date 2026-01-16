@@ -1,0 +1,805 @@
+/**
+ * MakIA Booking Form Templates
+ * 6 Plantillas profesionales para formularios de reserva
+ * Sin emojis ni iconos infantiles
+ * Diseño adaptado al sector gastronómico
+ */
+
+/* ============================================
+   PLANTILLA 1: MODERNO MINIMALISTA
+   ============================================ */
+.makia-template-modern {
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    background: #ffffff;
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.makia-template-modern .makia-form-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.makia-template-modern .makia-form-subtitle {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 32px;
+    font-weight: 400;
+}
+
+.makia-template-modern .makia-form-group {
+    margin-bottom: 24px;
+}
+
+.makia-template-modern label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.makia-template-modern input,
+.makia-template-modern select,
+.makia-template-modern textarea {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fafafa;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.makia-template-modern input:focus,
+.makia-template-modern select:focus,
+.makia-template-modern textarea:focus {
+    outline: none;
+    border-color: #4A90E2;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.makia-template-modern button[type="submit"] {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #4A90E2;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.makia-template-modern button[type="submit"]:hover {
+    background: #357ABD;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+/* ============================================
+   PLANTILLA 2: ELEGANTE CLÁSICO
+   ============================================ */
+.makia-template-elegant {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #fdfcfb;
+    max-width: 550px;
+    margin: 40px auto;
+    padding: 50px 45px;
+    border: 2px solid #d4af37;
+    border-radius: 4px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.makia-template-elegant .makia-form-title {
+    font-size: 32px;
+    font-weight: 400;
+    color: #2c2c2c;
+    margin-bottom: 10px;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.makia-template-elegant .makia-form-subtitle {
+    font-size: 16px;
+    color: #6b6b6b;
+    margin-bottom: 40px;
+    text-align: center;
+    font-style: italic;
+    font-family: 'Georgia', serif;
+}
+
+.makia-template-elegant .makia-form-group {
+    margin-bottom: 28px;
+}
+
+.makia-template-elegant label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #3a3a3a;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Arial', sans-serif;
+}
+
+.makia-template-elegant input,
+.makia-template-elegant select,
+.makia-template-elegant textarea {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 15px;
+    border: 1px solid #c9c9c9;
+    border-radius: 2px;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    font-family: 'Georgia', serif;
+}
+
+.makia-template-elegant input:focus,
+.makia-template-elegant select:focus,
+.makia-template-elegant textarea:focus {
+    outline: none;
+    border-color: #d4af37;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+}
+
+.makia-template-elegant button[type="submit"] {
+    width: 100%;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c2c2c;
+    background: #d4af37;
+    border: 2px solid #d4af37;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Arial', sans-serif;
+}
+
+.makia-template-elegant button[type="submit"]:hover {
+    background: #c19b2e;
+    border-color: #c19b2e;
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+}
+
+/* ============================================
+   PLANTILLA 3: COLORIDO VIBRANTE
+   ============================================ */
+.makia-template-vibrant {
+    font-family: 'Poppins', 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    max-width: 520px;
+    margin: 40px auto;
+    padding: 2px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+}
+
+.makia-template-vibrant .makia-form-inner {
+    background: #ffffff;
+    padding: 45px 40px;
+    border-radius: 14px;
+}
+
+.makia-template-vibrant .makia-form-title {
+    font-size: 30px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+}
+
+.makia-template-vibrant .makia-form-subtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 35px;
+    font-weight: 400;
+}
+
+.makia-template-vibrant .makia-form-group {
+    margin-bottom: 25px;
+}
+
+.makia-template-vibrant label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.makia-template-vibrant input,
+.makia-template-vibrant select,
+.makia-template-vibrant textarea {
+    width: 100%;
+    padding: 13px 18px;
+    font-size: 15px;
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    background: #f9f9f9;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.makia-template-vibrant input:focus,
+.makia-template-vibrant select:focus,
+.makia-template-vibrant textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.makia-template-vibrant button[type="submit"] {
+    width: 100%;
+    padding: 15px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.makia-template-vibrant button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+/* ============================================
+   PLANTILLA 4: OSCURO PREMIUM
+   ============================================ */
+.makia-template-dark {
+    font-family: 'Montserrat', 'Arial', sans-serif;
+    background: #1a1a1a;
+    max-width: 540px;
+    margin: 40px auto;
+    padding: 45px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+}
+
+.makia-template-dark .makia-form-title {
+    font-size: 30px;
+    font-weight: 600;
+    color: #d4af37;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+.makia-template-dark .makia-form-subtitle {
+    font-size: 15px;
+    color: #aaa;
+    margin-bottom: 35px;
+    font-weight: 300;
+}
+
+.makia-template-dark .makia-form-group {
+    margin-bottom: 26px;
+}
+
+.makia-template-dark label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #bbb;
+    margin-bottom: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.makia-template-dark input,
+.makia-template-dark select,
+.makia-template-dark textarea {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 15px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: #2a2a2a;
+    color: #e0e0e0;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.makia-template-dark input:focus,
+.makia-template-dark select:focus,
+.makia-template-dark textarea:focus {
+    outline: none;
+    border-color: #d4af37;
+    background: #333;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+}
+
+.makia-template-dark button[type="submit"] {
+    width: 100%;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    background: #d4af37;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.makia-template-dark button[type="submit"]:hover {
+    background: #e6c04d;
+    box-shadow: 0 6px 25px rgba(212, 175, 55, 0.4);
+}
+
+/* ============================================
+   PLANTILLA 5: RÚSTICO ACOGEDOR
+   ============================================ */
+.makia-template-rustic {
+    font-family: 'Merriweather', 'Georgia', serif;
+    background: #f5f1e8;
+    max-width: 530px;
+    margin: 40px auto;
+    padding: 45px 40px;
+    border-radius: 6px;
+    border: 3px solid #8b7355;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+}
+
+.makia-template-rustic .makia-form-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #5a4a3a;
+    margin-bottom: 8px;
+}
+
+.makia-template-rustic .makia-form-subtitle {
+    font-size: 16px;
+    color: #7a6a5a;
+    margin-bottom: 35px;
+    font-weight: 400;
+}
+
+.makia-template-rustic .makia-form-group {
+    margin-bottom: 26px;
+}
+
+.makia-template-rustic label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #5a4a3a;
+    margin-bottom: 9px;
+    font-family: 'Arial', sans-serif;
+}
+
+.makia-template-rustic input,
+.makia-template-rustic select,
+.makia-template-rustic textarea {
+    width: 100%;
+    padding: 13px 16px;
+    font-size: 15px;
+    border: 2px solid #c9b8a0;
+    border-radius: 4px;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    font-family: 'Georgia', serif;
+}
+
+.makia-template-rustic input:focus,
+.makia-template-rustic select:focus,
+.makia-template-rustic textarea:focus {
+    outline: none;
+    border-color: #8b7355;
+    box-shadow: 0 0 8px rgba(139, 115, 85, 0.2);
+}
+
+.makia-template-rustic button[type="submit"] {
+    width: 100%;
+    padding: 15px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #8b7355;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Arial', sans-serif;
+}
+
+.makia-template-rustic button[type="submit"]:hover {
+    background: #75604a;
+    box-shadow: 0 5px 18px rgba(139, 115, 85, 0.3);
+}
+
+/* ============================================
+   PLANTILLA 6: PROFESIONAL CORPORATIVO
+   ============================================ */
+.makia-template-corporate {
+    font-family: 'Roboto', 'Arial', sans-serif;
+    background: #ffffff;
+    max-width: 560px;
+    margin: 40px auto;
+    padding: 40px 45px;
+    border-radius: 4px;
+    border-left: 6px solid #003d7a;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.makia-template-corporate .makia-form-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #003d7a;
+    margin-bottom: 8px;
+}
+
+.makia-template-corporate .makia-form-subtitle {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 32px;
+    font-weight: 400;
+}
+
+.makia-template-corporate .makia-form-group {
+    margin-bottom: 24px;
+}
+
+.makia-template-corporate label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.makia-template-corporate input,
+.makia-template-corporate select,
+.makia-template-corporate textarea {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #f9f9f9;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.makia-template-corporate input:focus,
+.makia-template-corporate select:focus,
+.makia-template-corporate textarea:focus {
+    outline: none;
+    border-color: #003d7a;
+    background: #ffffff;
+    box-shadow: 0 0 6px rgba(0, 61, 122, 0.15);
+}
+
+.makia-template-corporate button[type="submit"] {
+    width: 100%;
+    padding: 14px 26px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #003d7a;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.makia-template-corporate button[type="submit"]:hover {
+    background: #002a54;
+    box-shadow: 0 4px 15px rgba(0, 61, 122, 0.3);
+}
+
+/* ============================================
+   ESTILOS COMUNES PARA TODAS LAS PLANTILLAS
+   ============================================ */
+[class*="makia-template-"] textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+[class*="makia-template-"] select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+[class*="makia-template-"] button[type="submit"]:active {
+    transform: scale(0.98);
+}
+
+[class*="makia-template-"] .makia-success-message {
+    padding: 20px;
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 6px;
+    color: #155724;
+    margin-top: 20px;
+    text-align: center;
+    font-weight: 500;
+}
+
+[class*="makia-template-"] .makia-error-message {
+    padding: 20px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    color: #721c24;
+    margin-top: 20px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    [class*="makia-template-"] {
+        margin: 20px;
+        padding: 30px 25px;
+    }
+}
+
+/* ============================================
+   MEJORAS ADICIONALES Y ANIMACIONES
+   ============================================ */
+
+/* Efecto de enfoque mejorado en inputs */
+[class*="makia-template-"] input,
+[class*="makia-template-"] select,
+[class*="makia-template-"] textarea {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[class*="makia-template-"] input:hover,
+[class*="makia-template-"] select:hover,
+[class*="makia-template-"] textarea:hover {
+    border-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Efecto ripple en botones */
+[class*="makia-template-"] button[type="submit"] {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Transiciones suaves para labels */
+[class*="makia-template-"] label {
+    transition: color 0.2s ease;
+}
+
+[class*="makia-template-"] .makia-form-group:focus-within label {
+    opacity: 1;
+}
+
+/* Placeholder mejorado */
+[class*="makia-template-"] input::placeholder,
+[class*="makia-template-"] textarea::placeholder {
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+[class*="makia-template-"] input:focus::placeholder,
+[class*="makia-template-"] textarea:focus::placeholder {
+    opacity: 0.3;
+}
+
+/* Estados de validación */
+[class*="makia-template-"] input:valid:not(:placeholder-shown),
+[class*="makia-template-"] select:valid {
+    border-color: #46b450;
+}
+
+[class*="makia-template-"] input:invalid:not(:placeholder-shown):not(:focus) {
+    border-color: #dc3232;
+}
+
+/* Mejoras específicas por plantilla */
+
+/* Modern - Efecto glassmorphism */
+.makia-template-modern {
+    backdrop-filter: blur(10px);
+}
+
+.makia-template-modern input:focus,
+.makia-template-modern select:focus,
+.makia-template-modern textarea:focus {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+/* Elegant - Efecto dorado sutil */
+.makia-template-elegant::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #d4af37, transparent);
+    opacity: 0.5;
+}
+
+/* Vibrant - Animación de gradiente */
+.makia-template-vibrant {
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Dark - Efecto neón */
+.makia-template-dark button[type="submit"]:hover {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+.makia-template-dark input:focus,
+.makia-template-dark select:focus,
+.makia-template-dark textarea:focus {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+
+/* Rustic - Efecto textura */
+.makia-template-rustic {
+    position: relative;
+}
+
+.makia-template-rustic::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23f5f1e8" width="100" height="100"/><circle fill="%238b7355" fill-opacity="0.02" cx="50" cy="50" r="40"/></svg>');
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* Corporate - Líneas profesionales */
+.makia-template-corporate {
+    position: relative;
+}
+
+.makia-template-corporate::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 6px;
+    background: linear-gradient(to bottom, #003d7a, #0066cc);
+}
+
+/* Animación de shake para errores */
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+    }
+}
+
+[class*="makia-template-"] input.error,
+[class*="makia-template-"] select.error {
+    animation: shake 0.5s ease;
+}
+
+/* Loading skeleton */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.makia-loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* Tooltips mejorados */
+[class*="makia-template-"] [data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[class*="makia-template-"] [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-5px);
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    font-size: 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+[class*="makia-template-"] [data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+/* Accesibilidad mejorada */
+[class*="makia-template-"] *:focus {
+    outline: 2px solid #4A90E2;
+    outline-offset: 2px;
+}
+
+[class*="makia-template-"] button:focus,
+[class*="makia-template-"] input:focus,
+[class*="makia-template-"] select:focus,
+[class*="makia-template-"] textarea:focus {
+    outline: none;
+}
+
+/* Modo oscuro (si el navegador lo soporta) */
+@media (prefers-color-scheme: dark) {
+    .makia-template-modern,
+    .makia-template-corporate {
+        filter: brightness(0.9);
+    }
+}
+
+/* Reducción de movimiento para accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+    [class*="makia-template-"] * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    [class*="makia-template-"] {
+        background: white !important;
+        box-shadow: none !important;
+    }
+    
+    [class*="makia-template-"] button {
+        display: none;
+    }
+}

@@ -1,0 +1,532 @@
+/**
+ * MakIA Admin Design Panel
+ * Estilos para el panel de diseño con vista previa en vivo
+ */
+
+/* ============================================
+   CONTENEDOR PRINCIPAL DEL PANEL
+   ============================================ */
+.makia-design-tab {
+    padding: 20px;
+    background: #f5f5f5;
+    min-height: 100vh;
+}
+
+.makia-design-header {
+    margin-bottom: 30px;
+}
+
+.makia-design-header h2 {
+    color: #667eea;
+    margin-bottom: 10px;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.makia-design-header p {
+    color: #666;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* ============================================
+   GRID DE PLANTILLAS
+   ============================================ */
+.makia-templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+/* ============================================
+   TARJETA DE PLANTILLA
+   ============================================ */
+.makia-template-card {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 25px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.makia-template-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.makia-template-card:hover::before {
+    transform: scaleX(1);
+}
+
+.makia-template-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    border-color: #667eea;
+}
+
+.makia-template-card.active {
+    border-color: #667eea;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+}
+
+.makia-template-card.active::before {
+    transform: scaleX(1);
+}
+
+/* Badge de plantilla activa */
+.makia-template-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    animation: makia-pulse 2s infinite;
+}
+
+@keyframes makia-pulse {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+    50% {
+        box-shadow: 0 2px 15px rgba(102, 126, 234, 0.5);
+    }
+}
+
+/* Contenido de la tarjeta */
+.makia-template-card h3 {
+    margin: 0 0 12px 0;
+    color: #333;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.makia-template-card p {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+
+.makia-template-style {
+    margin-bottom: 15px;
+}
+
+.makia-template-style strong {
+    font-size: 13px;
+    color: #555;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.makia-template-style span {
+    font-size: 13px;
+    color: #777;
+}
+
+/* Paleta de colores */
+.makia-template-colors {
+    margin-bottom: 20px;
+}
+
+.makia-template-colors strong {
+    font-size: 13px;
+    color: #555;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.makia-color-palette {
+    display: flex;
+    gap: 8px;
+}
+
+.makia-color-swatch {
+    width: 45px;
+    height: 45px;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+}
+
+.makia-color-swatch:hover {
+    transform: scale(1.1);
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.makia-color-swatch::after {
+    content: attr(data-color);
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #999;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.makia-color-swatch:hover::after {
+    opacity: 1;
+}
+
+/* Botón de selección */
+.makia-select-template {
+    width: 100%;
+    padding: 12px 24px;
+    background: #667eea;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.makia-select-template::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.makia-select-template:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.makia-select-template:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.makia-select-template:active {
+    transform: translateY(0);
+}
+
+.makia-template-card.active .makia-select-template {
+    background: linear-gradient(135deg, #46b450 0%, #38a845 100%);
+}
+
+.makia-template-card.active .makia-select-template:hover {
+    background: linear-gradient(135deg, #38a845 0%, #2d8b38 100%);
+}
+
+/* ============================================
+   VISTA PREVIA EN VIVO
+   ============================================ */
+.makia-preview-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.makia-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.makia-preview-header h3 {
+    color: #333;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.makia-preview-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.makia-preview-btn {
+    padding: 8px 16px;
+    border: 2px solid #667eea;
+    background: #fff;
+    color: #667eea;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+.makia-preview-btn:hover {
+    background: #667eea;
+    color: #fff;
+}
+
+.makia-preview-btn.active {
+    background: #667eea;
+    color: #fff;
+}
+
+.makia-preview-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 40px 20px;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.makia-preview-frame {
+    width: 100%;
+    max-width: 600px;
+    transition: max-width 0.3s;
+}
+
+.makia-preview-frame.mobile {
+    max-width: 400px;
+}
+
+/* ============================================
+   OPCIONES DE PERSONALIZACIÓN
+   ============================================ */
+.makia-customization-panel {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.makia-customization-panel h3 {
+    color: #333;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.makia-custom-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.makia-custom-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.makia-custom-field label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.makia-custom-field input[type="text"],
+.makia-custom-field input[type="url"] {
+    padding: 10px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.makia-custom-field input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.makia-custom-field input[type="color"] {
+    width: 100%;
+    height: 50px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.makia-custom-field input[type="color"]:hover {
+    border-color: #667eea;
+}
+
+.makia-logo-upload {
+    border: 2px dashed #d0d0d0;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.makia-logo-upload:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.makia-logo-preview {
+    margin-top: 15px;
+    max-width: 200px;
+    display: inline-block;
+}
+
+.makia-logo-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ============================================
+   INFORMACIÓN Y AYUDA
+   ============================================ */
+.makia-design-info {
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    padding: 25px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.makia-design-info h3 {
+    margin: 0 0 12px 0;
+    color: #667eea;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.makia-design-info ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #666;
+    line-height: 1.8;
+}
+
+.makia-design-info ul li {
+    margin-bottom: 8px;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 1200px) {
+    .makia-templates-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .makia-templates-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .makia-preview-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .makia-custom-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .makia-design-tab {
+        padding: 15px;
+    }
+    
+    .makia-template-card {
+        padding: 20px;
+    }
+    
+    .makia-preview-section,
+    .makia-customization-panel {
+        padding: 20px;
+    }
+}
+
+/* ============================================
+   ANIMACIONES ADICIONALES
+   ============================================ */
+@keyframes makia-fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.makia-template-card {
+    animation: makia-fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.makia-template-card:nth-child(1) { animation-delay: 0.05s; }
+.makia-template-card:nth-child(2) { animation-delay: 0.1s; }
+.makia-template-card:nth-child(3) { animation-delay: 0.15s; }
+.makia-template-card:nth-child(4) { animation-delay: 0.2s; }
+.makia-template-card:nth-child(5) { animation-delay: 0.25s; }
+.makia-template-card:nth-child(6) { animation-delay: 0.3s; }
+
+/* Loading overlay */
+.makia-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    backdrop-filter: blur(5px);
+}
+
+.makia-loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

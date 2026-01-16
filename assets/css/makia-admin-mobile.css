@@ -1,0 +1,459 @@
+/**
+ * MakIA Reservas - Estilos Responsive para Panel Admin
+ * Optimizado para móviles
+ */
+
+/* Estadísticas en móvil */
+@media (max-width: 782px) {
+    .makia-stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    
+    .makia-stat-card {
+        padding: 15px !important;
+    }
+    
+    .makia-stat-card h3 {
+        font-size: 12px !important;
+    }
+    
+    .makia-stat-card p {
+        font-size: 24px !important;
+    }
+}
+
+/* Tabla responsive */
+@media (max-width: 782px) {
+    /* Ocultar tabla normal y mostrar versión móvil */
+    .wp-list-table.widefat {
+        display: none;
+    }
+    
+    /* Contenedor de tarjetas móvil */
+    .makia-mobile-bookings {
+        display: block !important;
+    }
+    
+    .makia-booking-card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: box-shadow 0.2s;
+    }
+    
+    .makia-booking-card:active {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .makia-booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .makia-booking-name {
+        font-size: 16px;
+        font-weight: bold;
+        color: #2271b1;
+    }
+    
+    .makia-booking-status {
+        font-size: 14px;
+    }
+    
+    .makia-booking-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .makia-info-item {
+        font-size: 13px;
+    }
+    
+    .makia-info-label {
+        color: #666;
+        font-size: 11px;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+    }
+    
+    .makia-info-value {
+        color: #000;
+        font-weight: 500;
+    }
+    
+    .makia-booking-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .makia-booking-actions form {
+        flex: 1;
+        min-width: calc(50% - 4px);
+    }
+    
+    .makia-booking-actions button {
+        width: 100%;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    
+    .makia-booking-actions button:active {
+        opacity: 0.7;
+    }
+    
+    .makia-btn-approve {
+        background: #46b450;
+        color: #fff;
+    }
+    
+    .makia-btn-reject {
+        background: #dc3232;
+        color: #fff;
+    }
+    
+    .makia-btn-delete {
+        background: #666;
+        color: #fff;
+    }
+    
+    .makia-booking-notes {
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        font-size: 13px;
+    }
+    
+    .makia-booking-notes strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #666;
+    }
+    
+    /* Filtros en móvil */
+    .tablenav.top {
+        margin-bottom: 15px !important;
+    }
+    
+    #filter-status {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    
+    /* Ocultar paginación/navegación de tabla en footer (móvil) */
+    .tablenav.bottom {
+        display: none !important;
+    }
+}
+
+/* Desktop - ocultar versión móvil */
+@media (min-width: 783px) {
+    .makia-mobile-bookings {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   TABLA DE DÍAS ESPECIALES - RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 782px) {
+    /* Mostrar tabla de días especiales en móvil con scroll horizontal */
+    #makia-tab-special-days .wp-list-table.widefat {
+        display: table !important;
+        width: 100%;
+        font-size: 12px;
+    }
+    
+    #makia-tab-special-days .wp-list-table.widefat th,
+    #makia-tab-special-days .wp-list-table.widefat td {
+        padding: 8px 5px;
+        white-space: nowrap;
+    }
+    
+    /* Contenedor con scroll horizontal */
+    #makia-tab-special-days .wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Formulario de agregar día especial */
+    #makia-tab-special-days .card {
+        max-width: 100% !important;
+        margin: 0 0 20px 0 !important;
+    }
+    
+    #makia-tab-special-days .form-table th,
+    #makia-tab-special-days .form-table td {
+        display: block;
+        width: 100%;
+        padding: 5px 0;
+    }
+    
+    #makia-tab-special-days .form-table th {
+        padding-top: 15px;
+    }
+    
+    #makia-tab-special-days input[type="date"],
+    #makia-tab-special-days input[type="time"],
+    #makia-tab-special-days input[type="text"],
+    #makia-tab-special-days select {
+        width: 100%;
+        max-width: 100%;
+        padding: 10px;
+        font-size: 16px; /* Evita zoom en iOS */
+        box-sizing: border-box;
+    }
+    
+    /* Botón de agregar */
+    #makia-tab-special-days .button-primary {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    /* Tabla de días configurados - versión tarjetas */
+    #makia-tab-special-days .wp-list-table.widefat thead {
+        display: none;
+    }
+    
+    #makia-tab-special-days .wp-list-table.widefat tbody tr {
+        display: block;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    #makia-tab-special-days .wp-list-table.widefat tbody td {
+        display: block;
+        text-align: left;
+        padding: 5px 0;
+        border: none;
+        white-space: normal;
+    }
+    
+    #makia-tab-special-days .wp-list-table.widefat tbody td:before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #666;
+        font-size: 11px;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 3px;
+    }
+    
+    /* Fecha destacada */
+    #makia-tab-special-days .wp-list-table.widefat tbody td:first-child {
+        font-size: 16px;
+        color: #2271b1;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 10px;
+    }
+    
+    /* Botón eliminar */
+    #makia-tab-special-days .wp-list-table.widefat tbody td:last-child {
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+        margin-top: 10px;
+    }
+    
+    #makia-tab-special-days .wp-list-table.widefat .button-small {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        background: #dc3232;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+    }
+}
+
+/* ==========================================================================
+   ACCIONES EN LOTE - RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 782px) {
+    /* Barra de acciones en lote */
+    .makia-bulk-actions-bar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 12px !important;
+        margin: -15px -15px 15px -15px !important;
+        border-radius: 0 !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+    
+    .makia-bulk-actions-bar > div {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    
+    .makia-bulk-actions-bar > div > div:first-child {
+        text-align: center;
+        color: #fff;
+    }
+    
+    .makia-bulk-actions-bar > div > div:last-child {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        width: 100%;
+    }
+    
+    .makia-bulk-actions-bar .button {
+        padding: 10px 8px !important;
+        font-size: 12px !important;
+        border-radius: 6px !important;
+        white-space: nowrap;
+    }
+    
+    .makia-bulk-actions-bar .button.makia-bulk-action {
+        flex: 1;
+    }
+    
+    /* Checkbox de selección en tarjetas */
+    .makia-booking-card {
+        position: relative;
+        padding-right: 45px !important;
+    }
+    
+    .makia-booking-checkbox {
+        position: absolute !important;
+        top: 15px !important;
+        right: 15px !important;
+        width: 24px !important;
+        height: 24px !important;
+        cursor: pointer;
+        accent-color: #667eea;
+    }
+    
+    .makia-booking-card.selected {
+        border: 2px solid #667eea !important;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%) !important;
+    }
+    
+    /* Checkbox seleccionar todas en móvil */
+    .makia-select-all-mobile {
+        display: flex !important;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 15px;
+        background: #f0f0f1;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    
+    .makia-select-all-mobile input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: #667eea;
+    }
+    
+    .makia-select-all-mobile label {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    /* Ocultar checkbox de tabla en móvil */
+    .wp-list-table th:first-child,
+    .wp-list-table td:first-child {
+        display: none;
+    }
+    
+    /* Detalle expandido de reserva */
+    .makia-booking-detail {
+        background: #f9f9f9;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+    
+    .makia-booking-detail h4 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        color: #333;
+    }
+    
+    /* Notas internas en móvil */
+    .makia-internal-notes-section {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #ddd;
+    }
+    
+    .makia-internal-notes-section h4 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+    }
+    
+    .makia-internal-notes-section textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    .makia-internal-notes-section button {
+        width: 100%;
+        margin-top: 10px;
+        padding: 12px;
+        background: #667eea;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    
+    .makia-note-item {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .makia-note-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-size: 12px;
+    }
+    
+    .makia-note-date {
+        color: #666;
+    }
+    
+    .makia-note-content {
+        font-size: 13px;
+        color: #333;
+    }
+}
