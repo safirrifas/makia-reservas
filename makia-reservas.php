@@ -50,6 +50,12 @@ require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-operators.php';
 // Enlace a PWA para operarios
 require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-pwa-link.php';
 
+// API REST para sincronización con la app
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-api.php';
+
+// Servicio de Push Notifications
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-push-service.php';
+
 /**
  * Activación del plugin
  */
