@@ -59,6 +59,10 @@ require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-push-service.php';
 // Servicio de SMS con Twilio
 require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-sms.php';
 
+// Servicio de WhatsApp con WhatsApp Business API
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-whatsapp.php';
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-whatsapp-webhook.php';
+
 /**
  * Activación del plugin
  */
