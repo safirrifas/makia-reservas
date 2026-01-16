@@ -47,6 +47,9 @@ require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-audit.php';
 require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-notes.php';
 require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-operators.php';
 
+// Enlace a PWA para operarios
+require_once MAKIA_PLUGIN_DIR . 'includes/class-makia-pwa-link.php';
+
 /**
  * Activación del plugin
  */

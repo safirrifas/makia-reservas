@@ -1,0 +1,323 @@
+/**
+ * Estilos para la página de acceso a la PWA en el panel del plugin
+ */
+
+.makia-pwa-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.makia-pwa-wrap h1 {
+  font-size: 2.5em;
+  font-weight: 900;
+  margin-bottom: 0.5em;
+  border-bottom: 4px solid #000;
+  padding-bottom: 0.5em;
+}
+
+.makia-pwa-container {
+  background: #fff;
+  border: 2px solid #000;
+  padding: 2em;
+  margin-top: 2em;
+}
+
+/* Welcome Section */
+.makia-pwa-welcome {
+  text-align: center;
+  margin-bottom: 3em;
+  padding-bottom: 2em;
+  border-bottom: 2px solid #000;
+}
+
+.makia-pwa-welcome h2 {
+  font-size: 2em;
+  font-weight: 900;
+  margin-bottom: 0.5em;
+}
+
+.makia-pwa-welcome p {
+  font-size: 1.1em;
+  color: #333;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Content Layout */
+.makia-pwa-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3em;
+  margin-bottom: 3em;
+}
+
+@media (max-width: 768px) {
+  .makia-pwa-content {
+    grid-template-columns: 1fr;
+    gap: 2em;
+  }
+}
+
+/* Instructions */
+.makia-pwa-instructions h3 {
+  font-size: 1.5em;
+  font-weight: 900;
+  margin-bottom: 1.5em;
+  border-bottom: 3px solid #000;
+  padding-bottom: 0.5em;
+}
+
+.makia-pwa-step {
+  display: flex;
+  gap: 1.5em;
+  margin-bottom: 2em;
+  padding: 1.5em;
+  border-left: 4px solid #000;
+  background: #f9f9f9;
+}
+
+.step-number {
+  font-size: 2em;
+  font-weight: 900;
+  color: #000;
+  min-width: 50px;
+  text-align: center;
+}
+
+.step-content h4 {
+  font-size: 1.1em;
+  font-weight: 900;
+  margin: 0 0 0.5em 0;
+}
+
+.step-content p {
+  margin: 0;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Actions */
+.makia-pwa-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+}
+
+.makia-pwa-button-group {
+  text-align: center;
+}
+
+.makia-pwa-button {
+  display: inline-block;
+  padding: 1em 2em !important;
+  font-size: 1.1em !important;
+  font-weight: 900 !important;
+  background: #000 !important;
+  color: #fff !important;
+  border: none !important;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 250px;
+}
+
+.makia-pwa-button:hover {
+  background: #333 !important;
+  transform: scale(1.05);
+}
+
+.makia-pwa-button-desc {
+  margin-top: 0.5em;
+  font-size: 0.9em;
+  color: #999;
+}
+
+/* QR Code */
+.makia-pwa-qr {
+  text-align: center;
+  padding: 2em;
+  border: 2px solid #000;
+  background: #f9f9f9;
+}
+
+.makia-pwa-qr h4 {
+  font-size: 1.1em;
+  font-weight: 900;
+  margin-bottom: 1em;
+}
+
+.makia-pwa-qr-image {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  border: 2px solid #000;
+  padding: 1em;
+  background: #fff;
+}
+
+.makia-pwa-qr-desc {
+  margin-top: 1em;
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* Info Box */
+.makia-pwa-info {
+  padding: 1.5em;
+  border: 2px solid #000;
+  background: #f9f9f9;
+}
+
+.makia-pwa-info h4 {
+  font-size: 1.1em;
+  font-weight: 900;
+  margin-bottom: 1em;
+  border-bottom: 2px solid #000;
+  padding-bottom: 0.5em;
+}
+
+.makia-pwa-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.makia-pwa-info li {
+  padding: 0.5em 0;
+  font-size: 0.95em;
+}
+
+.makia-pwa-info strong {
+  font-weight: 900;
+}
+
+/* Features Grid */
+.makia-pwa-features {
+  margin: 3em 0;
+  padding: 2em 0;
+  border-top: 2px solid #000;
+  border-bottom: 2px solid #000;
+}
+
+.makia-pwa-features h3 {
+  font-size: 1.5em;
+  font-weight: 900;
+  margin-bottom: 2em;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2em;
+}
+
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5em;
+  }
+}
+
+@media (max-width: 480px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.feature-card {
+  padding: 1.5em;
+  border: 2px solid #000;
+  text-align: center;
+  background: #f9f9f9;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  background: #000;
+  color: #fff;
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  font-size: 2.5em;
+  margin-bottom: 0.5em;
+}
+
+.feature-card h4 {
+  font-size: 1em;
+  font-weight: 900;
+  margin: 0.5em 0;
+}
+
+.feature-card p {
+  font-size: 0.9em;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Support Section */
+.makia-pwa-support {
+  padding: 2em;
+  border: 2px solid #000;
+  background: #f9f9f9;
+}
+
+.makia-pwa-support h3 {
+  font-size: 1.3em;
+  font-weight: 900;
+  margin-bottom: 1em;
+}
+
+.makia-pwa-support p {
+  margin-bottom: 1em;
+  color: #555;
+}
+
+.makia-pwa-support ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.makia-pwa-support li {
+  padding: 0.5em 0 0.5em 2em;
+  position: relative;
+  color: #555;
+}
+
+.makia-pwa-support li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  font-weight: 900;
+  color: #000;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .makia-pwa-wrap h1 {
+    font-size: 1.8em;
+  }
+
+  .makia-pwa-container {
+    padding: 1.5em;
+  }
+
+  .makia-pwa-content {
+    gap: 1.5em;
+  }
+
+  .makia-pwa-step {
+    gap: 1em;
+    padding: 1em;
+  }
+
+  .step-number {
+    font-size: 1.5em;
+    min-width: 40px;
+  }
+
+  .makia-pwa-button {
+    min-width: 100%;
+  }
+}
