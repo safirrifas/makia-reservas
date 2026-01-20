@@ -187,6 +187,17 @@ class MakIA_API {
 				),
 			)
 		);
+
+		// Verificar estado de licencia
+		register_rest_route(
+			$this->namespace,
+			'/license/status',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_license_status' ),
+				'permission_callback' => '__return_true',
+			)
+		);
 	}
 
 	/**
@@ -590,6 +601,42 @@ class MakIA_API {
 	public function check_operator_permission( $request ) {
 		$operator_id = $this->get_operator_from_token( $request );
 		return (bool) $operator_id;
+	}
+
+	/**
+	 * Obtener estado de licencia
+	 */
+	public function get_license_status( $request ) {
+		$license_manager = new MakIA_License_Manager();
+		$is_active = $license_manager->is_license_active();
+
+		if ( ! $is_active ) {
+			return new WP_REST_Response(
+				array(
+					'active' => false,
+					'message' => 'Licencia no activa',
+				),
+				403
+			);
+		}
+
+		$plan = $license_manager->get_current_plan();
+		$license_info = $license_manager->get_license_info();
+
+		return new WP_REST_Response(
+			array(
+				'active' => true,
+				'plan' => $plan,
+				'license_info' => $license_info,
+				'usage_stats' => array(
+					'plan_name' => $plan['name'] ?? 'Unknown',
+					'current_count' => $license_manager->get_current_booking_count(),
+					'remaining' => ( $plan['limit'] ?? 0 ) - $license_manager->get_current_booking_count(),
+					'usage_percentage' => round( ( $license_manager->get_current_booking_count() / ( $plan['limit'] ?? 1 ) ) * 100 ),
+				),
+			),
+			200
+		);
 	}
 
 	/**

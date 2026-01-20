@@ -18,9 +18,9 @@ class MakIA_Button_Settings {
         'makia_button_style' => 'solid',
         'makia_button_border_radius' => '8',
         'makia_button_url' => '',
-        'makia_floating_enabled' => false,
-        'makia_floating_position' => 'right',
-        'makia_floating_scroll_offset' => '100',
+        'makia_floating_enabled' => true,
+        'makia_floating_position' => 'left',
+        'makia_floating_scroll_offset' => '0',
         'makia_floating_mobile' => true,
         'makia_floating_icon' => 'calendar',
         'makia_floating_animation' => 'fade'
