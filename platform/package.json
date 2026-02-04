@@ -1,0 +1,27 @@
+{
+  "name": "makia-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MakIA Reservas - Plataforma Multiplataforma de Reservas",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "api:dev": "pnpm --filter @makia/api dev",
+    "api:build": "pnpm --filter @makia/api build",
+    "sdk:build": "pnpm --filter @makia/sdk build",
+    "embed:build": "pnpm --filter @makia/embed build",
+    "db:generate": "pnpm --filter @makia/api db:generate",
+    "db:migrate": "pnpm --filter @makia/api db:migrate",
+    "db:studio": "pnpm --filter @makia/api db:studio"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.3.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

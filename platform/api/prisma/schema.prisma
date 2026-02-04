@@ -1,0 +1,247 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ORGANIZACIONES (Multi-tenant)
+// ============================================
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  email     String?
+  phone     String?
+  address   String?
+  timezone  String   @default("Europe/Madrid")
+  currency  String   @default("EUR")
+  plan      Plan     @default(FREE)
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  users         User[]
+  apiKeys       ApiKey[]
+  bookings      Booking[]
+  businessHours BusinessHours[]
+  specialDays   SpecialDay[]
+  blacklist     BlacklistEntry[]
+  webhooks      Webhook[]
+
+  @@map("organizations")
+}
+
+enum Plan {
+  FREE      // Chupito: 20 reservas/mes
+  STARTER   // Starter: 100 reservas/mes
+  PRO       // Pro: 500 reservas/mes
+  BUSINESS  // Business: ilimitadas
+}
+
+// ============================================
+// USUARIOS
+// ============================================
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String?   @map("password_hash")
+  name         String?
+  role         UserRole  @default(OPERATOR)
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  bookingNotes   BookingNote[]
+  auditLogs      AuditLog[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  OPERATOR
+}
+
+// ============================================
+// API KEYS
+// ============================================
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  keyHash    String    @unique @map("key_hash")
+  keyPrefix  String    @map("key_prefix") // Ej: "mk_live_abc..."
+  scopes     String[]  @default([])
+  lastUsedAt DateTime? @map("last_used_at")
+  expiresAt  DateTime? @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("api_keys")
+}
+
+// ============================================
+// RESERVAS
+// ============================================
+model Booking {
+  id              String        @id @default(cuid())
+  customerName    String        @map("customer_name")
+  customerEmail   String        @map("customer_email")
+  customerPhone   String?       @map("customer_phone")
+  bookingDate     DateTime      @map("booking_date") @db.Date
+  bookingTime     String        @map("booking_time") // "20:30"
+  guests          Int
+  occasion        String?
+  specialRequests String?       @map("special_requests")
+  status          BookingStatus @default(PENDING)
+  source          String        @default("web") // web, widget, api, mobile
+  editToken       String?       @unique @map("edit_token")
+  metadata        Json          @default("{}")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String        @map("organization_id")
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  notes          BookingNote[]
+
+  @@index([organizationId, bookingDate])
+  @@index([organizationId, status])
+  @@index([customerEmail])
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model BookingNote {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  bookingId String  @map("booking_id")
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  userId    String  @map("user_id")
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@map("booking_notes")
+}
+
+// ============================================
+// HORARIOS
+// ============================================
+model BusinessHours {
+  id        String  @id @default(cuid())
+  dayOfWeek Int     @map("day_of_week") // 0=domingo, 1=lunes...
+  isOpen    Boolean @default(true) @map("is_open")
+  slots     Json    @default("[]") // [{open: "09:00", close: "14:00"}, {open: "20:00", close: "23:00"}]
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, dayOfWeek])
+  @@map("business_hours")
+}
+
+model SpecialDay {
+  id        String          @id @default(cuid())
+  date      DateTime        @db.Date
+  type      SpecialDayType
+  name      String?
+  slots     Json?           @default("[]") // Horarios especiales si aplica
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, date])
+  @@map("special_days")
+}
+
+enum SpecialDayType {
+  CLOSED
+  SPECIAL_HOURS
+  HOLIDAY
+}
+
+// ============================================
+// LISTA NEGRA
+// ============================================
+model BlacklistEntry {
+  id          String   @id @default(cuid())
+  email       String?
+  phone       String?
+  reason      String
+  notes       String?
+  noShowCount Int      @default(0) @map("no_show_count")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, email])
+  @@index([organizationId, phone])
+  @@map("blacklist")
+}
+
+// ============================================
+// WEBHOOKS
+// ============================================
+model Webhook {
+  id        String   @id @default(cuid())
+  url       String
+  events    String[] @default([]) // ["booking.created", "booking.confirmed"]
+  secret    String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("webhooks")
+}
+
+// ============================================
+// AUDIT LOG
+// ============================================
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  oldData   Json?    @map("old_data")
+  newData   Json?    @map("new_data")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  userId String? @map("user_id")
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
