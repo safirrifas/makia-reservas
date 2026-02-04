@@ -29,7 +29,40 @@ class MakIA_Bookings {
         add_action('wp_ajax_makia_cancel_booking', array($this, 'cancel_booking_public'));
         add_action('wp_ajax_nopriv_makia_cancel_booking', array($this, 'cancel_booking_public'));
     }
-    
+
+    /**
+     * Obtener IP del cliente de forma segura
+     *
+     * @return string
+     */
+    private function get_client_ip() {
+        $ip = '';
+
+        // Lista de headers confiables (en orden de preferencia)
+        // Solo confiar en X-Forwarded-For si hay proxies configurados
+        $trusted_proxies = apply_filters( 'makia_trusted_proxies', array() );
+        $remote_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '';
+
+        // Si hay proxies confiables configurados, verificar X-Forwarded-For
+        if ( ! empty( $trusted_proxies ) && in_array( $remote_addr, $trusted_proxies, true ) ) {
+            if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+                // Tomar solo la primera IP (la del cliente original)
+                $forwarded_ips = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] );
+                $ip = trim( $forwarded_ips[0] );
+            }
+        }
+
+        // Fallback a REMOTE_ADDR
+        if ( empty( $ip ) ) {
+            $ip = $remote_addr;
+        }
+
+        // Validar que sea una IP válida
+        $ip = filter_var( $ip, FILTER_VALIDATE_IP );
+
+        return $ip ? $ip : '0.0.0.0';
+    }
+
     /**
      * Crear tabla de reservas
      */
@@ -58,7 +91,10 @@ class MakIA_Bookings {
             KEY booking_date_time (booking_date, booking_time),
             KEY status (status),
             KEY email (email),
-            KEY edit_token (edit_token)
+            KEY edit_token (edit_token),
+            KEY phone (phone),
+            KEY created_at (created_at),
+            KEY status_date (status, booking_date)
         ) $charset_collate;";
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -87,42 +123,67 @@ class MakIA_Bookings {
         global $wpdb;
         
         // ============================================
-        // RATE LIMITING - Prevención de SPAM
+        // RATE LIMITING - Prevención de SPAM (Mejorado)
         // ============================================
-        // Obtener IP del cliente (considera proxies)
-        $ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
-        $ip = filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '0.0.0.0';
-        
-        // Crear clave única para esta IP
-        $transient_key = 'makia_rate_limit_' . md5($ip);
-        $attempts = get_transient($transient_key);
-        
-        // Límite: 3 intentos cada 10 minutos
-        $max_attempts = 3;
-        $time_window = 10 * MINUTE_IN_SECONDS;
-        
-        if ($attempts === false) {
-            // Primera vez, registrar intento
-            set_transient($transient_key, 1, $time_window);
+        $ip = $this->get_client_ip();
+
+        // Crear claves únicas para rate limiting por IP y por email
+        $ip_key = 'makia_rate_ip_' . md5( $ip );
+        $ip_attempts = get_transient( $ip_key );
+
+        // Límites configurables (más estrictos)
+        $max_attempts_per_ip = apply_filters( 'makia_rate_limit_ip', 5 ); // 5 intentos por IP
+        $max_attempts_per_email = apply_filters( 'makia_rate_limit_email', 3 ); // 3 intentos por email
+        $time_window = apply_filters( 'makia_rate_limit_window', 15 * MINUTE_IN_SECONDS ); // 15 minutos
+
+        // Verificar límite por IP
+        if ( $ip_attempts === false ) {
+            set_transient( $ip_key, 1, $time_window );
         } else {
-            if ($attempts >= $max_attempts) {
-                $time_remaining = ceil($time_window / 60);
-                
-                // Log de seguridad
-                MakIA_Logger::security("Rate limit exceeded", array(
-                    'ip' => $ip,
-                    'attempts' => $attempts
-                ));
-                
-                wp_send_json_error(array(
-                    'message' => "Has superado el límite de intentos de reserva. Por favor, espera {$time_remaining} minutos e inténtalo de nuevo.",
+            if ( $ip_attempts >= $max_attempts_per_ip ) {
+                $time_remaining = ceil( $time_window / 60 );
+
+                MakIA_Logger::security( 'Rate limit exceeded (IP)', array(
+                    'ip'       => $ip,
+                    'attempts' => $ip_attempts,
+                ) );
+
+                wp_send_json_error( array(
+                    'message'      => sprintf( 'Has superado el límite de intentos. Por favor, espera %d minutos e inténtalo de nuevo.', $time_remaining ),
                     'rate_limited' => true,
-                    'retry_after' => $time_remaining
-                ));
+                    'retry_after'  => $time_remaining,
+                ) );
                 return;
             }
-            // Incrementar contador
-            set_transient($transient_key, $attempts + 1, $time_window);
+            set_transient( $ip_key, $ip_attempts + 1, $time_window );
+        }
+
+        // Verificar límite por email (si se proporciona)
+        if ( ! empty( $_POST['email'] ) ) {
+            $email = sanitize_email( $_POST['email'] );
+            $email_key = 'makia_rate_email_' . md5( $email );
+            $email_attempts = get_transient( $email_key );
+
+            if ( $email_attempts === false ) {
+                set_transient( $email_key, 1, $time_window );
+            } else {
+                if ( $email_attempts >= $max_attempts_per_email ) {
+                    $time_remaining = ceil( $time_window / 60 );
+
+                    MakIA_Logger::security( 'Rate limit exceeded (Email)', array(
+                        'email'    => $email,
+                        'attempts' => $email_attempts,
+                    ) );
+
+                    wp_send_json_error( array(
+                        'message'      => sprintf( 'Este email ha superado el límite de reservas. Por favor, espera %d minutos.', $time_remaining ),
+                        'rate_limited' => true,
+                        'retry_after'  => $time_remaining,
+                    ) );
+                    return;
+                }
+                set_transient( $email_key, $email_attempts + 1, $time_window );
+            }
         }
         
         // ============================================

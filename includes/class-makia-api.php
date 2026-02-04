@@ -333,8 +333,8 @@ class MakIA_API {
 		$result = $wpdb->update(
 			$table,
 			array(
-				'status'      => $status,
-				'modified_at' => current_time( 'mysql' ),
+				'status'     => $status,
+				'updated_at' => current_time( 'mysql' ),
 			),
 			array( 'id' => $booking_id ),
 			array( '%s', '%s' ),
@@ -533,8 +533,8 @@ class MakIA_API {
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} 
-				WHERE (customer_name LIKE %s OR customer_email LIKE %s OR customer_phone LIKE %s)
+				"SELECT * FROM {$table}
+				WHERE (name LIKE %s OR email LIKE %s OR phone LIKE %s)
 				ORDER BY booking_date DESC
 				LIMIT 20",
 				'%' . $wpdb->esc_like( $query ) . '%',
@@ -547,28 +547,145 @@ class MakIA_API {
 	}
 
 	/**
-	 * Generar JWT token
+	 * Obtener la clave secreta para JWT
+	 *
+	 * @return string
+	 */
+	private function get_jwt_secret() {
+		if ( defined( 'JWT_AUTH_SECRET_KEY' ) && ! empty( JWT_AUTH_SECRET_KEY ) ) {
+			return JWT_AUTH_SECRET_KEY;
+		}
+
+		// Fallback: usar una combinación de salts de WordPress para mayor seguridad
+		return hash( 'sha256', AUTH_KEY . SECURE_AUTH_KEY . LOGGED_IN_KEY );
+	}
+
+	/**
+	 * Generar firma HMAC-SHA256
+	 *
+	 * @param string $header_payload Base64 encoded header.payload
+	 * @param string $secret Secret key
+	 * @return string
+	 */
+	private function generate_jwt_signature( $header_payload, $secret ) {
+		return rtrim( strtr( base64_encode( hash_hmac( 'sha256', $header_payload, $secret, true ) ), '+/', '-_' ), '=' );
+	}
+
+	/**
+	 * Base64 URL encode
+	 *
+	 * @param string $data
+	 * @return string
+	 */
+	private function base64_url_encode( $data ) {
+		return rtrim( strtr( base64_encode( $data ), '+/', '-_' ), '=' );
+	}
+
+	/**
+	 * Base64 URL decode
+	 *
+	 * @param string $data
+	 * @return string
+	 */
+	private function base64_url_decode( $data ) {
+		$remainder = strlen( $data ) % 4;
+		if ( $remainder ) {
+			$data .= str_repeat( '=', 4 - $remainder );
+		}
+		return base64_decode( strtr( $data, '-_', '+/' ) );
+	}
+
+	/**
+	 * Generar JWT token con firma criptográfica HMAC-SHA256
+	 *
+	 * @param WP_User $user
+	 * @return string
 	 */
 	private function generate_jwt_token( $user ) {
-		$secret = defined( 'JWT_AUTH_SECRET_KEY' ) ? JWT_AUTH_SECRET_KEY : wp_salt();
+		$secret = $this->get_jwt_secret();
 		$issued_at = time();
-		$expire = $issued_at + ( 7 * 24 * 60 * 60 ); // 7 días
+		$expire = $issued_at + ( 24 * 60 * 60 ); // 24 horas (más seguro que 7 días)
 
+		// Header
+		$header = array(
+			'typ' => 'JWT',
+			'alg' => 'HS256',
+		);
+
+		// Payload
 		$payload = array(
 			'iss' => get_bloginfo( 'url' ),
 			'iat' => $issued_at,
 			'exp' => $expire,
+			'nbf' => $issued_at, // Not valid before
+			'jti' => bin2hex( random_bytes( 16 ) ), // Unique token ID
 			'user_id' => $user->ID,
 			'email' => $user->user_email,
 		);
 
-		// Aquí se usaría una librería JWT real como firebase/php-jwt
-		// Por ahora, retornar un token simulado
-		return base64_encode( wp_json_encode( $payload ) );
+		// Encode header and payload
+		$header_encoded = $this->base64_url_encode( wp_json_encode( $header ) );
+		$payload_encoded = $this->base64_url_encode( wp_json_encode( $payload ) );
+
+		// Create signature
+		$signature = $this->generate_jwt_signature( $header_encoded . '.' . $payload_encoded, $secret );
+
+		return $header_encoded . '.' . $payload_encoded . '.' . $signature;
+	}
+
+	/**
+	 * Verificar y decodificar JWT token
+	 *
+	 * @param string $token
+	 * @return array|false
+	 */
+	private function verify_jwt_token( $token ) {
+		$parts = explode( '.', $token );
+
+		if ( count( $parts ) !== 3 ) {
+			return false;
+		}
+
+		list( $header_encoded, $payload_encoded, $signature_provided ) = $parts;
+
+		// Verify signature
+		$secret = $this->get_jwt_secret();
+		$signature_expected = $this->generate_jwt_signature( $header_encoded . '.' . $payload_encoded, $secret );
+
+		if ( ! hash_equals( $signature_expected, $signature_provided ) ) {
+			return false; // Invalid signature
+		}
+
+		// Decode payload
+		$payload = json_decode( $this->base64_url_decode( $payload_encoded ), true );
+
+		if ( ! $payload ) {
+			return false;
+		}
+
+		// Verify expiration
+		if ( isset( $payload['exp'] ) && $payload['exp'] < time() ) {
+			return false; // Token expired
+		}
+
+		// Verify not before
+		if ( isset( $payload['nbf'] ) && $payload['nbf'] > time() ) {
+			return false; // Token not yet valid
+		}
+
+		// Verify issuer
+		if ( isset( $payload['iss'] ) && $payload['iss'] !== get_bloginfo( 'url' ) ) {
+			return false; // Invalid issuer
+		}
+
+		return $payload;
 	}
 
 	/**
 	 * Obtener operario desde token
+	 *
+	 * @param WP_REST_Request $request
+	 * @return int|false
 	 */
 	private function get_operator_from_token( $request ) {
 		$auth_header = $request->get_header( 'Authorization' );
@@ -585,10 +702,10 @@ class MakIA_API {
 
 		$token = $parts[1];
 
-		// Decodificar token
-		$payload = json_decode( base64_decode( $token ), true );
+		// Verificar y decodificar token con firma criptográfica
+		$payload = $this->verify_jwt_token( $token );
 
-		if ( ! isset( $payload['user_id'] ) ) {
+		if ( ! $payload || ! isset( $payload['user_id'] ) ) {
 			return false;
 		}
 

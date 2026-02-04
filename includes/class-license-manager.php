@@ -155,13 +155,22 @@ class MakIA_License_Manager {
     }
     
     /**
+     * Obtener el conteo actual de reservas del mes
+     *
+     * @return int
+     */
+    public function get_current_booking_count() {
+        return intval( get_option( 'makia_monthly_bookings_count', 0 ) );
+    }
+
+    /**
      * Obtener estadísticas de uso
      */
     public function get_usage_stats() {
         $current_plan = $this->get_current_plan();
-        $current_count = intval(get_option('makia_monthly_bookings_count', 0));
+        $current_count = $this->get_current_booking_count();
         $reset_date = get_option('makia_monthly_reset_date', date('Y-m-d H:i:s'));
-        
+
         $usage_percentage = ($current_count / $current_plan['limit']) * 100;
         
         // Calcular días hasta el próximo reset

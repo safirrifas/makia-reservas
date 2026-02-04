@@ -3,7 +3,7 @@
  * Plugin Name: MakIA - Sistema de Reservas
  * Plugin URI: https://contacpro.app
  * Description: Sistema completo de reservas con IA para restaurantes. Incluye formulario de reservas, gestión de horarios, control de capacidad, plantillas personalizables con vista previa en vivo, y lista negra de usuarios.
- * Version: 4.2.0
+ * Version: 4.3.0
  * Author: MakIA Team
  * Author URI: https://contacpro.app
  * License: GPL v2 or later
@@ -12,6 +12,39 @@
  * Domain Path: /languages
  * Requires at least: 5.0
  * Requires PHP: 7.4
+ *
+ * ============================================================================
+ * CONFIGURACIÓN REQUERIDA EN wp-config.php
+ * ============================================================================
+ *
+ * Variables de entorno opcionales (pero recomendadas para seguridad):
+ *
+ * 1. JWT_AUTH_SECRET_KEY (Recomendado para API REST)
+ *    - Clave secreta para firmar tokens JWT
+ *    - Si no se define, se usará una combinación de las salts de WordPress
+ *    - Ejemplo: define('JWT_AUTH_SECRET_KEY', 'tu-clave-secreta-muy-larga-y-aleatoria');
+ *    - Genera una clave segura en: https://api.wordpress.org/secret-key/1.1/salt/
+ *
+ * 2. MAKIA_VAPID_PUBLIC_KEY (Requerido para Push Notifications)
+ *    - Clave pública VAPID para Web Push
+ *    - Ejemplo: define('MAKIA_VAPID_PUBLIC_KEY', 'BEl62i...');
+ *
+ * 3. MAKIA_VAPID_PRIVATE_KEY (Requerido para Push Notifications)
+ *    - Clave privada VAPID para Web Push
+ *    - Ejemplo: define('MAKIA_VAPID_PRIVATE_KEY', 'UUxI4o...');
+ *
+ * Configuración de Twilio para SMS (Opcional):
+ *    - Las credenciales de Twilio se configuran en el panel de administración
+ *    - El SDK de Twilio es opcional: si no está instalado, el plugin funciona sin SMS
+ *    - Para instalar Twilio: composer require twilio/sdk
+ *
+ * Filtros de WordPress disponibles:
+ *    - 'makia_rate_limit_ip': Límite de intentos por IP (default: 5)
+ *    - 'makia_rate_limit_email': Límite de intentos por email (default: 3)
+ *    - 'makia_rate_limit_window': Ventana de tiempo en segundos (default: 900 = 15 min)
+ *    - 'makia_trusted_proxies': Array de IPs de proxies confiables para X-Forwarded-For
+ *
+ * ============================================================================
  */
 
 // Evitar acceso directo
@@ -20,7 +53,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Definir constantes del plugin
-define('MAKIA_VERSION', '4.2.0');
+define('MAKIA_VERSION', '4.3.0');
 define('MAKIA_PLUGIN_FILE', __FILE__);
 define('MAKIA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MAKIA_PLUGIN_URL', plugin_dir_url(__FILE__));

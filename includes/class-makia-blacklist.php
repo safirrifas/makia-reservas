@@ -20,32 +20,50 @@ class MakIA_Blacklist {
     
     /**
      * Verificar si un usuario está baneado
+     *
+     * @param string|null $email Email del usuario
+     * @param string|null $phone Teléfono del usuario
+     * @return object|false Datos del ban o false si no está baneado
      */
-    public function is_banned($email = null, $phone = null) {
+    public function is_banned( $email = null, $phone = null ) {
         global $wpdb;
-        
-        if (!$email && !$phone) {
+
+        if ( empty( $email ) && empty( $phone ) ) {
             return false;
         }
-        
-        $where_clauses = array();
-        $where_values = array();
-        
-        if ($email) {
-            $where_clauses[] = "email = %s";
-            $where_values[] = $email;
+
+        // Sanitizar inputs
+        $email = sanitize_email( $email );
+        $phone = sanitize_text_field( $phone );
+
+        // Construir query de forma segura según los parámetros disponibles
+        if ( ! empty( $email ) && ! empty( $phone ) ) {
+            // Buscar por email O teléfono
+            $banned = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$this->table_name} WHERE (email = %s OR phone = %s) AND is_active = 1 LIMIT 1",
+                    $email,
+                    $phone
+                )
+            );
+        } elseif ( ! empty( $email ) ) {
+            // Buscar solo por email
+            $banned = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$this->table_name} WHERE email = %s AND is_active = 1 LIMIT 1",
+                    $email
+                )
+            );
+        } else {
+            // Buscar solo por teléfono
+            $banned = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$this->table_name} WHERE phone = %s AND is_active = 1 LIMIT 1",
+                    $phone
+                )
+            );
         }
-        
-        if ($phone) {
-            $where_clauses[] = "phone = %s";
-            $where_values[] = $phone;
-        }
-        
-        $where_sql = implode(' OR ', $where_clauses);
-        
-        $query = "SELECT * FROM {$this->table_name} WHERE ({$where_sql}) AND is_active = 1 LIMIT 1";
-        $banned = $wpdb->get_row($wpdb->prepare($query, $where_values));
-        
+
         return $banned ? $banned : false;
     }
     
@@ -148,15 +166,20 @@ class MakIA_Blacklist {
      * Banear usuario vía AJAX
      */
     public function ban_user_ajax() {
-        // Verificar permisos
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error('No tienes permisos para realizar esta acción');
+        // Verificar nonce
+        if ( ! check_ajax_referer( 'makia_nonce', 'nonce', false ) ) {
+            wp_send_json_error( 'Token de seguridad inválido' );
         }
-        
-        $email = sanitize_email($_POST['email']);
-        $phone = sanitize_text_field($_POST['phone']);
-        $reason = sanitize_text_field($_POST['reason']);
-        $notes = sanitize_textarea_field($_POST['notes']);
+
+        // Verificar permisos
+        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'makia_manage_bookings' ) ) {
+            wp_send_json_error( 'No tienes permisos para realizar esta acción' );
+        }
+
+        $email = isset( $_POST['email'] ) ? sanitize_email( $_POST['email'] ) : '';
+        $phone = isset( $_POST['phone'] ) ? sanitize_text_field( $_POST['phone'] ) : '';
+        $reason = isset( $_POST['reason'] ) ? sanitize_text_field( $_POST['reason'] ) : '';
+        $notes = isset( $_POST['notes'] ) ? sanitize_textarea_field( $_POST['notes'] ) : '';
         
         if (empty($email) && empty($phone)) {
             wp_send_json_error('Debes proporcionar al menos un email o teléfono');
@@ -179,12 +202,17 @@ class MakIA_Blacklist {
      * Desbanear usuario vía AJAX
      */
     public function unban_user_ajax() {
-        // Verificar permisos
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error('No tienes permisos para realizar esta acción');
+        // Verificar nonce
+        if ( ! check_ajax_referer( 'makia_nonce', 'nonce', false ) ) {
+            wp_send_json_error( 'Token de seguridad inválido' );
         }
-        
-        $id = intval($_POST['id']);
+
+        // Verificar permisos
+        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'makia_manage_bookings' ) ) {
+            wp_send_json_error( 'No tienes permisos para realizar esta acción' );
+        }
+
+        $id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
         
         if (empty($id)) {
             wp_send_json_error('ID no válido');
@@ -203,13 +231,18 @@ class MakIA_Blacklist {
      * Incrementar no-show vía AJAX
      */
     public function increment_noshow_ajax() {
-        // Verificar permisos
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error('No tienes permisos para realizar esta acción');
+        // Verificar nonce
+        if ( ! check_ajax_referer( 'makia_nonce', 'nonce', false ) ) {
+            wp_send_json_error( 'Token de seguridad inválido' );
         }
-        
-        $email = sanitize_email($_POST['email']);
-        $phone = sanitize_text_field($_POST['phone']);
+
+        // Verificar permisos
+        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'makia_manage_bookings' ) ) {
+            wp_send_json_error( 'No tienes permisos para realizar esta acción' );
+        }
+
+        $email = isset( $_POST['email'] ) ? sanitize_email( $_POST['email'] ) : '';
+        $phone = isset( $_POST['phone'] ) ? sanitize_text_field( $_POST['phone'] ) : '';
         
         if (empty($email) && empty($phone)) {
             wp_send_json_error('Debes proporcionar al menos un email o teléfono');
