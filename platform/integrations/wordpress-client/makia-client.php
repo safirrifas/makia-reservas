@@ -3,7 +3,7 @@
  * Plugin Name: MakIA Restaurante Client
  * Plugin URI: https://contacpro.app
  * Description: Cliente ligero de MakIA Restaurante que conecta con la plataforma cloud. Widget de reservas, sincronización automática y gestión desde el dashboard centralizado.
- * Version: 1.0.0
+ * Version: 3.4.0
  * Author: MakIA Team
  * Author URI: https://contacpro.app
  * License: GPL v2 or later
@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes del plugin
-define( 'MAKIA_CLIENT_VERSION', '1.1.0' );
+define( 'MAKIA_CLIENT_VERSION', '3.4.0' );
 define( 'MAKIA_CLIENT_FILE', __FILE__ );
 define( 'MAKIA_CLIENT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MAKIA_CLIENT_URL', plugin_dir_url( __FILE__ ) );

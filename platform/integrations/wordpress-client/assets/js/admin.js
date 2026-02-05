@@ -504,13 +504,22 @@
             // Datos de ejemplo - en producción vendrían de la API
             const changelog = [
                 {
-                    version: '1.1.0',
-                    date: '2024-02-05',
+                    version: '3.4.0',
+                    date: '2026-02-05',
                     changes: [
-                        { type: 'feature', text: 'Sistema de gestión de licencias integrado' },
+                        { type: 'feature', text: 'Panel de administración completo (Dashboard, Licencia, Facturación, Soporte, Novedades)' },
+                        { type: 'feature', text: 'Integración con API tRPC de contacpro.app' },
+                        { type: 'feature', text: 'Mostrar motivo de cierre en formulario (Cerrado, Completo, Festivo)' },
+                        { type: 'improvement', text: 'Sistema de planes y upgrade/downgrade' }
+                    ]
+                },
+                {
+                    version: '3.3.0',
+                    date: '2026-02-04',
+                    changes: [
+                        { type: 'feature', text: 'Sistema de sincronización automática' },
                         { type: 'feature', text: 'Integración con WhatsApp Business' },
-                        { type: 'feature', text: 'Bot de Telegram para reservas' },
-                        { type: 'improvement', text: 'Nuevo panel de administración' }
+                        { type: 'feature', text: 'Bot de Telegram para reservas' }
                     ]
                 },
                 {
