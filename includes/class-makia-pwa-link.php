@@ -26,7 +26,7 @@ class MakIA_PWA_Link {
 	 * Agregar menú de acceso a la PWA
 	 */
 	public function add_pwa_menu() {
-		// Agregar submenú bajo MakIA Reservas
+		// Agregar submenú bajo MakIA Restaurante
 		add_submenu_page(
 			'makia-reservas',
 			__( 'Panel Móvil', 'makia-reservas' ),

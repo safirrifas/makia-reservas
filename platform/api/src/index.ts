@@ -11,7 +11,7 @@ console.log(`
  | |  | | (_| |   < _| |_ / ____ \\
  |_|  |_|\\__,_|_|\\_\\_____/_/    \\_\\
 
-  MakIA Reservas API v1.0.0
+  MakIA Restaurante API v1.0.0
   Running on http://localhost:${port}
 `);
 

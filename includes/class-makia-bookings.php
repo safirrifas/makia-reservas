@@ -544,7 +544,7 @@ class MakIA_Bookings {
         if ($result === false) {
             // Log del error para debugging
             $db_error = $wpdb->last_error;
-            error_log('[MakIA Reservas] Error al guardar reserva: ' . $db_error);
+            error_log('[MakIA Restaurante] Error al guardar reserva: ' . $db_error);
             
             // Si el error es por columna desconocida, intentar actualizar la tabla
             if (strpos($db_error, 'Unknown column') !== false || strpos($db_error, 'edit_token') !== false) {
@@ -681,7 +681,7 @@ class MakIA_Bookings {
         $message .= "Teléfono: " . get_option('makia_restaurant_phone', '') . "\n\n";
         $message .= "Gracias por elegir $restaurant_name.\n\n";
         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Powered by MakIA Reservas - https://contacpro.app\n";
+        $message .= "Powered by MakIA Restaurante - https://contacpro.app\n";
         
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
@@ -733,7 +733,7 @@ class MakIA_Bookings {
         $message .= "Para gestionar esta reserva, accede al panel de administración:\n";
         $message .= admin_url('admin.php?page=makia&tab=bookings') . "\n\n";
         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "MakIA Reservas - https://contacpro.app\n";
+        $message .= "MakIA Restaurante - https://contacpro.app\n";
         
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
@@ -871,7 +871,7 @@ class MakIA_Bookings {
         $message .= "Teléfono: " . get_option('makia_restaurant_phone', '') . "\n\n";
         $message .= "Gracias,\n$restaurant_name\n\n";
         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Powered by MakIA Reservas - https://contacpro.app\n";
+        $message .= "Powered by MakIA Restaurante - https://contacpro.app\n";
         
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
@@ -2040,7 +2040,7 @@ class MakIA_Bookings {
                         $message .= "¡Te esperamos!\n\n";
                         $message .= "Saludos,\n$restaurant_name\n\n";
                         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-                        $message .= "Powered by MakIA Reservas - https://contacpro.app\n";
+                        $message .= "Powered by MakIA Restaurante - https://contacpro.app\n";
                         
                         $headers = array(
                             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',

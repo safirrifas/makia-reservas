@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: MakIA - Sistema de Reservas
+ * Plugin Name: MakIA Restaurante
  * Plugin URI: https://contacpro.app
- * Description: Sistema completo de reservas con IA para restaurantes. Incluye formulario de reservas, gestión de horarios, control de capacidad, plantillas personalizables con vista previa en vivo, y lista negra de usuarios.
+ * Description: MakIA Restaurante - Sistema completo de reservas con IA para restaurantes. Incluye formulario de reservas, gestión de horarios, control de capacidad, plantillas personalizables con vista previa en vivo, y lista negra de usuarios.
  * Version: 4.3.0
  * Author: MakIA Team
  * Author URI: https://contacpro.app
@@ -210,21 +210,21 @@ function makia_insert_default_templates() {
             'type' => 'email_customer_pending',
             'name' => 'Email Cliente - Pendiente',
             'subject' => 'Reserva pendiente de confirmación - {restaurante}',
-            'body' => "Hola {nombre},\n\nHemos recibido tu solicitud de reserva en {restaurante}.\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\nMotivo: {motivo}\nNotas: {notas}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nTu reserva está PENDIENTE DE CONFIRMACIÓN.\nTe enviaremos un email cuando el restaurante la apruebe.\n\n🔗 GESTIONAR RESERVA:\nPuedes modificar o cancelar tu reserva en cualquier momento:\n{enlace_gestion}\n\nSi tienes alguna pregunta, puedes contactarnos en:\nEmail: {email_restaurante}\nTeléfono: {telefono_restaurante}\n\nGracias por elegir {restaurante}.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPowered by MakIA Reservas - https://contacpro.app",
+            'body' => "Hola {nombre},\n\nHemos recibido tu solicitud de reserva en {restaurante}.\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\nMotivo: {motivo}\nNotas: {notas}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nTu reserva está PENDIENTE DE CONFIRMACIÓN.\nTe enviaremos un email cuando el restaurante la apruebe.\n\n🔗 GESTIONAR RESERVA:\nPuedes modificar o cancelar tu reserva en cualquier momento:\n{enlace_gestion}\n\nSi tienes alguna pregunta, puedes contactarnos en:\nEmail: {email_restaurante}\nTeléfono: {telefono_restaurante}\n\nGracias por elegir {restaurante}.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPowered by MakIA Restaurante - https://contacpro.app",
             'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","motivo":"Motivo de la reserva","notas":"Notas especiales","restaurante":"Nombre del restaurante","email_restaurante":"Email del restaurante","telefono_restaurante":"Teléfono del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
         ),
         array(
             'type' => 'email_customer_approved',
             'name' => 'Email Cliente - Aprobada',
             'subject' => '✅ Reserva confirmada - {restaurante}',
-            'body' => "Hola {nombre},\n\n¡Buenas noticias! Tu reserva ha sido CONFIRMADA.\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n¡Te esperamos en {restaurante}!\n\n🔗 GESTIONAR RESERVA:\nSi necesitas modificar o cancelar tu reserva:\n{enlace_gestion}\n\nO contáctanos directamente:\nEmail: {email_restaurante}\nTeléfono: {telefono_restaurante}\n\nGracias por elegirnos.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPowered by MakIA Reservas - https://contacpro.app",
+            'body' => "Hola {nombre},\n\n¡Buenas noticias! Tu reserva ha sido CONFIRMADA.\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n¡Te esperamos en {restaurante}!\n\n🔗 GESTIONAR RESERVA:\nSi necesitas modificar o cancelar tu reserva:\n{enlace_gestion}\n\nO contáctanos directamente:\nEmail: {email_restaurante}\nTeléfono: {telefono_restaurante}\n\nGracias por elegirnos.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPowered by MakIA Restaurante - https://contacpro.app",
             'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","restaurante":"Nombre del restaurante","email_restaurante":"Email del restaurante","telefono_restaurante":"Teléfono del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
         ),
         array(
             'type' => 'email_restaurant',
             'name' => 'Email Restaurante - Nueva Reserva',
             'subject' => 'Nueva reserva pendiente de aprobación',
-            'body' => "Nueva solicitud de reserva en {restaurante}:\n\nDATOS DEL CLIENTE:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNombre: {nombre}\nEmail: {email}\nTeléfono: {telefono}\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\nMotivo: {motivo}\nNotas: {notas}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPara gestionar esta reserva, accede al panel de administración:\n{url_admin}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nMakIA Reservas - https://contacpro.app",
+            'body' => "Nueva solicitud de reserva en {restaurante}:\n\nDATOS DEL CLIENTE:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNombre: {nombre}\nEmail: {email}\nTeléfono: {telefono}\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\nMotivo: {motivo}\nNotas: {notas}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPara gestionar esta reserva, accede al panel de administración:\n{url_admin}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nMakIA Restaurante - https://contacpro.app",
             'variables' => '{"nombre":"Nombre del cliente","email":"Email del cliente","telefono":"Teléfono del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","motivo":"Motivo de la reserva","notas":"Notas especiales","restaurante":"Nombre del restaurante","url_admin":"URL del panel admin"}'
         ),
         array(

@@ -1,7 +1,7 @@
 {
   "name": "@makia/sdk",
   "version": "1.0.0",
-  "description": "MakIA Reservas SDK - Cliente JavaScript/TypeScript para la API de reservas",
+  "description": "MakIA Restaurante SDK - Cliente JavaScript/TypeScript para la API de reservas",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

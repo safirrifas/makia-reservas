@@ -46,7 +46,7 @@ app.use('/v1/*', rateLimiter({
 // ============================================
 app.get('/', (c) => {
   return c.json({
-    name: 'MakIA Reservas API',
+    name: 'MakIA Restaurante API',
     version: '1.0.0',
     status: 'healthy',
     timestamp: new Date().toISOString(),

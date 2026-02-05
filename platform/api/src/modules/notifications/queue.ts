@@ -284,7 +284,7 @@ export function startNotificationWorker(): Worker<NotificationJobData> {
           case 'PUSH':
             result = await sendPushNotification({
               to: recipient,
-              title: subject || 'MakIA Reservas',
+              title: subject || 'MakIA Restaurante',
               body,
             });
             break;

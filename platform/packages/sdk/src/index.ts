@@ -1,6 +1,6 @@
 /**
  * MakIA SDK
- * Cliente TypeScript para la API de MakIA Reservas
+ * Cliente TypeScript para la API de MakIA Restaurante
  *
  * @example
  * ```ts

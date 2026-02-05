@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: MakIA Reservas Client
+ * Plugin Name: MakIA Restaurante Client
  * Plugin URI: https://makia.app
- * Description: Cliente ligero de MakIA Reservas que conecta con la plataforma cloud. Widget de reservas, sincronización automática y gestión desde el dashboard centralizado.
+ * Description: Cliente ligero de MakIA Restaurante que conecta con la plataforma cloud. Widget de reservas, sincronización automática y gestión desde el dashboard centralizado.
  * Version: 1.0.0
  * Author: MakIA Team
  * Author URI: https://makia.app
@@ -18,7 +18,7 @@
  * ============================================================================
  *
  * 1. Obtén tu API Key en https://dashboard.makia.app/settings/api-keys
- * 2. Configura en Ajustes > MakIA Reservas
+ * 2. Configura en Ajustes > MakIA Restaurante
  *
  * O define en wp-config.php:
  *   define('MAKIA_API_KEY', 'mk_live_xxx');
@@ -113,8 +113,8 @@ class MakIA_Client {
      */
     public function admin_menu() {
         add_options_page(
-            __( 'MakIA Reservas', 'makia-client' ),
-            __( 'MakIA Reservas', 'makia-client' ),
+            __( 'MakIA Restaurante', 'makia-client' ),
+            __( 'MakIA Restaurante', 'makia-client' ),
             'manage_options',
             'makia-settings',
             array( $this, 'settings_page' )
@@ -156,7 +156,7 @@ class MakIA_Client {
         $connection_status = $this->test_connection();
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e( 'MakIA Reservas', 'makia-client' ); ?></h1>
+            <h1><?php esc_html_e( 'MakIA Restaurante', 'makia-client' ); ?></h1>
 
             <?php if ( $connection_status['success'] ) : ?>
                 <div class="notice notice-success">
@@ -252,7 +252,7 @@ class MakIA_Client {
             <code>[makia_booking]</code>
 
             <h3><?php esc_html_e( 'Widget', 'makia-client' ); ?></h3>
-            <p><?php esc_html_e( 'También puedes usar el widget de MakIA Reservas en cualquier área de widgets.', 'makia-client' ); ?></p>
+            <p><?php esc_html_e( 'También puedes usar el widget de MakIA Restaurante en cualquier área de widgets.', 'makia-client' ); ?></p>
 
             <h3><?php esc_html_e( 'Dashboard', 'makia-client' ); ?></h3>
             <p>
@@ -410,7 +410,7 @@ class MakIA_Client {
             if ( current_user_can( 'manage_options' ) ) {
                 return '<p>' . sprintf(
                     /* translators: %s: settings URL */
-                    esc_html__( 'MakIA Reservas no está configurado. %s', 'makia-client' ),
+                    esc_html__( 'MakIA Restaurante no está configurado. %s', 'makia-client' ),
                     '<a href="' . admin_url( 'options-general.php?page=makia-settings' ) . '">' . esc_html__( 'Configurar', 'makia-client' ) . '</a>'
                 ) . '</p>';
             }

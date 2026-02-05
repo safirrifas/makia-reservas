@@ -63,7 +63,7 @@
 
 ### Método 1: Desde el Panel de WordPress (Recomendado)
 
-1. Descarga el archivo `makia-reservas-v3.1.1.zip`
+1. Descarga el archivo `makia-restaurante-v3.1.1.zip`
 2. Ve a **Plugins → Añadir nuevo** en tu WordPress
 3. Haz clic en **Subir plugin**
 4. Selecciona el archivo ZIP descargado
@@ -72,7 +72,7 @@
 
 ### Método 2: Por FTP/SFTP
 
-1. Descomprime el archivo `makia-reservas-v3.1.1.zip`
+1. Descomprime el archivo `makia-restaurante-v3.1.1.zip`
 2. Sube la carpeta `makia-plugin-v3.1.1` a `/wp-content/plugins/`
 3. Ve a **Plugins** en WordPress y activa "MakIA - Sistema de Reservas"
 

@@ -1,5 +1,5 @@
 /**
- * MakIA Reservas - JavaScript (Ultra Robusta - WordPress Compatible)
+ * MakIA Restaurante - JavaScript (Ultra Robusta - WordPress Compatible)
  * Version: 3.3.0
  */
 

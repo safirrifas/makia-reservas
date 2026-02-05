@@ -41,7 +41,7 @@ export function generateIcsFile(event: IcsEventData): Buffer {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//MakIA Reservas//ES',
+    'PRODID:-//MakIA Restaurante//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:REQUEST',
     'BEGIN:VEVENT',

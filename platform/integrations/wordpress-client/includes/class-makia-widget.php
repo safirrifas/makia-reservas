@@ -1,6 +1,6 @@
 <?php
 /**
- * Widget de WordPress para MakIA Reservas
+ * Widget de WordPress para MakIA Restaurante
  */
 
 // Evitar acceso directo
@@ -19,7 +19,7 @@ class MakIA_Booking_Widget extends WP_Widget {
     public function __construct() {
         parent::__construct(
             'makia_booking_widget',
-            __( 'MakIA Reservas', 'makia-client' ),
+            __( 'MakIA Restaurante', 'makia-client' ),
             array(
                 'description' => __( 'Formulario de reservas MakIA', 'makia-client' ),
                 'classname'   => 'makia-booking-widget',
