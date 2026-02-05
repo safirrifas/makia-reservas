@@ -286,3 +286,111 @@ enum NotificationEvent {
   BOOKING_MODIFIED        // Reserva modificada
   ADMIN_NEW_BOOKING       // Notificación al admin de nueva reserva
 }
+
+// ============================================
+// LOGS DE NOTIFICACIONES
+// ============================================
+model NotificationLog {
+  id             String                 @id @default(cuid())
+  channel        NotificationType
+  event          NotificationEvent
+  recipient      String                 // email o teléfono
+  subject        String?
+  body           String                 @db.Text
+  status         NotificationStatus     @default(QUEUED)
+  error          String?                // mensaje de error si falló
+  attempts       Int                    @default(0)
+  metadata       Json                   @default("{}") // datos adicionales (message_id, etc)
+  scheduledFor   DateTime?              @map("scheduled_for") // para envíos programados
+  queuedAt       DateTime               @default(now()) @map("queued_at")
+  sentAt         DateTime?              @map("sent_at")
+  deliveredAt    DateTime?              @map("delivered_at")
+  openedAt       DateTime?              @map("opened_at")
+  failedAt       DateTime?              @map("failed_at")
+
+  // Relaciones
+  organizationId String                 @map("organization_id")
+  bookingId      String?                @map("booking_id")
+  templateId     String?                @map("template_id")
+
+  @@index([organizationId, status])
+  @@index([organizationId, channel])
+  @@index([bookingId])
+  @@index([scheduledFor, status])
+  @@map("notification_logs")
+}
+
+enum NotificationStatus {
+  QUEUED      // En cola, pendiente de envío
+  SENDING     // En proceso de envío
+  SENT        // Enviado al proveedor
+  DELIVERED   // Entregado al destinatario
+  OPENED      // Abierto (solo email)
+  CLICKED     // Click en enlace (solo email)
+  FAILED      // Fallo en el envío
+  CANCELLED   // Cancelado antes de enviar
+}
+
+// ============================================
+// PREFERENCIAS DE NOTIFICACIÓN
+// ============================================
+model NotificationPreference {
+  id             String   @id @default(cuid())
+  email          String?
+  phone          String?
+  optOutEmail    Boolean  @default(false) @map("opt_out_email")
+  optOutSms      Boolean  @default(false) @map("opt_out_sms")
+  optOutWhatsapp Boolean  @default(false) @map("opt_out_whatsapp")
+  optOutPush     Boolean  @default(false) @map("opt_out_push")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String   @map("organization_id")
+
+  @@unique([organizationId, email])
+  @@unique([organizationId, phone])
+  @@index([email])
+  @@index([phone])
+  @@map("notification_preferences")
+}
+
+// ============================================
+// TRABAJOS PROGRAMADOS (Scheduler)
+// ============================================
+model ScheduledJob {
+  id             String           @id @default(cuid())
+  type           ScheduledJobType
+  status         JobStatus        @default(PENDING)
+  payload        Json             @default("{}") // datos del trabajo
+  scheduledFor   DateTime         @map("scheduled_for")
+  executedAt     DateTime?        @map("executed_at")
+  error          String?
+  attempts       Int              @default(0)
+  maxAttempts    Int              @default(3) @map("max_attempts")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  // Relaciones
+  organizationId String           @map("organization_id")
+  bookingId      String?          @map("booking_id")
+
+  @@index([status, scheduledFor])
+  @@index([organizationId])
+  @@index([bookingId])
+  @@map("scheduled_jobs")
+}
+
+enum ScheduledJobType {
+  BOOKING_REMINDER      // Recordatorio de reserva
+  BOOKING_FOLLOWUP      // Seguimiento post-reserva
+  REPORT_DAILY          // Reporte diario
+  REPORT_WEEKLY         // Reporte semanal
+}
+
+enum JobStatus {
+  PENDING     // Pendiente de ejecutar
+  RUNNING     // En ejecución
+  COMPLETED   // Completado con éxito
+  FAILED      // Falló
+  CANCELLED   // Cancelado
+}
