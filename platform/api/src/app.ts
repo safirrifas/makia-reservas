@@ -13,6 +13,7 @@ import { availabilityRoutes } from './modules/bookings/availability';
 import { templatesRoutes } from './modules/notifications/templates';
 import { logsRoutes } from './modules/notifications/logs';
 import { socialRoutes } from './modules/social';
+import licenseRoutes from './modules/license/routes';
 
 // Middleware
 import { rateLimiter } from './shared/middleware/rate-limiter';
@@ -73,6 +74,12 @@ v1.route('/availability', availabilityRoutes);
 v1.route('/organizations', organizationsRoutes);
 v1.route('/notifications/templates', templatesRoutes);
 v1.route('/notifications/logs', logsRoutes);
+
+// Rutas de licencia y facturación
+v1.route('/license', licenseRoutes);
+v1.route('/billing', licenseRoutes);
+v1.route('/support', licenseRoutes);
+v1.route('/notifications', licenseRoutes);
 
 // Montar v1
 app.route('/v1', v1);

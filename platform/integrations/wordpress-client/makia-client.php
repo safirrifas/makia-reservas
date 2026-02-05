@@ -110,15 +110,18 @@ class MakIA_Client {
 
     /**
      * Menú de administración
+     * Nota: El menú principal es gestionado por MakIA_License_Manager
+     * Esta función se mantiene para compatibilidad
      */
     public function admin_menu() {
-        add_options_page(
-            __( 'MakIA Restaurante', 'makia-client' ),
-            __( 'MakIA Restaurante', 'makia-client' ),
-            'manage_options',
-            'makia-settings',
-            array( $this, 'settings_page' )
-        );
+        // El menú principal ahora es gestionado por MakIA_License_Manager
+        // que proporciona un menú completo con submenús para:
+        // - Dashboard
+        // - Mi Licencia
+        // - Facturación
+        // - Soporte
+        // - Novedades
+        // - Configuración
     }
 
     /**
@@ -444,6 +447,20 @@ class MakIA_Client {
         require_once MAKIA_CLIENT_DIR . 'includes/class-makia-widget.php';
         register_widget( 'MakIA_Booking_Widget' );
     }
+
+    /**
+     * Obtener API key
+     */
+    public function get_api_key() {
+        return $this->api_key;
+    }
+
+    /**
+     * Obtener organización
+     */
+    public function get_organization() {
+        return $this->organization;
+    }
 }
 
 // Inicializar plugin
@@ -465,4 +482,8 @@ register_activation_hook( __FILE__, function() {
 register_deactivation_hook( __FILE__, function() {
     // Limpiar transients
     delete_transient( 'makia_connection_status' );
+    delete_transient( 'makia_license_data' );
 });
+
+// Cargar License Manager (gestión de planes, facturación, soporte)
+require_once MAKIA_CLIENT_DIR . 'includes/class-makia-license-manager.php';
