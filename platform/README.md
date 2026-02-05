@@ -96,7 +96,7 @@ const slots = await makia.availability.get({
 ```html
 <div id="makia-booking"></div>
 <script
-  src="https://cdn.makia.app/widget.js"
+  src="https://cdn.contacpro.app/widget.js"
   data-restaurant="mi-restaurante"
   data-theme="light"
   data-primary-color="#4f46e5">

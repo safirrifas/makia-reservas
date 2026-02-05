@@ -31,7 +31,7 @@ app.use('*', timing());
 app.use('*', prettyJSON());
 app.use('*', secureHeaders());
 app.use('*', cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://*.makia.app'],
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://*.contacpro.app'],
   credentials: true,
 }));
 

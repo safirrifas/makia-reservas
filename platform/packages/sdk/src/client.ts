@@ -4,7 +4,7 @@ import { AvailabilityResource } from './resources/availability';
 import { OrganizationsResource } from './resources/organizations';
 import { AuthResource } from './resources/auth';
 
-const DEFAULT_BASE_URL = 'https://api.makia.app/v1';
+const DEFAULT_BASE_URL = 'https://api.contacpro.app/v1';
 const DEFAULT_TIMEOUT = 30000;
 
 export class MakiaClient {

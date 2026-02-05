@@ -259,8 +259,8 @@ La API configura automáticamente:
 
 ```env
 # URLs base
-API_URL=https://api.makia.app
-APP_URL=https://makia.app
+API_URL=https://api.contacpro.app
+APP_URL=https://contacpro.app
 
 # Base de datos
 DATABASE_URL=postgresql://user:pass@localhost:5432/makia
@@ -346,7 +346,7 @@ const cleaned = await cleanupExpiredConversations(); // Expira después de 24h i
         Te hemos enviado un email con los detalles.
 
         Si necesitas modificar o cancelar tu reserva:
-        https://makia.app/reserva/abc123xyz
+        https://contacpro.app/reserva/abc123xyz
 
         ¡Te esperamos! 🍽️
 ```

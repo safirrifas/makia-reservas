@@ -83,7 +83,7 @@ export async function sendEmail(params: EmailParams): Promise<SendResult> {
     const transporter = getEmailTransporter();
 
     const fromName = process.env.EMAIL_FROM_NAME || 'MakIA Restaurante';
-    const fromEmail = process.env.EMAIL_FROM || 'reservas@makia.app';
+    const fromEmail = process.env.EMAIL_FROM || 'reservas@contacpro.app';
 
     // Convertir texto plano a HTML básico si no se proporciona HTML
     const htmlBody = params.html || textToHtml(params.body);

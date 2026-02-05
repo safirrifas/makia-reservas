@@ -480,7 +480,7 @@ async function handleConfirm(
     bookingId: booking.id,
   });
 
-  const editUrl = `${process.env.APP_URL || 'https://makia.app'}/reserva/${editToken}`;
+  const editUrl = `${process.env.APP_URL || 'https://contacpro.app'}/reserva/${editToken}`;
 
   return {
     messages: [MESSAGES.COMPLETED(editUrl)],

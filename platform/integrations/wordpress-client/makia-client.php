@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: MakIA Restaurante Client
- * Plugin URI: https://makia.app
+ * Plugin URI: https://contacpro.app
  * Description: Cliente ligero de MakIA Restaurante que conecta con la plataforma cloud. Widget de reservas, sincronización automática y gestión desde el dashboard centralizado.
  * Version: 1.0.0
  * Author: MakIA Team
- * Author URI: https://makia.app
+ * Author URI: https://contacpro.app
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: makia-client
@@ -17,7 +17,7 @@
  * CONFIGURACIÓN
  * ============================================================================
  *
- * 1. Obtén tu API Key en https://dashboard.makia.app/settings/api-keys
+ * 1. Obtén tu API Key en https://dashboard.contacpro.app/settings/api-keys
  * 2. Configura en Ajustes > MakIA Restaurante
  *
  * O define en wp-config.php:
@@ -37,7 +37,7 @@ define( 'MAKIA_CLIENT_VERSION', '1.0.0' );
 define( 'MAKIA_CLIENT_FILE', __FILE__ );
 define( 'MAKIA_CLIENT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MAKIA_CLIENT_URL', plugin_dir_url( __FILE__ ) );
-define( 'MAKIA_API_BASE', 'https://api.makia.app/v1' );
+define( 'MAKIA_API_BASE', 'https://api.contacpro.app/v1' );
 
 /**
  * Clase principal del plugin
@@ -192,7 +192,7 @@ class MakIA_Client {
                                 printf(
                                     /* translators: %s: dashboard URL */
                                     esc_html__( 'Obtén tu API Key en %s', 'makia-client' ),
-                                    '<a href="https://dashboard.makia.app/settings/api-keys" target="_blank">dashboard.makia.app</a>'
+                                    '<a href="https://dashboard.contacpro.app/settings/api-keys" target="_blank">dashboard.contacpro.app</a>'
                                 );
                                 ?>
                             </p>
@@ -257,7 +257,7 @@ class MakIA_Client {
             <h3><?php esc_html_e( 'Dashboard', 'makia-client' ); ?></h3>
             <p>
                 <?php esc_html_e( 'Gestiona todas tus reservas desde el dashboard centralizado:', 'makia-client' ); ?>
-                <a href="https://dashboard.makia.app" target="_blank" class="button button-secondary">
+                <a href="https://dashboard.contacpro.app" target="_blank" class="button button-secondary">
                     <?php esc_html_e( 'Ir al Dashboard', 'makia-client' ); ?>
                 </a>
             </p>
@@ -386,7 +386,7 @@ class MakIA_Client {
         // Encolar widget desde CDN
         wp_enqueue_script(
             'makia-widget',
-            'https://cdn.makia.app/widget.js',
+            'https://cdn.contacpro.app/widget.js',
             array(),
             MAKIA_CLIENT_VERSION,
             true

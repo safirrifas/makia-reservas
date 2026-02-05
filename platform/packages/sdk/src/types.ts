@@ -6,7 +6,7 @@ export interface MakiaClientConfig {
   apiKey?: string;
   /** Access token JWT (alternativa a apiKey) */
   accessToken?: string;
-  /** URL base de la API (default: https://api.makia.app/v1) */
+  /** URL base de la API (default: https://api.contacpro.app/v1) */
   baseUrl?: string;
   /** Organization slug (requerido para algunas operaciones sin auth) */
   organization?: string;

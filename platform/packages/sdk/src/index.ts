@@ -8,7 +8,7 @@
  *
  * const makia = new MakiaClient({
  *   apiKey: 'mk_live_xxx',
- *   // o baseUrl: 'https://api.makia.app/v1'
+ *   // o baseUrl: 'https://api.contacpro.app/v1'
  * });
  *
  * // Crear reserva

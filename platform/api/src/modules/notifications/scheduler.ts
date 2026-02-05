@@ -139,7 +139,7 @@ async function sendBookingReminder(
     restaurante: organization.name,
     direccion: organization.address || '',
     telefono_restaurante: organization.phone || '',
-    enlace_gestion: `${process.env.APP_URL || 'https://makia.app'}/reserva/${booking.editToken}`,
+    enlace_gestion: `${process.env.APP_URL || 'https://contacpro.app'}/reserva/${booking.editToken}`,
   };
 
   // Generar archivo ICS

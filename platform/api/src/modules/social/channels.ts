@@ -132,7 +132,7 @@ channelsRoutes.post('/whatsapp', zValidator('json', whatsappConfigSchema), async
   });
 
   // Generar URL del webhook
-  const webhookUrl = `${process.env.API_URL || 'https://api.makia.app'}/social/whatsapp/webhook/${organization.id}`;
+  const webhookUrl = `${process.env.API_URL || 'https://api.contacpro.app'}/social/whatsapp/webhook/${organization.id}`;
 
   return c.json({
     success: true,
@@ -213,7 +213,7 @@ channelsRoutes.post('/telegram', zValidator('json', telegramConfigSchema), async
   });
 
   // Configurar webhook de Telegram
-  const webhookUrl = `${process.env.API_URL || 'https://api.makia.app'}/social/telegram/webhook/${organization.id}`;
+  const webhookUrl = `${process.env.API_URL || 'https://api.contacpro.app'}/social/telegram/webhook/${organization.id}`;
   const webhookSet = await setTelegramWebhook({ botToken, botUsername: botInfo.username }, webhookUrl);
 
   // Configurar comandos del bot
@@ -269,7 +269,7 @@ channelsRoutes.patch('/:type/toggle', async (c) => {
   if (type === 'TELEGRAM') {
     const config = channel.config as { botToken: string; botUsername?: string };
     if (newStatus) {
-      const webhookUrl = `${process.env.API_URL || 'https://api.makia.app'}/social/telegram/webhook/${organization.id}`;
+      const webhookUrl = `${process.env.API_URL || 'https://api.contacpro.app'}/social/telegram/webhook/${organization.id}`;
       await setTelegramWebhook(config, webhookUrl);
     } else {
       await deleteTelegramWebhook(config);

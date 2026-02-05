@@ -510,7 +510,7 @@ templatesRoutes.post('/:id/preview', async (c) => {
     telefono_restaurante: organization.phone || '+34 912 345 678',
     enlace_gestion: 'https://example.com/reserva/abc123',
     enlace_nueva_reserva: 'https://example.com/reservar',
-    enlace_admin: 'https://dashboard.makia.app/bookings/abc123',
+    enlace_admin: 'https://dashboard.contacpro.app/bookings/abc123',
     fecha_anterior: '14 de febrero de 2024',
     hora_anterior: '21:00',
     fecha_nueva: '15 de febrero de 2024',

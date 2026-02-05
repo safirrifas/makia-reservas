@@ -4,7 +4,7 @@
  *
  * Uso:
  * <div id="makia-booking"></div>
- * <script src="https://cdn.makia.app/widget.js" data-restaurant="mi-restaurante"></script>
+ * <script src="https://cdn.contacpro.app/widget.js" data-restaurant="mi-restaurante"></script>
  */
 
 interface WidgetConfig {
@@ -30,7 +30,7 @@ class MakiaBookingWidget {
   constructor(config: WidgetConfig) {
     this.config = {
       restaurant: config.restaurant,
-      apiUrl: config.apiUrl || 'https://api.makia.app/v1',
+      apiUrl: config.apiUrl || 'https://api.contacpro.app/v1',
       theme: config.theme || 'light',
       primaryColor: config.primaryColor || '#4f46e5',
       locale: config.locale || 'es',

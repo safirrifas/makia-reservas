@@ -33,7 +33,7 @@ export interface IcsEventData {
 // ============================================
 
 export function generateIcsFile(event: IcsEventData): Buffer {
-  const uid = event.uid || `${Date.now()}-${Math.random().toString(36).slice(2)}@makia.app`;
+  const uid = event.uid || `${Date.now()}-${Math.random().toString(36).slice(2)}@contacpro.app`;
   const now = formatIcsDate(new Date());
   const start = formatIcsDate(event.startDate);
   const end = formatIcsDate(event.endDate);
