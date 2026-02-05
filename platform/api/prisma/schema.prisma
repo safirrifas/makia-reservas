@@ -25,13 +25,14 @@ model Organization {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relaciones
-  users         User[]
-  apiKeys       ApiKey[]
-  bookings      Booking[]
-  businessHours BusinessHours[]
-  specialDays   SpecialDay[]
-  blacklist     BlacklistEntry[]
-  webhooks      Webhook[]
+  users                 User[]
+  apiKeys               ApiKey[]
+  bookings              Booking[]
+  businessHours         BusinessHours[]
+  specialDays           SpecialDay[]
+  blacklist             BlacklistEntry[]
+  webhooks              Webhook[]
+  notificationTemplates NotificationTemplate[]
 
   @@map("organizations")
 }
@@ -244,4 +245,44 @@ model AuditLog {
   user   User?   @relation(fields: [userId], references: [id])
 
   @@map("audit_logs")
+}
+
+// ============================================
+// PLANTILLAS DE NOTIFICACIÓN
+// ============================================
+model NotificationTemplate {
+  id           String               @id @default(cuid())
+  type         NotificationType
+  event        NotificationEvent
+  name         String               // "Confirmación de reserva"
+  subject      String?              // Solo para email
+  body         String               @db.Text
+  variables    Json                 @default("{}") // {"nombre": "Nombre del cliente", "fecha": "Fecha de la reserva"}
+  isActive     Boolean              @default(true) @map("is_active")
+  isDefault    Boolean              @default(false) @map("is_default")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, type, event])
+  @@map("notification_templates")
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH
+}
+
+enum NotificationEvent {
+  BOOKING_RECEIVED        // Reserva recibida (pendiente)
+  BOOKING_CONFIRMED       // Reserva confirmada
+  BOOKING_CANCELLED       // Reserva cancelada
+  BOOKING_REMINDER        // Recordatorio (24h antes)
+  BOOKING_MODIFIED        // Reserva modificada
+  ADMIN_NEW_BOOKING       // Notificación al admin de nueva reserva
 }
