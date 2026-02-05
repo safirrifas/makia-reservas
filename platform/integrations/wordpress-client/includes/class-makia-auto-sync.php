@@ -40,7 +40,7 @@ class MakIA_Auto_Sync {
     /**
      * URL del servidor de actualizaciones
      */
-    const UPDATE_SERVER = 'https://api.contacpro.app/v1/updates/wordpress';
+    const UPDATE_SERVER = 'https://contacpro.app/api/updates/wordpress';
 
     /**
      * Obtener instancia
@@ -122,7 +122,7 @@ class MakIA_Auto_Sync {
     }
 
     /**
-     * Sincronizar datos de licencia
+     * Sincronizar datos de licencia usando tRPC
      */
     public function sync_license_data() {
         $client = makia_client();
@@ -131,15 +131,30 @@ class MakIA_Auto_Sync {
             return false;
         }
 
-        $response = $client->api_request( '/license/current' );
+        // Usar el nuevo método tRPC para verificar licencia
+        $response = $client->verify_license();
 
-        if ( is_wp_error( $response ) || empty( $response['success'] ) ) {
-            $this->log_sync_error( 'license', $response );
+        if ( ! isset( $response['valid'] ) ) {
+            $this->log_sync_error( 'license', new WP_Error( 'sync_error', $response['message'] ?? 'Unknown error' ) );
             return false;
         }
 
-        // Guardar datos de licencia
-        $license_data = $response['data'];
+        // Construir datos de licencia desde la respuesta tRPC
+        $license_data = array(
+            'status'      => $response['valid'] ? 'active' : 'inactive',
+            'plan'        => 'pro', // El servidor no devuelve plan en verify, usar default
+            'plan_name'   => 'Pro',
+            'expires_at'  => $response['license']['expiresAt'] ?? null,
+            'domain'      => $response['license']['domain'] ?? wp_parse_url( home_url(), PHP_URL_HOST ),
+            'days_remaining' => $response['license']['daysUntilExpiration'] ?? null,
+        );
+
+        // Si la licencia no es válida, marcar como inactiva
+        if ( ! $response['valid'] ) {
+            $license_data['status'] = 'expired';
+            $license_data['message'] = $response['message'] ?? '';
+        }
+
         set_transient( 'makia_license_data', $license_data, self::SYNC_INTERVAL * 2 );
 
         // Verificar si hay cambios importantes
@@ -154,9 +169,9 @@ class MakIA_Auto_Sync {
                 'license_update',
                 __( 'Tu licencia de MakIA Restaurante ha sido actualizada', 'makia-client' ),
                 sprintf(
-                    __( 'Plan: %s | Estado: %s', 'makia-client' ),
-                    $license_data['plan_name'],
-                    $license_data['status']
+                    __( 'Estado: %s | Dominio: %s', 'makia-client' ),
+                    $license_data['status'],
+                    $license_data['domain']
                 )
             );
         }

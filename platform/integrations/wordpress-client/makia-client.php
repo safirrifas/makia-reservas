@@ -33,11 +33,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes del plugin
-define( 'MAKIA_CLIENT_VERSION', '1.0.0' );
+define( 'MAKIA_CLIENT_VERSION', '1.1.0' );
 define( 'MAKIA_CLIENT_FILE', __FILE__ );
 define( 'MAKIA_CLIENT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MAKIA_CLIENT_URL', plugin_dir_url( __FILE__ ) );
-define( 'MAKIA_API_BASE', 'https://api.contacpro.app/v1' );
+define( 'MAKIA_API_BASE', 'https://contacpro.app/api/trpc' );
+define( 'MAKIA_API_LEGACY', 'https://contacpro.app/api' );
 
 /**
  * Clase principal del plugin
@@ -89,6 +90,9 @@ class MakIA_Client {
         // AJAX handlers
         add_action( 'wp_ajax_makia_proxy', array( $this, 'api_proxy' ) );
         add_action( 'wp_ajax_nopriv_makia_proxy', array( $this, 'api_proxy' ) );
+        add_action( 'wp_ajax_makia_activate_license_ajax', array( $this, 'ajax_activate_license' ) );
+        add_action( 'wp_ajax_makia_deactivate_license_ajax', array( $this, 'ajax_deactivate_license' ) );
+        add_action( 'wp_ajax_makia_verify_license_ajax', array( $this, 'ajax_verify_license' ) );
 
         // Widget
         add_action( 'widgets_init', array( $this, 'register_widget' ) );
@@ -103,9 +107,10 @@ class MakIA_Client {
 
     /**
      * Verificar si está configurado
+     * Solo necesita la clave de licencia para conectar con contacpro.app
      */
     public function is_configured() {
-        return ! empty( $this->api_key ) && ! empty( $this->organization );
+        return ! empty( $this->api_key );
     }
 
     /**
@@ -155,27 +160,59 @@ class MakIA_Client {
      * Página de ajustes
      */
     public function settings_page() {
-        // Verificar conexión
+        // Verificar conexión/licencia
         $connection_status = $this->test_connection();
+        $domain = wp_parse_url( home_url(), PHP_URL_HOST );
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e( 'MakIA Restaurante', 'makia-client' ); ?></h1>
+            <h1><?php esc_html_e( 'MakIA Restaurante - Configuración', 'makia-client' ); ?></h1>
 
             <?php if ( $connection_status['success'] ) : ?>
                 <div class="notice notice-success">
                     <p>
-                        <strong><?php esc_html_e( 'Conectado correctamente', 'makia-client' ); ?></strong> -
-                        <?php echo esc_html( $connection_status['organization_name'] ); ?>
-                        (<?php echo esc_html( $connection_status['plan'] ); ?>)
+                        <strong><?php esc_html_e( 'Licencia activa', 'makia-client' ); ?></strong> -
+                        <?php echo esc_html( $domain ); ?>
+                        <?php if ( ! empty( $connection_status['days_remaining'] ) ) : ?>
+                            (<?php printf( esc_html__( '%d días restantes', 'makia-client' ), $connection_status['days_remaining'] ); ?>)
+                        <?php endif; ?>
                     </p>
                 </div>
             <?php elseif ( $this->is_configured() ) : ?>
-                <div class="notice notice-error">
+                <div class="notice notice-warning">
                     <p>
-                        <strong><?php esc_html_e( 'Error de conexión', 'makia-client' ); ?></strong>:
+                        <strong><?php esc_html_e( 'Licencia no activada', 'makia-client' ); ?></strong>:
                         <?php echo esc_html( $connection_status['message'] ); ?>
                     </p>
+                    <p>
+                        <button type="button" class="button button-primary" id="makia-activate-license">
+                            <?php esc_html_e( 'Activar licencia en este dominio', 'makia-client' ); ?>
+                        </button>
+                        <span class="spinner" style="float: none;"></span>
+                    </p>
                 </div>
+                <script>
+                jQuery(document).ready(function($) {
+                    $('#makia-activate-license').on('click', function() {
+                        var $btn = $(this);
+                        var $spinner = $btn.next('.spinner');
+                        $btn.prop('disabled', true);
+                        $spinner.addClass('is-active');
+
+                        $.post(ajaxurl, {
+                            action: 'makia_activate_license_ajax',
+                            nonce: '<?php echo wp_create_nonce( 'makia_activate_license' ); ?>'
+                        }, function(response) {
+                            if (response.success) {
+                                location.reload();
+                            } else {
+                                alert(response.data.message || 'Error activando licencia');
+                                $btn.prop('disabled', false);
+                                $spinner.removeClass('is-active');
+                            }
+                        });
+                    });
+                });
+                </script>
             <?php endif; ?>
 
             <form method="post" action="options.php">
@@ -272,41 +309,37 @@ class MakIA_Client {
      * Test de conexión con la API
      */
     private function test_connection() {
-        if ( ! $this->is_configured() ) {
+        if ( empty( $this->api_key ) ) {
             return array(
                 'success' => false,
-                'message' => __( 'API Key y organización requeridos', 'makia-client' ),
+                'message' => __( 'Clave de licencia requerida', 'makia-client' ),
             );
         }
 
-        $response = $this->api_request( '/organizations/current' );
+        // Verificar licencia usando tRPC
+        $response = $this->verify_license();
 
-        if ( is_wp_error( $response ) ) {
+        if ( isset( $response['valid'] ) && $response['valid'] ) {
             return array(
-                'success' => false,
-                'message' => $response->get_error_message(),
-            );
-        }
-
-        if ( ! $response['success'] ) {
-            return array(
-                'success' => false,
-                'message' => $response['error']['message'] ?? __( 'Error desconocido', 'makia-client' ),
+                'success'           => true,
+                'organization_name' => $response['license']['domain'] ?? wp_parse_url( home_url(), PHP_URL_HOST ),
+                'plan'              => $response['license']['status'] ?? 'active',
+                'expires_at'        => $response['license']['expiresAt'] ?? null,
+                'days_remaining'    => $response['license']['daysUntilExpiration'] ?? null,
             );
         }
 
         return array(
-            'success'           => true,
-            'organization_name' => $response['data']['name'],
-            'plan'              => $response['data']['plan'],
+            'success' => false,
+            'message' => $response['message'] ?? __( 'Licencia inválida o no activada', 'makia-client' ),
         );
     }
 
     /**
-     * Realizar petición a la API
+     * Realizar petición a la API (legacy REST)
      */
     public function api_request( $endpoint, $method = 'GET', $body = null ) {
-        $url = MAKIA_API_BASE . $endpoint;
+        $url = MAKIA_API_LEGACY . $endpoint;
 
         // Añadir organización como query param si no está en el endpoint
         if ( strpos( $endpoint, 'org=' ) === false && strpos( $endpoint, '/organizations/' ) === false ) {
@@ -336,6 +369,199 @@ class MakIA_Client {
 
         $body = wp_remote_retrieve_body( $response );
         return json_decode( $body, true );
+    }
+
+    /**
+     * Realizar petición tRPC a la API de contacpro.app
+     *
+     * @param string $procedure Procedimiento tRPC (ej: 'licenses.verify')
+     * @param array  $input     Datos de entrada
+     * @param string $type      'query' o 'mutation'
+     * @return array|WP_Error
+     */
+    public function trpc_request( $procedure, $input = array(), $type = 'mutation' ) {
+        $url = MAKIA_API_BASE . '/' . $procedure;
+
+        if ( $type === 'query' ) {
+            // Para queries, el input va en la URL codificado
+            if ( ! empty( $input ) ) {
+                $url .= '?input=' . urlencode( wp_json_encode( array( 'json' => $input ) ) );
+            }
+            $method = 'GET';
+            $body = null;
+        } else {
+            // Para mutations, el input va en el body
+            $method = 'POST';
+            $body = array( 'json' => $input );
+        }
+
+        $args = array(
+            'method'  => $method,
+            'timeout' => 30,
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'Accept'       => 'application/json',
+            ),
+        );
+
+        // Añadir Authorization si tenemos API key
+        if ( ! empty( $this->api_key ) ) {
+            $args['headers']['Authorization'] = 'Bearer ' . $this->api_key;
+        }
+
+        if ( $body ) {
+            $args['body'] = wp_json_encode( $body );
+        }
+
+        $response = wp_remote_request( $url, $args );
+
+        if ( is_wp_error( $response ) ) {
+            return $response;
+        }
+
+        $response_code = wp_remote_retrieve_response_code( $response );
+        $response_body = wp_remote_retrieve_body( $response );
+        $data = json_decode( $response_body, true );
+
+        // tRPC devuelve { result: { data: { json: ... } } } para éxito
+        // o { error: { json: { message: ... } } } para error
+        if ( isset( $data['result']['data']['json'] ) ) {
+            return array(
+                'success' => true,
+                'data'    => $data['result']['data']['json'],
+            );
+        }
+
+        if ( isset( $data['error'] ) ) {
+            $error_message = $data['error']['json']['message']
+                ?? $data['error']['message']
+                ?? __( 'Error desconocido', 'makia-client' );
+            return new WP_Error( 'trpc_error', $error_message );
+        }
+
+        // Respuesta inesperada
+        if ( $response_code >= 400 ) {
+            return new WP_Error(
+                'http_error',
+                sprintf( __( 'Error HTTP %d', 'makia-client' ), $response_code )
+            );
+        }
+
+        return array(
+            'success' => true,
+            'data'    => $data,
+        );
+    }
+
+    /**
+     * Verificar licencia con el servidor tRPC
+     *
+     * @return array Resultado de la verificación
+     */
+    public function verify_license() {
+        $license_key = $this->api_key;
+        $domain = wp_parse_url( home_url(), PHP_URL_HOST );
+
+        if ( empty( $license_key ) ) {
+            return array(
+                'valid'   => false,
+                'message' => __( 'Clave de licencia no configurada', 'makia-client' ),
+            );
+        }
+
+        $response = $this->trpc_request( 'licenses.verify', array(
+            'licenseKey' => $license_key,
+            'domain'     => $domain,
+            'ipAddress'  => $_SERVER['SERVER_ADDR'] ?? '',
+        ) );
+
+        if ( is_wp_error( $response ) ) {
+            return array(
+                'valid'   => false,
+                'message' => $response->get_error_message(),
+            );
+        }
+
+        if ( isset( $response['data'] ) ) {
+            return $response['data'];
+        }
+
+        return array(
+            'valid'   => false,
+            'message' => __( 'Respuesta inválida del servidor', 'makia-client' ),
+        );
+    }
+
+    /**
+     * Activar licencia en este dominio
+     *
+     * @return array Resultado de la activación
+     */
+    public function activate_license() {
+        $license_key = $this->api_key;
+        $domain = wp_parse_url( home_url(), PHP_URL_HOST );
+
+        if ( empty( $license_key ) ) {
+            return array(
+                'success' => false,
+                'message' => __( 'Clave de licencia no configurada', 'makia-client' ),
+            );
+        }
+
+        $response = $this->trpc_request( 'licenses.activate', array(
+            'licenseKey' => $license_key,
+            'domain'     => $domain,
+            'ipAddress'  => $_SERVER['SERVER_ADDR'] ?? '',
+            'userAgent'  => 'WordPress/' . get_bloginfo( 'version' ) . '; MakIA/' . MAKIA_CLIENT_VERSION,
+        ) );
+
+        if ( is_wp_error( $response ) ) {
+            return array(
+                'success' => false,
+                'message' => $response->get_error_message(),
+            );
+        }
+
+        return $response['data'] ?? array(
+            'success' => false,
+            'message' => __( 'Respuesta inválida del servidor', 'makia-client' ),
+        );
+    }
+
+    /**
+     * Desactivar licencia de este dominio
+     *
+     * @return array Resultado de la desactivación
+     */
+    public function deactivate_license() {
+        $license_key = $this->api_key;
+        $domain = wp_parse_url( home_url(), PHP_URL_HOST );
+
+        if ( empty( $license_key ) ) {
+            return array(
+                'success' => false,
+                'message' => __( 'Clave de licencia no configurada', 'makia-client' ),
+            );
+        }
+
+        $response = $this->trpc_request( 'licenses.deactivate', array(
+            'licenseKey' => $license_key,
+            'domain'     => $domain,
+            'ipAddress'  => $_SERVER['SERVER_ADDR'] ?? '',
+            'userAgent'  => 'WordPress/' . get_bloginfo( 'version' ) . '; MakIA/' . MAKIA_CLIENT_VERSION,
+        ) );
+
+        if ( is_wp_error( $response ) ) {
+            return array(
+                'success' => false,
+                'message' => $response->get_error_message(),
+            );
+        }
+
+        return $response['data'] ?? array(
+            'success' => false,
+            'message' => __( 'Respuesta inválida del servidor', 'makia-client' ),
+        );
     }
 
     /**
@@ -376,6 +602,64 @@ class MakIA_Client {
         }
 
         wp_send_json( $response );
+    }
+
+    /**
+     * AJAX: Activar licencia
+     */
+    public function ajax_activate_license() {
+        check_ajax_referer( 'makia_activate_license', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+        }
+
+        $result = $this->activate_license();
+
+        if ( isset( $result['success'] ) && $result['success'] ) {
+            // Limpiar caches
+            delete_transient( 'makia_license_data' );
+            delete_transient( 'makia_connection_status' );
+            wp_send_json_success( $result );
+        } else {
+            wp_send_json_error( $result );
+        }
+    }
+
+    /**
+     * AJAX: Desactivar licencia
+     */
+    public function ajax_deactivate_license() {
+        check_ajax_referer( 'makia_deactivate_license', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+        }
+
+        $result = $this->deactivate_license();
+
+        if ( isset( $result['success'] ) && $result['success'] ) {
+            // Limpiar caches
+            delete_transient( 'makia_license_data' );
+            delete_transient( 'makia_connection_status' );
+            wp_send_json_success( $result );
+        } else {
+            wp_send_json_error( $result );
+        }
+    }
+
+    /**
+     * AJAX: Verificar licencia
+     */
+    public function ajax_verify_license() {
+        check_ajax_referer( 'makia_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+        }
+
+        $result = $this->verify_license();
+        wp_send_json_success( $result );
     }
 
     /**
