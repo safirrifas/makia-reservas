@@ -14,6 +14,7 @@ import { templatesRoutes } from './modules/notifications/templates';
 import { logsRoutes } from './modules/notifications/logs';
 import { socialRoutes } from './modules/social';
 import licenseRoutes from './modules/license/routes';
+import { webhooksRoutes } from './modules/webhooks';
 
 // Middleware
 import { rateLimiter } from './shared/middleware/rate-limiter';
@@ -80,6 +81,9 @@ v1.route('/license', licenseRoutes);
 v1.route('/billing', licenseRoutes);
 v1.route('/support', licenseRoutes);
 v1.route('/notifications', licenseRoutes);
+
+// Webhooks para sincronización automática
+v1.route('/webhooks', webhooksRoutes);
 
 // Montar v1
 app.route('/v1', v1);

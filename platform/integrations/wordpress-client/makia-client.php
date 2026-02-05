@@ -487,3 +487,6 @@ register_deactivation_hook( __FILE__, function() {
 
 // Cargar License Manager (gestión de planes, facturación, soporte)
 require_once MAKIA_CLIENT_DIR . 'includes/class-makia-license-manager.php';
+
+// Cargar Auto Sync (sincronización automática con contacpro.app)
+require_once MAKIA_CLIENT_DIR . 'includes/class-makia-auto-sync.php';
