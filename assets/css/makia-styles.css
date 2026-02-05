@@ -530,3 +530,57 @@
     border-radius: 6px;
     border: 1px solid #f5c6cb;
 }
+
+/* ==========================================================================
+   AVISOS DE DÍAS CERRADOS
+   ========================================================================== */
+
+.makia-closed-notice {
+    margin: 10px 0;
+    animation: makia-fadeIn 0.3s ease;
+}
+
+.makia-closed-notice > div {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.makia-closed-notice strong {
+    font-weight: 600;
+}
+
+/* Tipos de cierre */
+.makia-closed-notice.makia-closed-type-closed {
+    border-left-color: #e74c3c;
+}
+
+.makia-closed-notice.makia-closed-type-full {
+    border-left-color: #f39c12;
+}
+
+.makia-closed-notice.makia-closed-type-holiday {
+    border-left-color: #3498db;
+}
+
+/* Animación de entrada */
+@keyframes makia-noticeSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.makia-closed-notice > div {
+    animation: makia-noticeSlide 0.3s ease;
+}
+
+/* Select cuando está cerrado */
+#makia-time option[value=""] {
+    color: #666;
+    font-style: italic;
+}

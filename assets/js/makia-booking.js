@@ -204,16 +204,53 @@ jQuery(document).ready(function($) {
     }
 
     /**
-     * Verificar si una fecha está cerrada
+     * Verificar si una fecha está cerrada y obtener información
      */
     function isDateClosed(dateString) {
         for (var i = 0; i < specialDays.length; i++) {
-            if (specialDays[i].date === dateString && specialDays[i].type === 'closed') {
+            if (specialDays[i].date === dateString &&
+                (specialDays[i].type === 'closed' || specialDays[i].type === 'full' || specialDays[i].type === 'holiday')) {
                 log('Fecha cerrada por día especial:', dateString);
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Obtener información del día cerrado
+     */
+    function getClosedDayInfo(dateString) {
+        for (var i = 0; i < specialDays.length; i++) {
+            if (specialDays[i].date === dateString &&
+                (specialDays[i].type === 'closed' || specialDays[i].type === 'full' || specialDays[i].type === 'holiday')) {
+                return specialDays[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Obtener texto de motivo de cierre
+     */
+    function getClosedReasonText(closedInfo) {
+        if (!closedInfo) return 'Cerrado';
+
+        // Traducciones de tipos
+        var typeLabels = {
+            'closed': 'Cerrado',
+            'full': 'Completo',
+            'holiday': 'Festivo'
+        };
+
+        var typeText = typeLabels[closedInfo.type] || 'Cerrado';
+
+        // Si hay un motivo específico, mostrarlo
+        if (closedInfo.reason && closedInfo.reason.trim() !== '') {
+            return typeText + ' - ' + closedInfo.reason;
+        }
+
+        return typeText;
     }
 
     /**
@@ -252,7 +289,10 @@ jQuery(document).ready(function($) {
             // Pero verificar si hay apertura excepcional
             var specialOpening = getSpecialDayOpening(dateString);
             if (!specialOpening) {
-                timeSelect.append('<option value="">Cerrado</option>');
+                var closedInfo = getClosedDayInfo(dateString);
+                var closedText = getClosedReasonText(closedInfo);
+                timeSelect.append('<option value="">' + closedText + '</option>');
+                showClosedMessage(closedInfo);
                 return;
             }
         }
@@ -272,13 +312,15 @@ jQuery(document).ready(function($) {
                 log('Apertura excepcional:', specialOpening);
                 var slots = generateTimeSlots(specialOpening.start_time, specialOpening.end_time);
                 timeSelect.append('<option value="">Selecciona una hora</option>');
+                hideClosedMessage();
                 for (var i = 0; i < slots.length; i++) {
                     timeSelect.append('<option value="' + slots[i] + '">' + slots[i] + '</option>');
                 }
                 return;
             }
             log('Día cerrado (no habilitado)');
-            timeSelect.append('<option value="">Cerrado</option>');
+            timeSelect.append('<option value="">Día de descanso</option>');
+            showClosedMessage({ type: 'closed', reason: 'Día de descanso semanal' });
             return;
         }
 
@@ -314,12 +356,63 @@ jQuery(document).ready(function($) {
         timeSelect.append('<option value="">Selecciona una hora</option>');
 
         if (slots.length > 0) {
+            hideClosedMessage();
             for (var i = 0; i < slots.length; i++) {
                 timeSelect.append('<option value="' + slots[i] + '">' + slots[i] + '</option>');
             }
             log('Horarios agregados:', slots.length);
         } else {
-            timeSelect.append('<option value="">Cerrado</option>');
+            timeSelect.append('<option value="">Sin horarios disponibles</option>');
+            showClosedMessage({ type: 'closed', reason: 'No hay horarios disponibles para este día' });
         }
+    }
+
+    /**
+     * Mostrar mensaje de día cerrado en el formulario
+     */
+    function showClosedMessage(closedInfo) {
+        var container = $('#makia-closed-message');
+
+        // Crear contenedor si no existe
+        if (container.length === 0) {
+            $('#makia-time').after('<div id="makia-closed-message" class="makia-closed-notice"></div>');
+            container = $('#makia-closed-message');
+        }
+
+        if (!closedInfo) {
+            container.hide();
+            return;
+        }
+
+        // Iconos y colores según tipo
+        var icons = {
+            'closed': '🔒',
+            'full': '📅',
+            'holiday': '🎉'
+        };
+
+        var colors = {
+            'closed': '#e74c3c',
+            'full': '#f39c12',
+            'holiday': '#3498db'
+        };
+
+        var icon = icons[closedInfo.type] || '🔒';
+        var color = colors[closedInfo.type] || '#e74c3c';
+        var reasonText = getClosedReasonText(closedInfo);
+
+        container.html(
+            '<div style="background: ' + color + '15; border-left: 4px solid ' + color + '; padding: 12px 15px; margin: 10px 0; border-radius: 4px;">' +
+            '<span style="font-size: 1.2em; margin-right: 8px;">' + icon + '</span>' +
+            '<strong style="color: ' + color + ';">' + reasonText + '</strong>' +
+            '</div>'
+        ).show();
+    }
+
+    /**
+     * Ocultar mensaje de día cerrado
+     */
+    function hideClosedMessage() {
+        $('#makia-closed-message').hide();
     }
 });

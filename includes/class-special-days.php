@@ -49,6 +49,8 @@ class MakIA_Special_Days {
                                 <select name="special_type" id="special_type" required onchange="toggleHoursFields(this.value)">
                                     <option value="">Selecciona...</option>
                                     <option value="closed">⛔ Cerrado</option>
+                                    <option value="full">📅 Completo (sin disponibilidad)</option>
+                                    <option value="holiday">🎉 Festivo</option>
                                     <option value="special_hours">🕐 Horario Especial</option>
                                     <option value="exceptional_opening">✅ Apertura Excepcional (día normalmente cerrado)</option>
                                 </select>
@@ -127,6 +129,10 @@ class MakIA_Special_Days {
                                 <td data-label="Tipo">
                                     <?php if ($day['type'] === 'closed'): ?>
                                         <span style="color: #d63638;">⛔ Cerrado</span>
+                                    <?php elseif ($day['type'] === 'full'): ?>
+                                        <span style="color: #f0b849;">📅 Completo</span>
+                                    <?php elseif ($day['type'] === 'holiday'): ?>
+                                        <span style="color: #3498db;">🎉 Festivo</span>
                                     <?php elseif ($day['type'] === 'exceptional_opening'): ?>
                                         <span style="color: #00a32a;">✅ Apertura Excepcional</span>
                                     <?php else: ?>
@@ -192,10 +198,13 @@ class MakIA_Special_Days {
             'reason' => $reason
         );
         
-        // Agregar horarios si es horario especial
-        if ($type === 'special_hours') {
-            $special_day['start'] = sanitize_text_field($_POST['special_start']);
-            $special_day['end'] = sanitize_text_field($_POST['special_end']);
+        // Agregar horarios si es horario especial o apertura excepcional
+        if ($type === 'special_hours' || $type === 'exceptional_opening') {
+            $special_day['start_time'] = sanitize_text_field($_POST['special_start']);
+            $special_day['end_time'] = sanitize_text_field($_POST['special_end']);
+            // Mantener compatibilidad con start/end
+            $special_day['start'] = $special_day['start_time'];
+            $special_day['end'] = $special_day['end_time'];
         }
         
         // Obtener días especiales existentes
