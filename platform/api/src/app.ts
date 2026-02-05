@@ -10,6 +10,9 @@ import { authRoutes } from './modules/auth/routes';
 import { bookingsRoutes } from './modules/bookings/routes';
 import { organizationsRoutes } from './modules/organizations/routes';
 import { availabilityRoutes } from './modules/bookings/availability';
+import { templatesRoutes } from './modules/notifications/templates';
+import { logsRoutes } from './modules/notifications/logs';
+import { socialRoutes } from './modules/social';
 
 // Middleware
 import { rateLimiter } from './shared/middleware/rate-limiter';
@@ -68,9 +71,16 @@ v1.route('/availability', availabilityRoutes);
 
 // Rutas protegidas
 v1.route('/organizations', organizationsRoutes);
+v1.route('/notifications/templates', templatesRoutes);
+v1.route('/notifications/logs', logsRoutes);
 
 // Montar v1
 app.route('/v1', v1);
+
+// ============================================
+// SOCIAL WEBHOOKS (fuera de /v1, sin rate limiting estricto)
+// ============================================
+app.route('/social', socialRoutes);
 
 // ============================================
 // ERROR HANDLER
