@@ -1216,7 +1216,7 @@ class MakIA_Bookings {
             </div>
             
             <!-- Tabla de reservas -->
-            <table class="wp-list-table widefat fixed striped">
+            <table class="wp-list-table widefat fixed striped makia-bookings-table">
                 <thead>
                     <tr>
                         <th style="width: 40px;">
@@ -1242,12 +1242,12 @@ class MakIA_Bookings {
                         </tr>
                     <?php else: ?>
                         <?php foreach ($bookings as $booking): ?>
-                            <tr data-booking-id="<?php echo $booking->id; ?>">
+                            <tr data-booking-id="<?php echo $booking->id; ?>" data-status="<?php echo esc_attr($booking->status); ?>" data-date="<?php echo esc_attr($booking->booking_date); ?>">
                                 <td>
                                     <input type="checkbox" class="makia-booking-checkbox" value="<?php echo $booking->id; ?>">
                                 </td>
                                 <td><?php echo $booking->id; ?></td>
-                                <td><strong><?php echo esc_html($booking->name); ?></strong></td>
+                                <td><strong class="makia-booking-name"><?php echo esc_html($booking->name); ?></strong></td>
                                 <td>
                                     <?php echo esc_html($booking->email); ?><br>
                                     <small><?php echo esc_html($booking->phone); ?></small>
@@ -1313,7 +1313,7 @@ class MakIA_Bookings {
                     </div>
                 <?php else: ?>
                     <?php foreach ($bookings as $booking): ?>
-                        <div class="makia-booking-card" data-booking-id="<?php echo $booking->id; ?>" onclick="makiaShowBookingDetail(<?php echo $booking->id; ?>)">
+                        <div class="makia-booking-card" data-booking-id="<?php echo $booking->id; ?>" data-status="<?php echo esc_attr($booking->status); ?>" data-date="<?php echo esc_attr($booking->booking_date); ?>" onclick="makiaShowBookingDetail(<?php echo $booking->id; ?>)">
                             <div class="makia-booking-header">
                                 <div class="makia-booking-name"><?php echo esc_html($booking->name); ?></div>
                                 <div class="makia-booking-status">
@@ -1344,11 +1344,11 @@ class MakIA_Bookings {
                                 </div>
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">📧 Email</div>
-                                    <div class="makia-info-value" style="font-size: 11px;"><?php echo esc_html($booking->email); ?></div>
+                                    <div class="makia-info-value makia-booking-email" style="font-size: 11px;"><?php echo esc_html($booking->email); ?></div>
                                 </div>
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">📞 Teléfono</div>
-                                    <div class="makia-info-value"><?php echo esc_html($booking->phone); ?></div>
+                                    <div class="makia-info-value makia-booking-phone"><?php echo esc_html($booking->phone); ?></div>
                                     <div class="makia-phone-actions">
                                         <a href="tel:<?php echo esc_attr($booking->phone); ?>" class="makia-phone-btn makia-phone-btn-call">
                                             📞 Llamar
