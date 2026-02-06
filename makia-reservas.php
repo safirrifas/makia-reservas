@@ -3,7 +3,7 @@
  * Plugin Name: MakIA Restaurante
  * Plugin URI: https://contacpro.app
  * Description: MakIA Restaurante - Sistema completo de reservas con IA para restaurantes. Incluye formulario de reservas, gestión de horarios, control de capacidad, plantillas personalizables con vista previa en vivo, y lista negra de usuarios.
- * Version: 4.3.0
+ * Version: 4.4.0
  * Author: MakIA Team
  * Author URI: https://contacpro.app
  * License: GPL v2 or later
@@ -53,7 +53,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Definir constantes del plugin
-define('MAKIA_VERSION', '4.3.0');
+define('MAKIA_VERSION', '4.4.0');
 define('MAKIA_PLUGIN_FILE', __FILE__);
 define('MAKIA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MAKIA_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -231,22 +231,29 @@ function makia_insert_default_templates() {
             'type' => 'sms',
             'name' => 'SMS - Confirmación',
             'subject' => null,
-            'body' => 'Hola {nombre}, tu reserva para el {fecha} a las {hora} ha sido confirmada. Gestionar: {enlace_gestion} - {restaurante}',
+            'body' => '{restaurante}: Reserva confirmada para {nombre} el {fecha} a las {hora}. Modificar/cancelar: {enlace_gestion}',
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+        ),
+        array(
+            'type' => 'sms_reminder',
+            'name' => 'SMS - Recordatorio',
+            'subject' => null,
+            'body' => 'Recordatorio {restaurante}: Tu reserva es mañana {fecha} a las {hora}. Modificar/cancelar: {enlace_gestion}',
             'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
         ),
         array(
             'type' => 'whatsapp',
             'name' => 'WhatsApp - Confirmación',
             'subject' => null,
-            'body' => 'Hola {nombre}, tu reserva para el {fecha} a las {hora} en {restaurante} ha sido confirmada. ¡Te esperamos! 🍽️\n\nGestionar reserva: {enlace_gestion}',
-            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+            'body' => '✅ *{restaurante}*\n\nHola {nombre}, tu reserva ha sido *confirmada*:\n\n📅 {fecha}\n🕐 {hora}\n👥 {comensales} personas\n\n¡Te esperamos! 🍽️\n\n📝 Modificar o cancelar:\n{enlace_gestion}',
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
         ),
         array(
             'type' => 'whatsapp_reminder',
             'name' => 'WhatsApp - Recordatorio',
             'subject' => null,
-            'body' => 'Hola {nombre}, te recordamos tu reserva para el {fecha} a las {hora}. ¡Te esperamos!\n\nGestionar: {enlace_gestion} - {restaurante}',
-            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+            'body' => '⏰ *Recordatorio - {restaurante}*\n\nHola {nombre}, te recordamos tu reserva:\n\n📅 {fecha}\n🕐 {hora}\n👥 {comensales} personas\n\n¡Te esperamos!\n\n📝 Modificar o cancelar:\n{enlace_gestion}',
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
         )
     );
     

@@ -12,7 +12,7 @@ class MakIA_PWA_Link {
 	/**
 	 * URL de la aplicación PWA
 	 */
-	private $pwa_url = 'https://makia-operators.manus.space';
+	private $pwa_url = 'https://contacpro.app/operarios';
 
 	/**
 	 * Constructor

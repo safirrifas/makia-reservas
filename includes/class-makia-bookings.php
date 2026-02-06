@@ -625,70 +625,130 @@ class MakIA_Bookings {
     }
     
     /**
+     * Generar plantilla HTML base para emails
+     */
+    private function get_email_template($restaurant_name, $content, $footer_text = '') {
+        $logo_url = get_option('makia_restaurant_logo', '');
+        $logo_html = $logo_url ? '<img src="' . esc_url($logo_url) . '" alt="' . esc_attr($restaurant_name) . '" style="max-width: 120px; height: auto; margin-bottom: 15px;">' : '';
+
+        return '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif; background-color: #f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 30px 15px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+                            ' . $logo_html . '
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">' . esc_html($restaurant_name) . '</h1>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            ' . $content . '
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e9ecef;">
+                            ' . $footer_text . '
+                            <p style="margin: 10px 0 0 0; color: #999; font-size: 12px;">
+                                Powered by <a href="https://contacpro.app" style="color: #667eea; text-decoration: none;">MakIA Restaurante</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>';
+    }
+
+    /**
      * Enviar email al cliente
      */
     private function send_customer_email($booking_id) {
         global $wpdb;
-        
+
         $booking = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$this->table_name} WHERE id = %d",
             $booking_id
         ));
-        
+
         if (!$booking) return;
-        
+
         $restaurant_name = get_option('makia_restaurant_name', get_bloginfo('name'));
         $restaurant_email = get_option('makia_restaurant_email', get_option('admin_email'));
-        
-        $subject = "Reserva pendiente de confirmación - $restaurant_name";
-        
-        $message = "Hola {$booking->name},\n\n";
-        $message .= "Hemos recibido tu solicitud de reserva en $restaurant_name.\n\n";
-        $message .= "DETALLES DE LA RESERVA:\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($booking->booking_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($booking->booking_time)) . "\n";
-        $message .= "Comensales: {$booking->guests}\n";
-        if ($booking->occasion) {
-            $message .= "Motivo: {$booking->occasion}\n";
-        }
-        if ($booking->special_requests) {
-            $message .= "Notas: {$booking->special_requests}\n";
-        }
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
-        $message .= "Tu reserva está PENDIENTE DE CONFIRMACIÓN.\n";
-        $message .= "Te enviaremos un email cuando el restaurante la apruebe.\n\n";
-        
-        // Añadir enlaces de gestión
-        $manage_url = home_url('/gestionar-reserva/?token=' . $booking->edit_token);
-        $modify_url = $manage_url . '&action=modify';
-        $cancel_url = $manage_url . '&action=cancel';
-        
-        $message .= "GESTIONA TU RESERVA:
-";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-";
-        $message .= "<a href=\"$modify_url\">📝 Modificar mi reserva</a>
-";
-        $message .= "<a href=\"$cancel_url\">❌ Cancelar mi reserva</a>
-";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        $restaurant_phone = get_option('makia_restaurant_phone', '');
 
-";
-        
-        $message .= "Si tienes alguna pregunta, puedes contactarnos en:\n";
-        $message .= "Email: $restaurant_email\n";
-        $message .= "Teléfono: " . get_option('makia_restaurant_phone', '') . "\n\n";
-        $message .= "Gracias por elegir $restaurant_name.\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Powered by MakIA Restaurante - https://contacpro.app\n";
-        
+        $subject = "Reserva pendiente de confirmación - $restaurant_name";
+
+        // URLs de gestión
+        $manage_url = home_url('/gestionar-reserva/?token=' . $booking->edit_token);
+
+        // Contenido del email
+        $content = '
+            <p style="margin: 0 0 20px 0; font-size: 16px; color: #333;">Hola <strong>' . esc_html($booking->name) . '</strong>,</p>
+            <p style="margin: 0 0 25px 0; font-size: 16px; color: #555;">Hemos recibido tu solicitud de reserva. Te confirmaremos por email cuando sea aprobada.</p>
+
+            <!-- Detalles de la reserva -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f9fa; border-radius: 8px; margin-bottom: 25px;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #667eea; font-size: 16px;">📅 Detalles de tu Reserva</h3>
+                        <table width="100%" cellpadding="5" cellspacing="0">
+                            <tr>
+                                <td style="color: #666; width: 100px;">Fecha:</td>
+                                <td style="color: #333; font-weight: 600;">' . date('d/m/Y', strtotime($booking->booking_date)) . '</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #666;">Hora:</td>
+                                <td style="color: #333; font-weight: 600;">' . date('H:i', strtotime($booking->booking_time)) . 'h</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #666;">Comensales:</td>
+                                <td style="color: #333; font-weight: 600;">' . $booking->guests . ' personas</td>
+                            </tr>
+                            ' . ($booking->occasion ? '<tr><td style="color: #666;">Motivo:</td><td style="color: #333;">' . esc_html($booking->occasion) . '</td></tr>' : '') . '
+                            ' . ($booking->special_requests ? '<tr><td style="color: #666;">Notas:</td><td style="color: #333;">' . esc_html($booking->special_requests) . '</td></tr>' : '') . '
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Estado -->
+            <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; margin-bottom: 25px;">
+                <p style="margin: 0; color: #856404; font-size: 14px;">⏳ <strong>Pendiente de confirmación</strong> - Te avisaremos cuando el restaurante apruebe tu reserva.</p>
+            </div>
+
+            <!-- Botones de gestión -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 25px;">
+                <tr>
+                    <td align="center">
+                        <a href="' . esc_url($manage_url) . '" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 600; font-size: 14px;">📝 Gestionar mi Reserva</a>
+                    </td>
+                </tr>
+            </table>';
+
+        // Footer con contacto
+        $footer = '<p style="margin: 0; color: #666; font-size: 13px;">¿Preguntas? Contáctanos: <a href="mailto:' . esc_attr($restaurant_email) . '" style="color: #667eea;">' . esc_html($restaurant_email) . '</a>' . ($restaurant_phone ? ' | ' . esc_html($restaurant_phone) : '') . '</p>';
+
+        $message = $this->get_email_template($restaurant_name, $content, $footer);
+
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
             'Reply-To: ' . $restaurant_email,
             'Content-Type: text/html; charset=UTF-8'
         );
-        
+
         $result = wp_mail($booking->email, $subject, $message, $headers);
         error_log('[MakIA] Email cliente a ' . $booking->email . ': ' . ($result ? 'OK' : 'FALLO'));
         return $result;
@@ -699,47 +759,77 @@ class MakIA_Bookings {
      */
     private function send_restaurant_email($booking_id) {
         global $wpdb;
-        
+
         $booking = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$this->table_name} WHERE id = %d",
             $booking_id
         ));
-        
+
         if (!$booking) return;
-        
+
         $restaurant_name = get_option('makia_restaurant_name', get_bloginfo('name'));
         $restaurant_email = get_option('makia_restaurant_email', get_option('admin_email'));
-        
-        $subject = "Nueva reserva pendiente de aprobación";
-        
-        $message = "Nueva solicitud de reserva en $restaurant_name:\n\n";
-        $message .= "DATOS DEL CLIENTE:\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Nombre: {$booking->name}\n";
-        $message .= "Email: {$booking->email}\n";
-        $message .= "Teléfono: {$booking->phone}\n\n";
-        $message .= "DETALLES DE LA RESERVA:\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($booking->booking_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($booking->booking_time)) . "\n";
-        $message .= "Comensales: {$booking->guests}\n";
-        if ($booking->occasion) {
-            $message .= "Motivo: {$booking->occasion}\n";
-        }
-        if ($booking->special_requests) {
-            $message .= "Notas: {$booking->special_requests}\n";
-        }
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
-        $message .= "Para gestionar esta reserva, accede al panel de administración:\n";
-        $message .= admin_url('admin.php?page=makia&tab=bookings') . "\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "MakIA Restaurante - https://contacpro.app\n";
-        
+        $admin_url = admin_url('admin.php?page=makia&tab=bookings');
+
+        $subject = "⏳ Nueva reserva pendiente - " . $booking->name;
+
+        $content = '
+            <p style="margin: 0 0 20px 0; font-size: 16px; color: #333;">Nueva solicitud de reserva recibida.</p>
+
+            <!-- Datos del cliente -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #e8f4fd; border-radius: 8px; margin-bottom: 20px;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #2271b1; font-size: 16px;">👤 Cliente</h3>
+                        <p style="margin: 5px 0; font-size: 18px; font-weight: 600; color: #333;">' . esc_html($booking->name) . '</p>
+                        <p style="margin: 5px 0; color: #555;">📧 <a href="mailto:' . esc_attr($booking->email) . '" style="color: #2271b1;">' . esc_html($booking->email) . '</a></p>
+                        <p style="margin: 5px 0; color: #555;">📱 <a href="tel:' . esc_attr($booking->phone) . '" style="color: #2271b1;">' . esc_html($booking->phone) . '</a></p>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Detalles de la reserva -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f9fa; border-radius: 8px; margin-bottom: 25px;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #667eea; font-size: 16px;">📅 Reserva</h3>
+                        <table width="100%" cellpadding="8" cellspacing="0">
+                            <tr>
+                                <td style="color: #666; width: 100px; font-size: 14px;">Fecha:</td>
+                                <td style="color: #333; font-weight: 600; font-size: 16px;">' . date('d/m/Y', strtotime($booking->booking_date)) . '</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #666; font-size: 14px;">Hora:</td>
+                                <td style="color: #333; font-weight: 600; font-size: 16px;">' . date('H:i', strtotime($booking->booking_time)) . 'h</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #666; font-size: 14px;">Comensales:</td>
+                                <td style="color: #333; font-weight: 600; font-size: 16px;">' . $booking->guests . ' personas</td>
+                            </tr>
+                            ' . ($booking->occasion ? '<tr><td style="color: #666; font-size: 14px;">Motivo:</td><td style="color: #333;">' . esc_html($booking->occasion) . '</td></tr>' : '') . '
+                            ' . ($booking->special_requests ? '<tr><td style="color: #666; font-size: 14px;">Notas:</td><td style="color: #e65100; font-weight: 500;">' . esc_html($booking->special_requests) . '</td></tr>' : '') . '
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Botón de acción -->
+            <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td align="center">
+                        <a href="' . esc_url($admin_url) . '" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 14px;">Gestionar Reservas</a>
+                    </td>
+                </tr>
+            </table>';
+
+        $message = $this->get_email_template($restaurant_name, $content, '');
+
         $headers = array(
-            'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
-            'Reply-To: ' . $restaurant_email
+            'From: MakIA Restaurante <noreply@' . parse_url(home_url(), PHP_URL_HOST) . '>',
+            'Reply-To: ' . $booking->email,
+            'Content-Type: text/html; charset=UTF-8'
         );
-        
+
         $result = wp_mail($restaurant_email, $subject, $message, $headers);
         error_log('[MakIA] Email restaurante a ' . $restaurant_email . ': ' . ($result ? 'OK' : 'FALLO'));
         return $result;
@@ -818,67 +908,102 @@ class MakIA_Bookings {
      */
     private function send_status_update_email($booking_id, $new_status) {
         global $wpdb;
-        
+
         $booking = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$this->table_name} WHERE id = %d",
             $booking_id
         ));
-        
+
         if (!$booking) return;
-        
+
         $restaurant_name = get_option('makia_restaurant_name', get_bloginfo('name'));
         $restaurant_email = get_option('makia_restaurant_email', get_option('admin_email'));
-        
-        $status_messages = array(
-            'approved' => '¡Tu reserva ha sido CONFIRMADA! ✅',
-            'rejected' => 'Lo sentimos, tu reserva ha sido rechazada ❌',
-            'cancelled' => 'Tu reserva ha sido cancelada'
+        $restaurant_phone = get_option('makia_restaurant_phone', '');
+        $manage_url = home_url('/gestionar-reserva/?token=' . $booking->edit_token);
+
+        $status_config = array(
+            'approved' => array(
+                'subject' => '✅ ¡Reserva Confirmada!',
+                'icon' => '✅',
+                'color' => '#28a745',
+                'bg_color' => '#d4edda',
+                'message' => '¡Tu reserva ha sido confirmada! Te esperamos.',
+            ),
+            'rejected' => array(
+                'subject' => '❌ Reserva no disponible',
+                'icon' => '❌',
+                'color' => '#dc3545',
+                'bg_color' => '#f8d7da',
+                'message' => 'Lo sentimos, no hemos podido confirmar tu reserva para esta fecha/hora. Te invitamos a intentar con otra fecha.',
+            ),
+            'cancelled' => array(
+                'subject' => '🚫 Reserva Cancelada',
+                'icon' => '🚫',
+                'color' => '#6c757d',
+                'bg_color' => '#e2e3e5',
+                'message' => 'Tu reserva ha sido cancelada.',
+            ),
         );
-        
-        if (!isset($status_messages[$new_status])) return;
-        
-        $subject = $status_messages[$new_status] . " - $restaurant_name";
-        
-        $message = "Hola {$booking->name},\n\n";
-        $message .= $status_messages[$new_status] . "\n\n";
-        $message .= "DETALLES DE LA RESERVA:\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($booking->booking_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($booking->booking_time)) . "\n";
-        $message .= "Comensales: {$booking->guests}\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
-        
+
+        if (!isset($status_config[$new_status])) return;
+
+        $config = $status_config[$new_status];
+        $subject = $config['subject'] . " - $restaurant_name";
+
+        $content = '
+            <p style="margin: 0 0 20px 0; font-size: 16px; color: #333;">Hola <strong>' . esc_html($booking->name) . '</strong>,</p>
+
+            <!-- Estado -->
+            <div style="background-color: ' . $config['bg_color'] . '; border-left: 4px solid ' . $config['color'] . '; padding: 20px; border-radius: 4px; margin-bottom: 25px;">
+                <p style="margin: 0; color: ' . $config['color'] . '; font-size: 18px; font-weight: 600;">' . $config['icon'] . ' ' . $config['message'] . '</p>
+            </div>
+
+            <!-- Detalles de la reserva -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f9fa; border-radius: 8px; margin-bottom: 25px;">
+                <tr>
+                    <td style="padding: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #667eea; font-size: 16px;">📅 Detalles de la Reserva</h3>
+                        <table width="100%" cellpadding="5" cellspacing="0">
+                            <tr>
+                                <td style="color: #666; width: 100px;">Fecha:</td>
+                                <td style="color: #333; font-weight: 600;">' . date('d/m/Y', strtotime($booking->booking_date)) . '</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #666;">Hora:</td>
+                                <td style="color: #333; font-weight: 600;">' . date('H:i', strtotime($booking->booking_time)) . 'h</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #666;">Comensales:</td>
+                                <td style="color: #333; font-weight: 600;">' . $booking->guests . ' personas</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>';
+
+        // Añadir botón de gestión solo para aprobadas
         if ($new_status === 'approved') {
-            $message .= "¡Te esperamos! Si necesitas hacer algún cambio, puedes gestionar tu reserva online:\n\n";
-            
-            // Añadir enlaces de gestión
-            $manage_url = home_url('/gestionar-reserva/?token=' . $booking->edit_token);
-            $modify_url = $manage_url . '&action=modify';
-            $cancel_url = $manage_url . '&action=cancel';
-            
-            $message .= "GESTIONA TU RESERVA:\n";
-            $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-            $message .= "<a href=\"$modify_url\">📝 Modificar mi reserva</a>\n";
-            $message .= "<a href=\"$cancel_url\">❌ Cancelar mi reserva</a>\n";
-            $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
-            
-        } elseif ($new_status === 'rejected') {
-            $message .= "Puedes intentar reservar para otra fecha u hora.\n\n";
+            $content .= '
+            <p style="margin: 0 0 15px 0; color: #555; font-size: 14px;">Si necesitas modificar o cancelar tu reserva:</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 25px;">
+                <tr>
+                    <td align="center">
+                        <a href="' . esc_url($manage_url) . '" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 600; font-size: 14px;">📝 Gestionar mi Reserva</a>
+                    </td>
+                </tr>
+            </table>';
         }
-        
-        $message .= "Contacto:\n";
-        $message .= "Email: $restaurant_email\n";
-        $message .= "Teléfono: " . get_option('makia_restaurant_phone', '') . "\n\n";
-        $message .= "Gracias,\n$restaurant_name\n\n";
-        $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Powered by MakIA Restaurante - https://contacpro.app\n";
-        
+
+        $footer = '<p style="margin: 0; color: #666; font-size: 13px;">¿Preguntas? <a href="mailto:' . esc_attr($restaurant_email) . '" style="color: #667eea;">' . esc_html($restaurant_email) . '</a>' . ($restaurant_phone ? ' | ' . esc_html($restaurant_phone) : '') . '</p>';
+
+        $message = $this->get_email_template($restaurant_name, $content, $footer);
+
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
             'Reply-To: ' . $restaurant_email,
             'Content-Type: text/html; charset=UTF-8'
         );
-        
+
         wp_mail($booking->email, $subject, $message, $headers);
     }
     
@@ -1027,95 +1152,37 @@ class MakIA_Bookings {
                 </div>
             </div>
             
-            <!-- Filtros Avanzados -->
-            <div class="makia-advanced-filters" style="background: #f9f9f9; border-radius: 8px; margin-bottom: 20px;">
-                <!-- Botón Toggle -->
-                <button type="button" id="toggle-filters" class="button" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s ease;">
-                    <span>🔍 Filtros de Búsqueda</span>
-                    <span id="filter-toggle-icon" style="font-size: 20px; transition: transform 0.3s ease;">▶</span>
-                </button>
-                
-                <!-- Contenido de Filtros (Colapsado por defecto) -->
-                <div id="filters-content" style="display: none; padding: 20px; padding-top: 15px;">
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+            <!-- Filtros Simplificados -->
+            <div class="makia-filters-bar" style="background: #fff; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+
+                    <!-- Búsqueda rápida -->
+                    <div style="flex: 1; min-width: 200px;">
+                        <input type="text" id="filter-search" placeholder="🔍 Buscar nombre, email o teléfono..." style="width: 100%; padding: 10px 15px; border-radius: 6px; border: 2px solid #e0e0e0; font-size: 14px;">
+                    </div>
+
                     <!-- Estado -->
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Estado</label>
-                        <select name="filter_status" id="filter-status" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
-                            <option value="">Todos los estados</option>
+                        <select name="filter_status" id="filter-status" style="padding: 10px 15px; border-radius: 6px; border: 2px solid #e0e0e0; font-size: 14px; min-width: 150px;">
+                            <option value="">📋 Todos</option>
                             <option value="pending" <?php selected($filter_status, 'pending'); ?>>⏳ Pendientes</option>
                             <option value="approved" <?php selected($filter_status, 'approved'); ?>>✅ Aprobadas</option>
-                            <option value="rejected" <?php selected($filter_status, 'rejected'); ?>>❌ Rechazadas</option>
                             <option value="cancelled" <?php selected($filter_status, 'cancelled'); ?>>🚫 Canceladas</option>
                         </select>
                     </div>
-                    
-                    <!-- Período -->
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Período</label>
-                        <select id="filter-period" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
-                            <option value="">Personalizado</option>
-                            <option value="today">📅 Hoy</option>
-                            <option value="tomorrow">📆 Mañana</option>
-                            <option value="this-week">📅 Esta semana</option>
-                            <option value="this-month">📅 Este mes</option>
-                        </select>
+
+                    <!-- Período rápido -->
+                    <div style="display: flex; gap: 5px;">
+                        <button type="button" class="makia-period-btn button" data-period="today" style="padding: 8px 12px;">Hoy</button>
+                        <button type="button" class="makia-period-btn button" data-period="tomorrow" style="padding: 8px 12px;">Mañana</button>
+                        <button type="button" class="makia-period-btn button" data-period="week" style="padding: 8px 12px;">7 días</button>
+                        <button type="button" class="makia-period-btn button" data-period="all" style="padding: 8px 12px;">Todas</button>
                     </div>
-                    
-                    <!-- Fecha desde -->
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Desde</label>
-                        <input type="date" id="filter-date-from" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
-                    </div>
-                    
-                    <!-- Fecha hasta -->
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Hasta</label>
-                        <input type="date" id="filter-date-to" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
-                    </div>
-                    
-                    <!-- Rango de horas -->
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Horario</label>
-                        <select id="filter-time-range" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
-                            <option value="">Todas las horas</option>
-                            <option value="lunch">🍽️ Almuerzo (12:00-15:00)</option>
-                            <option value="dinner">🍷 Cena (19:00-23:00)</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Número de comensales -->
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Comensales</label>
-                        <select id="filter-guests" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
-                            <option value="">Todos</option>
-                            <option value="1-2">👥 1-2 personas</option>
-                            <option value="3-4">👥 3-4 personas</option>
-                            <option value="5-8">👥 5-8 personas</option>
-                            <option value="9+">👥 9+ personas</option>
-                        </select>
-                    </div>
+
+                    <!-- Limpiar -->
+                    <button type="button" id="clear-filters" class="button" style="padding: 8px 15px;" title="Limpiar filtros">✕</button>
                 </div>
-                
-                <!-- Búsqueda por texto -->
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">🔍 Buscar</label>
-                    <input type="text" id="filter-search" placeholder="Buscar por nombre, email o teléfono..." style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ddd; font-size: 14px;">
-                </div>
-                
-                <!-- Botones -->
-                <div style="display: flex; gap: 10px;">
-                    <button type="button" id="apply-filters" class="button button-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 10px 20px;">
-                        🔍 Aplicar Filtros
-                    </button>
-                    <button type="button" id="clear-filters" class="button" style="padding: 10px 20px;">
-                        🗑️ Limpiar Filtros
-                    </button>
-                </div>
-                
-                </div><!-- #filters-content -->
-            </div><!-- .makia-advanced-filters -->
+            </div><!-- .makia-filters-bar -->
             
             <!-- Barra de acciones grupales -->
             <div class="makia-bulk-actions-bar" style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;">
