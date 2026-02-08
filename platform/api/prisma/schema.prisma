@@ -516,3 +516,53 @@ enum MessageType {
   QUICK_REPLY
   LOCATION
 }
+
+// ============================================
+// LICENCIAS
+// ============================================
+model License {
+  id                String        @id @default(cuid())
+  licenseKey        String        @unique @map("license_key")
+  domain            String        @unique
+  plan              LicensePlan   @default(CHUPITO)
+  status            LicenseStatus @default(ACTIVE)
+
+  // Datos del cliente
+  clientName        String?       @map("client_name")
+  clientEmail       String?       @map("client_email")
+  clientPhone       String?       @map("client_phone")
+
+  // Uso mensual
+  monthlyBookings   Int           @default(0) @map("monthly_bookings")
+  monthlyResetAt    DateTime      @default(now()) @map("monthly_reset_at")
+
+  // Fechas
+  activatedAt       DateTime?     @map("activated_at")
+  expiresAt         DateTime?     @map("expires_at")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  // Metadatos
+  notes             String?       @db.Text
+  metadata          Json          @default("{}")
+
+  @@index([status])
+  @@index([plan])
+  @@index([domain])
+  @@map("licenses")
+}
+
+enum LicensePlan {
+  CHUPITO   // 5 reservas/mes - Gratis
+  CANA      // 15 reservas/mes - 5€
+  MASCANA   // 100 reservas/mes - 15€
+  UNLIMITED // Sin límite - Precio personalizado
+}
+
+enum LicenseStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  EXPIRED
+  CANCELLED
+}
