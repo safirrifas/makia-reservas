@@ -47,8 +47,8 @@ wp-content/upgrade/
 # Next.js
 .next/
 next-env.d.ts
-public/sw.js
-public/workbox-*.js
+**/public/sw.js
+**/public/workbox-*.js
 
 # pnpm
 pnpm-lock.yaml
