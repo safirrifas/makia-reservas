@@ -43,3 +43,17 @@ wp-config.php
 wp-content/uploads/
 wp-content/cache/
 wp-content/upgrade/
+
+# Next.js
+.next/
+next-env.d.ts
+public/sw.js
+public/workbox-*.js
+
+# pnpm
+pnpm-lock.yaml
+
+# Deployment build artifacts
+deployment/operator-pwa/apps/
+deployment/operator-pwa/node_modules/
+deployment/operator-pwa/package.json
