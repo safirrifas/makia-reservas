@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Gestión de Plantillas de Notificaciones MakIA
  * Maneja las plantillas personalizables de email, SMS y WhatsApp
@@ -84,13 +85,13 @@ class MakIA_Templates {
         $templates_instance = new self();
         
         // Guardar cambios si se envió el formulario
-        if (isset($_POST['save_templates']) && check_admin_referer('makia_save_templates', 'makia_templates_nonce')) {
+        if (isset($_POST['save_templates']) && current_user_can('manage_options') && check_admin_referer('makia_save_templates', 'makia_templates_nonce')) {
             $templates_instance->save_templates_from_form();
             echo '<div class="notice notice-success"><p>Plantillas actualizadas correctamente</p></div>';
         }
         
         // Restaurar plantillas por defecto
-        if (isset($_POST['restore_defaults']) && check_admin_referer('makia_restore_templates', 'makia_restore_nonce')) {
+        if (isset($_POST['restore_defaults']) && current_user_can('manage_options') && check_admin_referer('makia_restore_templates', 'makia_restore_nonce')) {
             $templates_instance->restore_default_templates();
             echo '<div class="notice notice-success"><p>Plantillas restauradas a valores por defecto</p></div>';
         }
@@ -294,27 +295,14 @@ class MakIA_Templates {
      */
     private function restore_default_templates() {
         global $wpdb;
-        
-        // Desactivar plantillas actuales
-        $wpdb->update(
-            $this->table_name,
-            array('is_active' => 0),
-            array(),
-            array('%d')
-        );
-        
-        // Ejecutar el script SQL de plantillas por defecto
-        $sql_file = MAKIA_PLUGIN_DIR . 'create-new-tables.sql';
-        if (file_exists($sql_file)) {
-            // Leer y ejecutar solo las inserciones de plantillas
-            $sql = file_get_contents($sql_file);
-            $queries = explode(';', $sql);
-            
-            foreach ($queries as $query) {
-                if (stripos($query, 'INSERT INTO') !== false && stripos($query, 'notification_templates') !== false) {
-                    $wpdb->query($query);
-                }
-            }
+        $table = $wpdb->prefix . 'makia_notification_templates';
+
+        // Clear existing templates
+        $wpdb->query("TRUNCATE TABLE {$table}");
+
+        // Re-insert defaults using the activation function
+        if (function_exists('makia_insert_default_templates')) {
+            makia_insert_default_templates();
         }
     }
 }

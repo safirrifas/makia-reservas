@@ -58,7 +58,7 @@ class MakIA_WhatsApp_Webhook {
         $token = $request->get_param( 'hub_verify_token' );
         $challenge = $request->get_param( 'hub_challenge' );
 
-        if ( $mode === 'subscribe' && $token === $this->verify_token ) {
+        if ( $mode === 'subscribe' && hash_equals($this->verify_token, $token) ) {
             return new WP_REST_Response( $challenge, 200 );
         }
 
@@ -73,6 +73,17 @@ class MakIA_WhatsApp_Webhook {
      * @return WP_REST_Response
      */
     public function handle_webhook( WP_REST_Request $request ) {
+        // Verify X-Hub-Signature-256
+        $signature = $request->get_header('X-Hub-Signature-256');
+        $app_secret = get_option('makia_whatsapp_app_secret', '');
+
+        if ($app_secret && $signature) {
+            $expected = 'sha256=' . hash_hmac('sha256', $request->get_body(), $app_secret);
+            if (!hash_equals($expected, $signature)) {
+                return new WP_REST_Response('Forbidden', 403);
+            }
+        }
+
         $body = $request->get_json_params();
 
         // Validar que sea un evento de WhatsApp
@@ -126,6 +137,11 @@ class MakIA_WhatsApp_Webhook {
         } elseif ( isset( $message['button']['text'] ) ) {
             $text = $message['button']['text'];
         }
+
+        // Sanitize incoming data
+        $from = sanitize_text_field($from);
+        $text = sanitize_textarea_field($text);
+        $msg_id = sanitize_text_field($msg_id);
 
         // Guardar mensaje en BD
         global $wpdb;
@@ -202,7 +218,7 @@ class MakIA_WhatsApp_Webhook {
                 "SELECT * FROM {$wpdb->prefix}makia_bookings 
                 WHERE customer_phone LIKE %s 
                 ORDER BY booking_date DESC LIMIT 1",
-                '%' . $phone . '%'
+                '%' . $wpdb->esc_like($phone) . '%'
             )
         );
 

@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Configuración del Botón de Reservas MakIA
  * Gestiona las opciones de personalización y el botón flotante
@@ -41,8 +42,22 @@ class MakIA_Button_Settings {
      * Registrar configuraciones
      */
     public function register_settings() {
+        $sanitize_map = array(
+            'makia_button_text' => 'sanitize_text_field',
+            'makia_button_url' => 'esc_url_raw',
+            'makia_button_color' => 'sanitize_hex_color',
+            'makia_button_text_color' => 'sanitize_hex_color',
+            'makia_button_size' => 'sanitize_text_field',
+            'makia_button_style' => 'sanitize_text_field',
+            'makia_button_border_radius' => 'absint',
+            'makia_button_icon' => 'sanitize_text_field',
+            'makia_floating_enabled' => 'sanitize_text_field',
+            'makia_floating_position' => 'sanitize_text_field',
+            'makia_floating_animation' => 'sanitize_text_field',
+        );
         foreach ($this->defaults as $option => $default) {
-            register_setting('makia_button_options', $option);
+            $callback = isset($sanitize_map[$option]) ? $sanitize_map[$option] : 'sanitize_text_field';
+            register_setting('makia_button_options', $option, array('sanitize_callback' => $callback));
         }
     }
     
@@ -105,8 +120,8 @@ class MakIA_Button_Settings {
      * Agregar estilos CSS personalizados
      */
     private function add_custom_styles() {
-        $color = sanitize_hex_color($this->get_option('makia_button_color'));
-        $text_color = sanitize_hex_color($this->get_option('makia_button_text_color'));
+        $color = sanitize_hex_color($this->get_option('makia_button_color')) ?: '#2c5530';
+        $text_color = sanitize_hex_color($this->get_option('makia_button_text_color')) ?: '#ffffff';
         $border_radius = intval($this->get_option('makia_button_border_radius'));
         $style = $this->get_option('makia_button_style');
         

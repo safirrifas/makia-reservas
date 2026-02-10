@@ -35,7 +35,7 @@ jQuery(document).ready(function($) {
      * Manejar selección de checkbox individual (tabla)
      */
     $(document).on('change', '.booking-checkbox', function() {
-        const bookingId = $(this).data('booking-id');
+        const bookingId = String($(this).data('booking-id'));
         
         if ($(this).is(':checked')) {
             if (!selectedBookings.includes(bookingId)) {
@@ -52,7 +52,7 @@ jQuery(document).ready(function($) {
      * Manejar selección de checkbox individual (tarjetas móviles)
      */
     $(document).on('change', '.makia-booking-checkbox', function() {
-        const bookingId = $(this).data('booking-id');
+        const bookingId = String($(this).data('booking-id'));
         
         if ($(this).is(':checked')) {
             if (!selectedBookings.includes(bookingId)) {
@@ -81,7 +81,7 @@ jQuery(document).ready(function($) {
         if (isChecked) {
             $('.makia-booking-card').addClass('selected');
             $('.makia-booking-checkbox').each(function() {
-                const bookingId = $(this).data('booking-id');
+                const bookingId = String($(this).data('booking-id'));
                 if (!selectedBookings.includes(bookingId)) {
                     selectedBookings.push(bookingId);
                 }
@@ -152,11 +152,18 @@ jQuery(document).ready(function($) {
             return;
         }
         
+        // Validar nonce
+        var nonce = $('#makia_bulk_nonce').val();
+        if (!nonce) {
+            showNotification('Error de seguridad. Recarga la página.', 'error');
+            return;
+        }
+
         // Deshabilitar botón
         $button.prop('disabled', true);
         const originalText = $button.html();
-        $button.html('⏳ Procesando...');
-        
+        $button.html('Procesando...');
+
         // Enviar petición AJAX
         $.ajax({
             url: ajaxurl,
@@ -165,7 +172,7 @@ jQuery(document).ready(function($) {
                 action: 'makia_bulk_action',
                 bulk_action: action,
                 booking_ids: selectedBookings,
-                nonce: $('#makia_bulk_nonce').val() || ''
+                nonce: nonce
             },
             success: function(response) {
                 if (response.success) {
@@ -229,8 +236,14 @@ jQuery(document).ready(function($) {
     function showNotification(message, type) {
         // Eliminar notificaciones anteriores
         $('.makia-notification').remove();
-        
-        const $notification = $('<div class="makia-notification makia-notification-' + type + '">' + message + '</div>');
+
+        type = type || 'success';
+        var validTypes = ['success', 'error', 'warning', 'info'];
+        if (validTypes.indexOf(type) === -1) type = 'info';
+
+        const $notification = $('<div class="makia-notification"></div>')
+            .addClass('makia-notification-' + type)
+            .text(message);
         
         $notification.css({
             'position': 'fixed',

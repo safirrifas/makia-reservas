@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Gestión de Lista Negra MakIA
  * Maneja el baneo y desbaneo de usuarios por no-show u otros motivos
@@ -148,9 +149,12 @@ class MakIA_Blacklist {
      * Banear usuario vía AJAX
      */
     public function ban_user_ajax() {
+        check_ajax_referer('makia_admin_nonce', 'nonce');
+
         // Verificar permisos
         if (!current_user_can('manage_options')) {
             wp_send_json_error('No tienes permisos para realizar esta acción');
+            return;
         }
         
         $email = sanitize_email($_POST['email']);
@@ -160,34 +164,40 @@ class MakIA_Blacklist {
         
         if (empty($email) && empty($phone)) {
             wp_send_json_error('Debes proporcionar al menos un email o teléfono');
+            return;
         }
-        
+
         if (empty($reason)) {
             wp_send_json_error('Debes proporcionar una razón');
+            return;
         }
-        
+
         $result = $this->ban_user($email, $phone, $reason, $notes);
-        
+
         if ($result['success']) {
             wp_send_json_success($result['message']);
         } else {
             wp_send_json_error($result['message']);
         }
     }
-    
+
     /**
      * Desbanear usuario vía AJAX
      */
     public function unban_user_ajax() {
+        check_ajax_referer('makia_admin_nonce', 'nonce');
+
         // Verificar permisos
         if (!current_user_can('manage_options')) {
             wp_send_json_error('No tienes permisos para realizar esta acción');
+            return;
         }
         
         $id = intval($_POST['id']);
         
         if (empty($id)) {
             wp_send_json_error('ID no válido');
+            return;
         }
         
         $result = $this->unban_user($id);
@@ -203,9 +213,12 @@ class MakIA_Blacklist {
      * Incrementar no-show vía AJAX
      */
     public function increment_noshow_ajax() {
+        check_ajax_referer('makia_admin_nonce', 'nonce');
+
         // Verificar permisos
         if (!current_user_can('manage_options')) {
             wp_send_json_error('No tienes permisos para realizar esta acción');
+            return;
         }
         
         $email = sanitize_email($_POST['email']);
@@ -213,8 +226,9 @@ class MakIA_Blacklist {
         
         if (empty($email) && empty($phone)) {
             wp_send_json_error('Debes proporcionar al menos un email o teléfono');
+            return;
         }
-        
+
         $result = $this->increment_noshow($email, $phone);
         
         if ($result['success']) {
@@ -358,7 +372,7 @@ class MakIA_Blacklist {
                                         </span>
                                     </td>
                                     <td><?php echo esc_html($banned->banned_by_name ?: 'Desconocido'); ?></td>
-                                    <td><?php echo date('d/m/Y H:i', strtotime($banned->banned_at)); ?></td>
+                                    <td><?php echo esc_html(date('d/m/Y H:i', strtotime($banned->banned_at))); ?></td>
                                     <td>
                                         <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=makia&tab=blacklist&action=unban&id=' . $banned->id), 'makia_unban_' . $banned->id); ?>" 
                                            class="button button-small" 

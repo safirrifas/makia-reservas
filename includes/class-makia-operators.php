@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * MakIA Operators Manager
  * Sistema de gestión de operarios para el restaurante
@@ -259,7 +260,11 @@ class MakIA_Operators {
         }
         
         $email = sanitize_email($_POST['email']);
-        $password = $_POST['password']; // Se sanitiza dentro de wp_insert_user
+        $password = isset($_POST['password']) ? $_POST['password'] : '';
+        if (strlen($password) < 8) {
+            wp_send_json_error('La contraseña debe tener al menos 8 caracteres');
+            return;
+        }
         $display_name = sanitize_text_field($_POST['display_name']);
         $first_name = sanitize_text_field($_POST['first_name']);
         $last_name = sanitize_text_field($_POST['last_name']);
@@ -435,7 +440,7 @@ class MakIA_Operators {
                         <?php foreach ($operators as $operator): 
                             $stats = self::get_operator_stats($operator->ID);
                         ?>
-                            <div class="makia-operator-card" data-user-id="<?php echo $operator->ID; ?>" style="background: #f9f9f9; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; transition: all 0.3s;">
+                            <div class="makia-operator-card" data-user-id="<?php echo esc_attr($operator->ID); ?>" style="background: #f9f9f9; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; transition: all 0.3s;">
                                 <div style="display: flex; justify-content: space-between; align-items: start;">
                                     <div style="flex: 1;">
                                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
@@ -466,7 +471,7 @@ class MakIA_Operators {
                                     
                                     <div style="display: flex; flex-direction: column; gap: 8px;">
                                         <span style="background: #46b450; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-align: center;">✓ ACTIVO</span>
-                                        <button type="button" class="button makia-remove-operator" data-user-id="<?php echo $operator->ID; ?>" style="background: #d63638; color: #fff; border-color: #d63638;">
+                                        <button type="button" class="button makia-remove-operator" data-user-id="<?php echo esc_attr($operator->ID); ?>" style="background: #d63638; color: #fff; border-color: #d63638;">
                                             🗑️ Eliminar
                                         </button>
                                     </div>

@@ -21,9 +21,10 @@
         // Obtener pestaña activa desde URL o usar la primera
         const urlParams = new URLSearchParams(window.location.search);
         const activeTab = urlParams.get('tab') || 'principal';
-        
+        const safeTab = /^[a-z0-9-]+$/.test(activeTab) ? activeTab : 'principal';
+
         // Activar pestaña inicial
-        activateTab(activeTab);
+        activateTab(safeTab);
         
         // Manejar clics en pestañas
         tabs.on('click', function() {
@@ -69,7 +70,7 @@
             }
         }
         
-        let rows_txt = temp + "" + param + "=" + paramVal;
+        let rows_txt = temp + "" + param + "=" + encodeURIComponent(paramVal);
         return baseURL + "?" + newAdditionalURL + rows_txt;
     }
     

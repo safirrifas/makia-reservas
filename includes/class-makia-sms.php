@@ -99,8 +99,8 @@ class MakIA_SMS {
                 'message' => 'SMS enviado correctamente',
             );
         } catch ( Exception $e ) {
-            error_log( 'Error sending SMS: ' . $e->getMessage() );
-            return new WP_Error( 'sms_error', 'Error al enviar SMS: ' . $e->getMessage() );
+            MakIA_Logger::log('error', 'Error al enviar SMS: ' . $e->getMessage());
+            return new WP_Error( 'sms_error', 'Error al enviar SMS. Revisa los logs para más detalles.' );
         }
     }
 

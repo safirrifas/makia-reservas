@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Gestión de Capacidad por Franjas Horarias
  * Similar a Five Star Restaurant Reservations
@@ -58,7 +59,7 @@ class MakIA_Capacity {
      */
     public function get_time_slot_for_datetime($date, $time) {
         global $wpdb;
-        
+
         $day_of_week = strtolower(date('l', strtotime($date)));
         $time_formatted = date('H:i:s', strtotime($time));
         
@@ -98,6 +99,13 @@ class MakIA_Capacity {
      * Validar capacidad disponible para una reserva
      */
     public function validate_capacity($date, $time, $guests, $exclude_booking_id = null) {
+        if (!$date || !strtotime($date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return array('valid' => false, 'message' => 'Fecha inválida');
+        }
+        if (!$time || !preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $time)) {
+            return array('valid' => false, 'message' => 'Hora inválida');
+        }
+
         // Verificar si las restricciones están habilitadas
         if ($this->get_config('enable_capacity_restrictions') != '1') {
             return array('valid' => true);
@@ -224,7 +232,17 @@ class MakIA_Capacity {
         $max_people = isset($_POST['max_people']) && $_POST['max_people'] !== '' ? intval($_POST['max_people']) : null;
         $dining_block_length = intval($_POST['dining_block_length']);
         $is_active = isset($_POST['is_active']) ? 1 : 0;
-        
+
+        $valid_days = array('all', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+        if (!in_array($day_of_week, $valid_days, true)) {
+            wp_send_json_error('Día de la semana no válido');
+            return;
+        }
+        if (!preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $start_time) || !preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $end_time)) {
+            wp_send_json_error('Formato de hora no válido');
+            return;
+        }
+
         global $wpdb;
         
         $data = array(

@@ -5,9 +5,30 @@
 
 (function($) {
     'use strict';
-    
+
+    if (typeof makiaDesignData === 'undefined') {
+        return;
+    }
+
+    var debounce = (typeof _ !== 'undefined' && _.debounce) ? _.debounce : function(func, wait) {
+        var timeout;
+        return function() {
+            var context = this, args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(function() { func.apply(context, args); }, wait);
+        };
+    };
+
+    function isValidHexColor(color) {
+        return /^#[0-9a-fA-F]{3,8}$/.test(color);
+    }
+
+    function isValidTemplateName(name) {
+        return /^[a-zA-Z0-9_-]+$/.test(name);
+    }
+
     const MakiaDesignPanel = {
-        
+
         /**
          * Inicializar
          */
@@ -15,37 +36,37 @@
             this.bindEvents();
             this.loadPreview();
         },
-        
+
         /**
          * Bind events
          */
         bindEvents: function() {
             // Seleccionar plantilla
             $('.makia-select-template').on('click', this.selectTemplate.bind(this));
-            
+
             // Hover effects en tarjetas
             $('.makia-template-card').hover(
                 this.onCardHoverIn.bind(this),
                 this.onCardHoverOut.bind(this)
             );
-            
+
             // Vista previa desktop/mobile
             $('.makia-preview-btn').on('click', this.togglePreviewMode.bind(this));
-            
+
             // Personalización
             $('#makia-logo-upload').on('click', this.uploadLogo.bind(this));
             $('#makia-save-customization').on('click', this.saveCustomization.bind(this));
-            
+
             // Actualizar preview al cambiar opciones
-            $('#makia-custom-title, #makia-custom-subtitle, #makia-button-text').on('input', 
-                _.debounce(this.updatePreview.bind(this), 500)
+            $('#makia-custom-title, #makia-custom-subtitle, #makia-button-text').on('input',
+                debounce(this.updatePreview.bind(this), 500)
             );
-            
-            $('#makia-primary-color, #makia-secondary-color, #makia-text-color').on('change', 
+
+            $('#makia-primary-color, #makia-secondary-color, #makia-text-color').on('change',
                 this.updatePreview.bind(this)
             );
         },
-        
+
         /**
          * Seleccionar plantilla
          */
@@ -53,16 +74,16 @@
             const $button = $(e.currentTarget);
             const templateId = $button.data('template');
             const $card = $button.closest('.makia-template-card');
-            
+
             // Si ya está activa, no hacer nada
             if ($card.hasClass('active')) {
                 return;
             }
-            
+
             // Mostrar loading
             this.showLoading();
             $button.prop('disabled', true).html('<span class="makia-loading-spinner"></span> Aplicando...');
-            
+
             // Llamada AJAX
             $.ajax({
                 url: makiaDesignData.ajaxurl,
@@ -77,7 +98,7 @@
                         // Actualizar UI
                         this.updateActiveTemplate(templateId, $card);
                         this.loadPreview(templateId);
-                        this.showNotification('✓ Plantilla aplicada correctamente', 'success');
+                        this.showNotification('Plantilla aplicada correctamente', 'success');
                     } else {
                         this.showNotification('Error: ' + response.data.message, 'error');
                         $button.prop('disabled', false).text('Seleccionar Plantilla');
@@ -91,7 +112,7 @@
                 }
             });
         },
-        
+
         /**
          * Actualizar plantilla activa en la UI
          */
@@ -102,23 +123,23 @@
             $('.makia-select-template')
                 .removeClass('active')
                 .text('Seleccionar Plantilla');
-            
+
             // Activar la nueva
             $newActiveCard.addClass('active').css('border-color', '#667eea');
             $newActiveCard.prepend(`
                 <div class="makia-template-badge">
-                    ✓ ACTIVA
+                    ACTIVA
                 </div>
             `);
-            
+
             $newActiveCard.find('.makia-select-template')
                 .addClass('active')
-                .text('✓ Plantilla Activa');
-            
+                .text('Plantilla Activa');
+
             // Actualizar datos globales
             makiaDesignData.activeTemplate = templateId;
         },
-        
+
         /**
          * Hover en tarjeta - entrada
          */
@@ -132,7 +153,7 @@
                 });
             }
         },
-        
+
         /**
          * Hover en tarjeta - salida
          */
@@ -146,17 +167,17 @@
                 });
             }
         },
-        
+
         /**
          * Toggle modo de vista previa
          */
         togglePreviewMode: function(e) {
             const $btn = $(e.currentTarget);
             const mode = $btn.data('view');
-            
+
             $('.makia-preview-btn').removeClass('active');
             $btn.addClass('active');
-            
+
             const $frame = $('#makia-preview-frame');
             if (mode === 'mobile') {
                 $frame.addClass('mobile');
@@ -164,13 +185,13 @@
                 $frame.removeClass('mobile');
             }
         },
-        
+
         /**
          * Cargar vista previa
          */
         loadPreview: function(templateId = null) {
             const template = templateId || makiaDesignData.activeTemplate;
-            
+
             $.ajax({
                 url: makiaDesignData.ajaxurl,
                 type: 'POST',
@@ -181,6 +202,7 @@
                 },
                 success: (response) => {
                     if (response.success) {
+                        // HTML comes from trusted admin AJAX endpoint
                         $('#makia-preview-frame').html(response.data.html);
                         this.applyCustomStyling();
                     }
@@ -194,30 +216,36 @@
                 }
             });
         },
-        
+
         /**
          * Actualizar vista previa
          */
         updatePreview: function() {
             this.loadPreview();
         },
-        
+
         /**
          * Aplicar estilos personalizados a la vista previa
          */
         applyCustomStyling: function() {
-            const template = makiaDesignData.activeTemplate;
-            const primaryColor = $('#makia-primary-color').val();
-            const secondaryColor = $('#makia-secondary-color').val();
-            const textColor = $('#makia-text-color').val();
-            
+            var template = makiaDesignData.activeTemplate;
+            var primaryColor = $('#makia-primary-color').val();
+            var secondaryColor = $('#makia-secondary-color').val();
+            var textColor = $('#makia-text-color').val();
+
+            // Validate color values before CSS interpolation
+            if (!isValidHexColor(primaryColor)) primaryColor = '#2c5530';
+            if (!isValidHexColor(secondaryColor)) secondaryColor = '#ffffff';
+            if (!isValidHexColor(textColor)) textColor = '#333333';
+            if (!isValidTemplateName(template)) template = 'moderno';
+
             // Crear o actualizar tag de estilo
             let $style = $('#makia-custom-preview-styles');
             if ($style.length === 0) {
                 $style = $('<style id="makia-custom-preview-styles"></style>');
                 $('head').append($style);
             }
-            
+
             const customCSS = `
                 .makia-template-${template} button.makia-preview-button {
                     background: ${primaryColor} !important;
@@ -234,10 +262,10 @@
                     color: ${textColor} !important;
                 }
             `;
-            
+
             $style.html(customCSS);
         },
-        
+
         /**
          * Subir logo
          */
@@ -253,35 +281,35 @@
                     type: 'image'
                 }
             });
-            
+
             // Cuando se selecciona una imagen
             mediaUploader.on('select', () => {
                 const attachment = mediaUploader.state().get('selection').first().toJSON();
-                
+
                 // Actualizar preview
                 $('#makia-logo-upload').html(`
                     <div class="makia-logo-preview">
                         <img src="${attachment.url}" alt="Logo">
                     </div>
                 `);
-                
+
                 // Guardar URL
                 $('#makia-logo-url').val(attachment.url);
-                
+
                 // Actualizar vista previa
                 this.updatePreview();
             });
-            
+
             // Abrir media uploader
             mediaUploader.open();
         },
-        
+
         /**
          * Guardar personalización
          */
         saveCustomization: function() {
             const $button = $('#makia-save-customization');
-            
+
             // Recopilar datos
             const data = {
                 action: 'makia_save_customization',
@@ -295,11 +323,11 @@
                 button_text: $('#makia-button-text').val(),
                 show_logo: true
             };
-            
+
             // Mostrar loading
             this.showLoading();
             $button.prop('disabled', true).html('<span class="makia-loading-spinner"></span> Guardando...');
-            
+
             // Llamada AJAX
             $.ajax({
                 url: makiaDesignData.ajaxurl,
@@ -307,51 +335,49 @@
                 data: data,
                 success: (response) => {
                     if (response.success) {
-                        this.showNotification('✓ Personalización guardada correctamente', 'success');
+                        this.showNotification('Personalización guardada correctamente', 'success');
                         this.updatePreview();
                         makiaDesignData.customization = response.data.options;
                     } else {
                         this.showNotification('Error: ' + response.data.message, 'error');
                     }
-                    $button.prop('disabled', false).html('💾 Guardar Personalización');
+                    $button.prop('disabled', false).html('Guardar Personalización');
                     this.hideLoading();
                 },
                 error: () => {
                     this.showNotification('Error al guardar la personalización', 'error');
-                    $button.prop('disabled', false).html('💾 Guardar Personalización');
+                    $button.prop('disabled', false).html('Guardar Personalización');
                     this.hideLoading();
                 }
             });
         },
-        
+
         /**
          * Mostrar notificación
          */
         showNotification: function(message, type = 'success') {
             const bgColor = type === 'success' ? '#46b450' : '#dc3545';
-            
+
             // Crear notificación
-            const $notification = $(`
-                <div class="makia-admin-notification" style="
-                    position: fixed;
-                    top: 40px;
-                    right: 40px;
-                    background: ${bgColor};
-                    color: white;
-                    padding: 18px 24px;
-                    border-radius: 8px;
-                    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-                    z-index: 999999;
-                    font-weight: 600;
-                    font-size: 15px;
-                    animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                ">
-                    ${message}
-                </div>
-            `);
-            
+            const $notification = $('<div class="makia-admin-notification"></div>')
+                .css({
+                    position: 'fixed',
+                    top: '40px',
+                    right: '40px',
+                    background: bgColor,
+                    color: 'white',
+                    padding: '18px 24px',
+                    borderRadius: '8px',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+                    zIndex: 999999,
+                    fontWeight: 600,
+                    fontSize: '15px',
+                    animation: 'slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                })
+                .text(message);
+
             $('body').append($notification);
-            
+
             // Eliminar después de 3 segundos
             setTimeout(() => {
                 $notification.fadeOut(400, function() {
@@ -359,7 +385,7 @@
                 });
             }, 3000);
         },
-        
+
         /**
          * Mostrar overlay de loading
          */
@@ -372,7 +398,7 @@
                 `);
             }
         },
-        
+
         /**
          * Ocultar overlay de loading
          */
@@ -382,7 +408,7 @@
             });
         }
     };
-    
+
     // Inicializar cuando el documento esté listo
     $(document).ready(function() {
         // Solo inicializar si estamos en la pestaña de diseño
@@ -390,7 +416,7 @@
             MakiaDesignPanel.init();
         }
     });
-    
+
     // Agregar animaciones CSS
     $('<style>')
         .prop('type', 'text/css')
@@ -405,7 +431,7 @@
                     opacity: 1;
                 }
             }
-            
+
             .makia-loading-spinner {
                 width: 50px;
                 height: 50px;
@@ -414,28 +440,11 @@
                 border-radius: 50%;
                 animation: spin 0.8s linear infinite;
             }
-            
+
             @keyframes spin {
                 to { transform: rotate(360deg); }
             }
         `)
         .appendTo('head');
-    
-})(jQuery);
 
-// Agregar lodash debounce si no existe
-if (typeof _ === 'undefined') {
-    window._ = {
-        debounce: function(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-    };
-}
+})(jQuery);

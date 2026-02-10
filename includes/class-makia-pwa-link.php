@@ -181,6 +181,7 @@ class MakIA_PWA_Link {
 	 */
 	private function generate_qr_code( $email ) {
 		$pwa_link = add_query_arg( 'email', urlencode( $email ), $this->pwa_url );
+		// Note: QR generation uses external service. Consider using a local library for privacy.
 		$qr_api = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=';
 		return $qr_api . urlencode( $pwa_link );
 	}

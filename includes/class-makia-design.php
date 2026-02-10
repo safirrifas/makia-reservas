@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * MakIA Design Templates Manager
  * Gestiona las plantillas de diseño del formulario de reservas
@@ -90,7 +91,8 @@ class MakIA_Design {
      */
     public function enqueue_template_styles() {
         // Solo cargar en páginas con shortcode de reservas
-        if (has_shortcode(get_post()->post_content, 'makia_booking_form')) {
+        $post = get_post();
+        if ($post && has_shortcode($post->post_content, 'makia_reservas')) {
             wp_enqueue_style(
                 'makia-booking-templates',
                 plugins_url('assets/css/makia-booking-templates.css', dirname(__FILE__)),

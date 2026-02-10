@@ -15,7 +15,7 @@
     };
     
     // Obtener opciones del backend o usar defaults
-    var options = typeof makiaButtonOptions !== 'undefined' ? makiaButtonOptions : defaults;
+    var options = $.extend({}, defaults, (typeof makiaButtonOptions !== 'undefined') ? makiaButtonOptions : {});
     
     // Elementos
     var $floatingButton = null;
@@ -23,6 +23,7 @@
     var isVisible = false;
     var scrollTimeout = null;
     var isMobile = window.innerWidth <= 768;
+    var pulseIntervalId = null;
     
     /**
      * Inicializar el botón flotante
@@ -81,7 +82,7 @@
         
         // Animación de pulso ocasional para llamar la atención
         if (options.animation !== 'none') {
-            setInterval(function() {
+            pulseIntervalId = setInterval(function() {
                 if (isVisible && !$floatingButton.is(':hover')) {
                     pulseAnimation();
                 }
@@ -236,12 +237,13 @@
     function destroy() {
         $window.off('scroll.makiaFloating');
         $window.off('resize.makiaFloating');
-        
-        if ($floatingButton.length) {
+        if ($floatingButton && $floatingButton.length) {
+            $floatingButton.off('click.makiaFloating');
             $floatingButton
                 .removeClass('makia-floating-visible makia-floating-hidden makia-pulse')
                 .removeAttr('style');
         }
+        clearInterval(pulseIntervalId);
     }
     
     // API pública

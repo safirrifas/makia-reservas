@@ -16,7 +16,15 @@ class MakIA_Logger {
     private static $log_file;
     
     public function __construct() {
-        self::$log_file = WP_CONTENT_DIR . '/makia-logs.txt';
+        $log_dir = WP_CONTENT_DIR . '/makia-logs';
+        if (!file_exists($log_dir)) {
+            wp_mkdir_p($log_dir);
+            // Create .htaccess to deny web access
+            file_put_contents($log_dir . '/.htaccess', 'Deny from all');
+            // Create index.php for extra protection
+            file_put_contents($log_dir . '/index.php', '<?php // Silence is golden.');
+        }
+        self::$log_file = $log_dir . '/makia-debug.log';
     }
     
     /**
@@ -67,7 +75,7 @@ class MakIA_Logger {
      */
     private static function write_log($level, $message) {
         if (!self::$log_file) {
-            self::$log_file = WP_CONTENT_DIR . '/makia-logs.txt';
+            self::$log_file = WP_CONTENT_DIR . '/makia-logs/makia-debug.log';
         }
         
         $timestamp = date('Y-m-d H:i:s');
@@ -92,7 +100,7 @@ class MakIA_Logger {
      */
     public static function get_recent_logs($lines = 100) {
         if (!self::$log_file) {
-            self::$log_file = WP_CONTENT_DIR . '/makia-logs.txt';
+            self::$log_file = WP_CONTENT_DIR . '/makia-logs/makia-debug.log';
         }
         
         if (!file_exists(self::$log_file)) {
@@ -107,7 +115,7 @@ class MakIA_Logger {
      * Limpiar logs antiguos
      */
     public static function clean_old_logs($days = 30) {
-        $files = glob(WP_CONTENT_DIR . '/makia-logs.txt.*');
+        $files = glob(WP_CONTENT_DIR . '/makia-logs/makia-debug.log.*');
         $cutoff = time() - ($days * 24 * 60 * 60);
         
         $cleaned = 0;
@@ -126,7 +134,7 @@ class MakIA_Logger {
      */
     public static function get_logs_size() {
         if (!self::$log_file) {
-            self::$log_file = WP_CONTENT_DIR . '/makia-logs.txt';
+            self::$log_file = WP_CONTENT_DIR . '/makia-logs/makia-debug.log';
         }
         
         $size = 0;
@@ -134,7 +142,7 @@ class MakIA_Logger {
             $size += filesize(self::$log_file);
         }
         
-        $files = glob(WP_CONTENT_DIR . '/makia-logs.txt.*');
+        $files = glob(WP_CONTENT_DIR . '/makia-logs/makia-debug.log.*');
         foreach ($files as $file) {
             $size += filesize($file);
         }

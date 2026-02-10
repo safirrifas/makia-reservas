@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Gestor de Licencias de MakIA
  * Maneja la activación, verificación y desactivación de licencias con sistema de planes
@@ -162,7 +163,7 @@ class MakIA_License_Manager {
         $current_count = intval(get_option('makia_monthly_bookings_count', 0));
         $reset_date = get_option('makia_monthly_reset_date', date('Y-m-d H:i:s'));
         
-        $usage_percentage = ($current_count / $current_plan['limit']) * 100;
+        $usage_percentage = ($current_plan['limit'] > 0) ? ($current_count / $current_plan['limit']) * 100 : 100;
         
         // Calcular días hasta el próximo reset
         $next_reset = strtotime('first day of next month 00:00:00');
@@ -253,6 +254,7 @@ class MakIA_License_Manager {
             
             // Guardar información del plan
             $plan = isset($license_data['plan']) ? strtolower($license_data['plan']) : 'chupito';
+            $plan = array_key_exists($plan, $this->plans) ? $plan : 'chupito';
             update_option('makia_license_plan', $plan);
             
             // Inicializar contador si no existe

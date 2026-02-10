@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * MakIA Audit System
  * Sistema completo de auditoría para registrar todas las acciones
@@ -15,14 +16,24 @@ class MakIA_Audit {
         global $wpdb;
         $this->table_name = $wpdb->prefix . 'makia_audit_log';
         
-        // Crear tabla si no existe
-        add_action('plugins_loaded', array($this, 'create_table'));
-        
+        // Crear tabla si no existe (con verificación de versión)
+        $this->maybe_create_table();
+
         // AJAX para consultar auditoría
         add_action('wp_ajax_makia_get_audit_log', array($this, 'get_audit_log_ajax'));
         add_action('wp_ajax_makia_get_booking_audit', array($this, 'get_booking_audit_ajax'));
     }
     
+    /**
+     * Crear tabla solo si la versión ha cambiado
+     */
+    private function maybe_create_table() {
+        if (get_option('makia_audit_db_version') !== MAKIA_VERSION) {
+            $this->create_table();
+            update_option('makia_audit_db_version', MAKIA_VERSION);
+        }
+    }
+
     /**
      * Crear tabla de auditoría
      */
@@ -70,7 +81,7 @@ class MakIA_Audit {
         $ip_address = self::get_client_ip();
         
         // Obtener User Agent
-        $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? substr($_SERVER['HTTP_USER_AGENT'], 0, 255) : '';
+        $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(substr($_SERVER['HTTP_USER_AGENT'], 0, 255)) : '';
         
         $result = $wpdb->insert(
             $table_name,
@@ -96,17 +107,8 @@ class MakIA_Audit {
      * Obtener IP del cliente
      */
     private static function get_client_ip() {
-        $ip = '';
-        
-        if (isset($_SERVER['HTTP_CLIENT_IP']) && !empty($_SERVER['HTTP_CLIENT_IP'])) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } elseif (isset($_SERVER['REMOTE_ADDR']) && !empty($_SERVER['REMOTE_ADDR'])) {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        }
-        
-        return sanitize_text_field($ip);
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '0.0.0.0';
     }
     
     /**
@@ -389,11 +391,11 @@ class MakIA_Audit {
                 <div style="background: #fff; border: 2px solid #46b450; padding: 25px; border-radius: 12px;">
                     <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Reservas Creadas</div>
                     <div style="font-size: 36px; font-weight: 700; color: #46b450;">
-                        <?php 
-                        $created = array_filter($stats['by_action'], function($item) {
+                        <?php
+                        $created = array_values(array_filter($stats['by_action'], function($item) {
                             return $item['action_type'] === 'booking_created';
-                        });
-                        echo $created ? $created[0]['count'] : 0;
+                        }));
+                        echo !empty($created) ? intval($created[0]['count']) : 0;
                         ?>
                     </div>
                 </div>
@@ -401,11 +403,11 @@ class MakIA_Audit {
                 <div style="background: #fff; border: 2px solid #2271b1; padding: 25px; border-radius: 12px;">
                     <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Notas Añadidas</div>
                     <div style="font-size: 36px; font-weight: 700; color: #2271b1;">
-                        <?php 
-                        $notes = array_filter($stats['by_action'], function($item) {
+                        <?php
+                        $notes = array_values(array_filter($stats['by_action'], function($item) {
                             return $item['action_type'] === 'note_added';
-                        });
-                        echo $notes ? $notes[0]['count'] : 0;
+                        }));
+                        echo !empty($notes) ? intval($notes[0]['count']) : 0;
                         ?>
                     </div>
                 </div>
@@ -413,11 +415,11 @@ class MakIA_Audit {
                 <div style="background: #fff; border: 2px solid #dba617; padding: 25px; border-radius: 12px;">
                     <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Cambios de Estado</div>
                     <div style="font-size: 36px; font-weight: 700; color: #dba617;">
-                        <?php 
-                        $status = array_filter($stats['by_action'], function($item) {
+                        <?php
+                        $status = array_values(array_filter($stats['by_action'], function($item) {
                             return $item['action_type'] === 'status_changed';
-                        });
-                        echo $status ? $status[0]['count'] : 0;
+                        }));
+                        echo !empty($status) ? intval($status[0]['count']) : 0;
                         ?>
                     </div>
                 </div>
@@ -510,13 +512,6 @@ class MakIA_Audit {
      * Handler AJAX para obtener log de auditoría
      */
     public function get_audit_log_ajax() {
-        // Verificar nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'makia_admin_nonce')) {
-            wp_send_json_error(array('message' => 'Acción no autorizada'));
-            return;
-        }
-
-
         check_ajax_referer('makia_admin_nonce', 'nonce');
         
         if (!current_user_can('manage_options')) {
@@ -549,13 +544,6 @@ class MakIA_Audit {
      * Handler AJAX para obtener auditoría de una reserva
      */
     public function get_booking_audit_ajax() {
-        // Verificar nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'makia_admin_nonce')) {
-            wp_send_json_error(array('message' => 'Acción no autorizada'));
-            return;
-        }
-
-
         check_ajax_referer('makia_admin_nonce', 'nonce');
         
         if (!current_user_can('makia_manage_bookings')) {

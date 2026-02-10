@@ -29,7 +29,7 @@ class MakIA_WhatsApp {
     /**
      * URL de la API de WhatsApp
      */
-    private $api_url = 'https://graph.instagram.com/v18.0';
+    private $api_url = 'https://graph.facebook.com/v18.0';
 
     /**
      * Constructor

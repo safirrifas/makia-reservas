@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Clase principal de administración MakIA
  * Versión con menú hamburguesa desplegable/pegable
@@ -50,7 +51,12 @@ class MakIA_Admin {
      * Cargar assets del admin
      */
     public function enqueue_admin_assets($hook) {
-        if ($hook !== 'toplevel_page_makia') {
+        $valid_hooks = array(
+            'toplevel_page_makia',
+            'makia-reservas_page_makia-operators',
+            'makia-reservas_page_makia-audit',
+        );
+        if (!in_array($hook, $valid_hooks, true)) {
             return;
         }
         
@@ -105,7 +111,7 @@ class MakIA_Admin {
 	        ));
 	        
 	        // Localizar scripts de notas
-	        wp_localize_script('makia-booking-notes', 'makiaAdminConfig', array(
+	        wp_localize_script('makia-booking-notes', 'makiaNotesConfig', array(
 	            'ajaxUrl' => admin_url('admin-ajax.php'),
 	            'noteNonce' => wp_create_nonce('makia_add_note_action')
 	        ));
@@ -120,7 +126,7 @@ class MakIA_Admin {
         // Obtener información de licencia
         $license_key = get_option('makia_license_key', '');
         $license_status = get_option('makia_license_status', 'inactive');
-        $license_info = $makia_license_manager->get_license_info();
+        $license_info = isset($makia_license_manager) ? $makia_license_manager->get_license_info() : array();
         
         // Determinar plan actual
         $current_plan = $this->get_current_plan($license_info);
@@ -164,7 +170,7 @@ class MakIA_Admin {
                 <!-- Header Mejorado con Logo -->
                 <div class="makia-admin-header">
                     <div class="makia-admin-header-logo">
-                        <img src="<?php echo MAKIA_PLUGIN_URL; ?>assets/images/makia-logo.svg" alt="MakIA Logo">
+                        <img src="<?php echo esc_url(MAKIA_PLUGIN_URL . 'assets/images/makia-logo.svg'); ?>" alt="MakIA Logo">
                     </div>
                     <div class="makia-admin-header-content">
                         <h1>MakIA - Sistema de Reservas</h1>
@@ -286,31 +292,31 @@ class MakIA_Admin {
             <!-- Total Reservas -->
             <div style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #667eea;">
                 <h3 style="margin: 0 0 10px 0; color: #667eea; font-size: 16px;">Total Reservas</h3>
-                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #333;"><?php echo $total; ?></p>
+                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #333;"><?php echo intval($total); ?></p>
             </div>
             
             <!-- Pendientes -->
-            <div class="makia-stat-card" data-filter="pending" style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #f0b849; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.05)';">
+            <div class="makia-stat-card" data-filter="pending" style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #f0b849; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
                 <h3 style="margin: 0 0 10px 0; color: #f0b849; font-size: 16px;">⏳ Pendientes</h3>
-                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #333;"><?php echo $pending; ?></p>
+                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #333;"><?php echo intval($pending); ?></p>
             </div>
             
             <!-- Aprobadas -->
-            <div class="makia-stat-card" data-filter="approved" style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #46b450; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.05)';">
+            <div class="makia-stat-card" data-filter="approved" style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #46b450; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
                 <h3 style="margin: 0 0 10px 0; color: #46b450; font-size: 16px;">✅ Aprobadas</h3>
-                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #333;"><?php echo $approved; ?></p>
+                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #333;"><?php echo intval($approved); ?></p>
             </div>
             
             <!-- Canceladas -->
-            <div class="makia-stat-card" data-filter="cancelled" style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #dc3232; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.05)';">
+            <div class="makia-stat-card" data-filter="cancelled" style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #dc3232; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
                 <h3 style="margin: 0 0 10px 0; color: #dc3232; font-size: 16px;">🚫 Canceladas</h3>
-                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #333;"><?php echo $cancelled; ?></p>
+                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #333;"><?php echo intval($cancelled); ?></p>
             </div>
             
             <!-- Próximas -->
-            <div class="makia-stat-card" data-filter="upcoming" style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #764ba2; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.05)';">
+            <div class="makia-stat-card" data-filter="upcoming" style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #764ba2; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
                 <h3 style="margin: 0 0 10px 0; color: #764ba2; font-size: 16px;">📅 Próximas 7 días</h3>
-                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #333;"><?php echo $upcoming; ?></p>
+                <p style="margin: 0; font-size: 36px; font-weight: 700; color: #333;"><?php echo intval($upcoming); ?></p>
             </div>
         </div>
         
@@ -353,7 +359,7 @@ class MakIA_Admin {
      */
     private function render_settings_tab() {
         // Guardar configuración si se envió el formulario
-        if (isset($_POST['save_settings']) && check_admin_referer('makia_save_settings', 'makia_settings_nonce')) {
+        if (isset($_POST['save_settings']) && current_user_can('manage_options') && check_admin_referer('makia_save_settings', 'makia_settings_nonce')) {
             update_option('makia_restaurant_name', sanitize_text_field($_POST['restaurant_name']));
             update_option('makia_restaurant_email', sanitize_email($_POST['restaurant_email']));
             update_option('makia_restaurant_phone', sanitize_text_field($_POST['restaurant_phone']));
@@ -367,7 +373,16 @@ class MakIA_Admin {
             
             // Guardar logo si se subió
             if (!empty($_FILES['restaurant_logo']['name'])) {
-                $upload = wp_handle_upload($_FILES['restaurant_logo'], array('test_form' => false));
+                $allowed_mimes = array(
+                    'jpg|jpeg|jpe' => 'image/jpeg',
+                    'png' => 'image/png',
+                    'gif' => 'image/gif',
+                    'webp' => 'image/webp',
+                );
+                $upload = wp_handle_upload($_FILES['restaurant_logo'], array(
+                    'test_form' => false,
+                    'mimes' => $allowed_mimes,
+                ));
                 if ($upload && !isset($upload['error'])) {
                     update_option('makia_restaurant_logo', $upload['url']);
                 }
@@ -574,7 +589,7 @@ class MakIA_Admin {
                                 <div class="makia-alert-icon">🟠</div>
                                 <div>
                                     <strong>Cerca del límite</strong><br>
-                                    Solo te quedan <?php echo $stats['remaining']; ?> reservas disponibles este mes. Considera actualizar tu plan.
+                                    Solo te quedan <?php echo intval($stats['remaining']); ?> reservas disponibles este mes. Considera actualizar tu plan.
                                 </div>
                             </div>
                         <?php else: ?>
@@ -582,36 +597,36 @@ class MakIA_Admin {
                                 <div class="makia-alert-icon">🟢</div>
                                 <div>
                                     <strong>Todo en orden</strong><br>
-                                    Tienes <?php echo $stats['remaining']; ?> reservas disponibles de <?php echo $stats['plan_limit']; ?> totales.
+                                    Tienes <?php echo intval($stats['remaining']); ?> reservas disponibles de <?php echo intval($stats['plan_limit']); ?> totales.
                                 </div>
                             </div>
                         <?php endif; ?>
                         
                         <!-- Barra de uso -->
                         <div class="makia-usage-bar">
-                            <div class="makia-usage-fill" style="width: <?php echo min(100, $stats['usage_percentage']); ?>%; background: <?php echo $stats['status']['color']; ?>;">
-                                <?php echo $stats['current_count']; ?> / <?php echo $stats['plan_limit']; ?> reservas
+                            <div class="makia-usage-fill" style="width: <?php echo intval(min(100, $stats['usage_percentage'])); ?>%; background: <?php echo esc_attr($stats['status']['color']); ?>;">
+                                <?php echo intval($stats['current_count']); ?> / <?php echo intval($stats['plan_limit']); ?> reservas
                             </div>
                         </div>
                         
                         <!-- Estadísticas -->
                         <div class="makia-usage-stats">
                             <div class="makia-usage-stat">
-                                <span class="makia-usage-stat-value"><?php echo $stats['current_count']; ?></span>
+                                <span class="makia-usage-stat-value"><?php echo intval($stats['current_count']); ?></span>
                                 <span class="makia-usage-stat-label">Usadas</span>
                             </div>
                             <div class="makia-usage-stat">
-                                <span class="makia-usage-stat-value"><?php echo $stats['remaining']; ?></span>
+                                <span class="makia-usage-stat-value"><?php echo intval($stats['remaining']); ?></span>
                                 <span class="makia-usage-stat-label">Disponibles</span>
                             </div>
                             <div class="makia-usage-stat">
-                                <span class="makia-usage-stat-value"><?php echo $stats['days_until_reset']; ?></span>
+                                <span class="makia-usage-stat-value"><?php echo intval($stats['days_until_reset']); ?></span>
                                 <span class="makia-usage-stat-label">Días hasta reset</span>
                             </div>
                         </div>
                         
                         <p style="text-align: center; color: #999; font-size: 13px; margin-top: 20px;">
-                            Próximo reinicio: <?php echo date('d/m/Y', strtotime('first day of next month')); ?> a las 00:00
+                            Próximo reinicio: <?php echo esc_html(wp_date('d/m/Y', strtotime('first day of next month'))); ?> a las 00:00
                         </p>
                     <?php endif; ?>
                 </div>
@@ -630,12 +645,12 @@ class MakIA_Admin {
                                     <?php if ($plan['price'] == 0): ?>
                                         <strong>GRATIS</strong>
                                     <?php else: ?>
-                                        <strong><?php echo $plan['price']; ?>€</strong>/mes <small>(sin IVA)</small>
+                                        <strong><?php echo esc_html($plan['price']); ?>€</strong>/mes <small>(sin IVA)</small>
                                     <?php endif; ?>
                                 </div>
                                 
                                 <div class="makia-plan-limit">
-                                    <span class="makia-plan-limit-value"><?php echo $plan['limit']; ?></span>
+                                    <span class="makia-plan-limit-value"><?php echo intval($plan['limit']); ?></span>
                                     <span class="makia-plan-limit-label">reservas al mes</span>
                                 </div>
                                 
@@ -741,21 +756,31 @@ class MakIA_Admin {
         global $makia_button_settings;
         
         // Procesar guardado de opciones
-        if (isset($_POST['save_button_settings']) && check_admin_referer('makia_button_settings_nonce')) {
+        if (isset($_POST['save_button_settings']) && current_user_can('manage_options') && check_admin_referer('makia_button_settings_nonce')) {
             // Guardar opciones del botón
             update_option('makia_button_text', sanitize_text_field($_POST['makia_button_text'] ?? 'Reservar Mesa'));
-            update_option('makia_button_color', sanitize_hex_color($_POST['makia_button_color'] ?? '#2c5530'));
-            update_option('makia_button_text_color', sanitize_hex_color($_POST['makia_button_text_color'] ?? '#ffffff'));
-            update_option('makia_button_size', sanitize_text_field($_POST['makia_button_size'] ?? 'medium'));
-            update_option('makia_button_style', sanitize_text_field($_POST['makia_button_style'] ?? 'solid'));
+            $color = sanitize_hex_color($_POST['makia_button_color'] ?? '#2c5530');
+            update_option('makia_button_color', $color ? $color : '#2c5530');
+            $text_color = sanitize_hex_color($_POST['makia_button_text_color'] ?? '#ffffff');
+            update_option('makia_button_text_color', $text_color ? $text_color : '#ffffff');
+            $allowed_sizes = array('small', 'medium', 'large');
+            $size = sanitize_text_field($_POST['makia_button_size'] ?? 'medium');
+            update_option('makia_button_size', in_array($size, $allowed_sizes, true) ? $size : 'medium');
+            $allowed_styles = array('solid', 'outline', 'gradient');
+            $style = sanitize_text_field($_POST['makia_button_style'] ?? 'solid');
+            update_option('makia_button_style', in_array($style, $allowed_styles, true) ? $style : 'solid');
             update_option('makia_button_border_radius', intval($_POST['makia_button_border_radius'] ?? 8));
             update_option('makia_button_url', esc_url_raw($_POST['makia_button_url'] ?? ''));
-            
+
             // Opciones del botón flotante
             update_option('makia_floating_enabled', isset($_POST['makia_floating_enabled']) ? true : false);
-            update_option('makia_floating_position', sanitize_text_field($_POST['makia_floating_position'] ?? 'right'));
+            $allowed_positions = array('left', 'center', 'right');
+            $position = sanitize_text_field($_POST['makia_floating_position'] ?? 'right');
+            update_option('makia_floating_position', in_array($position, $allowed_positions, true) ? $position : 'right');
             update_option('makia_floating_scroll_offset', intval($_POST['makia_floating_scroll_offset'] ?? 100));
-            update_option('makia_floating_animation', sanitize_text_field($_POST['makia_floating_animation'] ?? 'fade'));
+            $allowed_animations = array('fade', 'slide', 'scale');
+            $animation = sanitize_text_field($_POST['makia_floating_animation'] ?? 'fade');
+            update_option('makia_floating_animation', in_array($animation, $allowed_animations, true) ? $animation : 'fade');
             update_option('makia_floating_mobile', isset($_POST['makia_floating_mobile']) ? true : false);
             
             echo '<div class="notice notice-success is-dismissible"><p>Configuración guardada correctamente.</p></div>';

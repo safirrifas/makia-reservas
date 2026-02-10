@@ -120,15 +120,15 @@
             // Actualizar contadores
             $('.makia-stat-card').each(function() {
                 const $card = $(this);
-                const $title = $card.find('h3').text();
+                const title = $card.find('h3').text();
                 
-                if ($title.includes('Total Reservas')) {
+                if (title.includes('Total Reservas')) {
                     $card.find('p').text(stats.total);
-                } else if ($title.includes('Pendientes')) {
+                } else if (title.includes('Pendientes')) {
                     $card.find('p').text(stats.pending);
-                } else if ($title.includes('Aprobadas')) {
+                } else if (title.includes('Aprobadas')) {
                     $card.find('p').text(stats.approved);
-                } else if ($title.includes('Próximas')) {
+                } else if (title.includes('Próximas')) {
                     $card.find('p').text(stats.upcoming);
                 }
             });
@@ -140,10 +140,16 @@
         function showNotification(message, type) {
             // Eliminar notificaciones anteriores
             $('.makia-notification').remove();
-            
+
+            type = type || 'success';
+            var validTypes = ['success', 'error', 'warning', 'info'];
+            if (validTypes.indexOf(type) === -1) type = 'info';
+
             // Crear notificación
-            const $notification = $('<div class="makia-notification makia-notification-' + type + '">' + message + '</div>');
-            
+            const $notification = $('<div class="makia-notification"></div>')
+                .addClass('makia-notification-' + type)
+                .text(message);
+
             // Agregar al DOM
             $('.wrap').prepend($notification);
             

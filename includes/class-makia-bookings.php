@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Gestión de Reservas MakIA
  * Maneja el procesamiento, almacenamiento y gestión de reservas
@@ -85,35 +86,41 @@ class MakIA_Bookings {
      */
     public function submit_booking() {
         global $wpdb;
-        
+
+        // Verificar nonce (antes de rate limiting para no penalizar solicitudes inválidas)
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'makia_booking_nonce')) {
+            wp_send_json_error(array('message' => 'Seguridad: Solicitud no válida'));
+            return;
+        }
+
         // ============================================
         // RATE LIMITING - Prevención de SPAM
         // ============================================
-        // Obtener IP del cliente (considera proxies)
-        $ip = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR'];
+        // Obtener IP del cliente (solo REMOTE_ADDR para evitar spoofing)
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
         $ip = filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '0.0.0.0';
-        
+
         // Crear clave única para esta IP
         $transient_key = 'makia_rate_limit_' . md5($ip);
         $attempts = get_transient($transient_key);
-        
+
         // Límite: 3 intentos cada 10 minutos
         $max_attempts = 3;
         $time_window = 10 * MINUTE_IN_SECONDS;
-        
+
         if ($attempts === false) {
             // Primera vez, registrar intento
             set_transient($transient_key, 1, $time_window);
         } else {
             if ($attempts >= $max_attempts) {
                 $time_remaining = ceil($time_window / 60);
-                
+
                 // Log de seguridad
                 MakIA_Logger::security("Rate limit exceeded", array(
                     'ip' => $ip,
                     'attempts' => $attempts
                 ));
-                
+
                 wp_send_json_error(array(
                     'message' => "Has superado el límite de intentos de reserva. Por favor, espera {$time_remaining} minutos e inténtalo de nuevo.",
                     'rate_limited' => true,
@@ -124,21 +131,21 @@ class MakIA_Bookings {
             // Incrementar contador
             set_transient($transient_key, $attempts + 1, $time_window);
         }
-        
+
         // ============================================
         // VERIFICACIÓN DE LÍMITE DEL PLAN
         // ============================================
         global $makia_license_manager;
         if (isset($makia_license_manager)) {
             $can_book = $makia_license_manager->can_create_booking();
-            
+
             if (!$can_book['allowed']) {
                 MakIA_Logger::security("Plan limit exceeded", array(
                     'plan' => $can_book['plan'],
                     'current' => $can_book['current'],
                     'limit' => $can_book['limit']
                 ));
-                
+
                 wp_send_json_error(array(
                     'message' => $can_book['message'],
                     'plan_limit_exceeded' => true,
@@ -146,12 +153,6 @@ class MakIA_Bookings {
                 ));
                 return;
             }
-        }
-        
-        // Verificar nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'makia_booking_nonce')) {
-            wp_send_json_error(array('message' => 'Seguridad: Solicitud no válida'));
-            return;
         }
         
         // Validar datos requeridos
@@ -177,7 +178,7 @@ class MakIA_Bookings {
         // VALIDACIÓN DE NOMBRE
         // ============================================
         // Longitud mínima y máxima
-        if (strlen($name) < 2) {
+        if (mb_strlen($name, 'UTF-8') < 2) {
             wp_send_json_error(array(
                 'message' => 'El nombre debe tener al menos 2 caracteres',
                 'field' => 'name'
@@ -185,7 +186,7 @@ class MakIA_Bookings {
             return;
         }
         
-        if (strlen($name) > 100) {
+        if (mb_strlen($name, 'UTF-8') > 100) {
             wp_send_json_error(array(
                 'message' => 'El nombre es demasiado largo (máximo 100 caracteres)',
                 'field' => 'name'
@@ -267,6 +268,25 @@ class MakIA_Bookings {
         $date = sanitize_text_field($_POST['date']);
         $time = sanitize_text_field($_POST['time']);
         $guests = intval($_POST['guests']);
+
+        // Validación estricta de formato de fecha
+        $date_obj = DateTime::createFromFormat('Y-m-d', $date);
+        if (!$date_obj || $date_obj->format('Y-m-d') !== $date) {
+            wp_send_json_error(array('message' => 'Formato de fecha inválido'));
+            return;
+        }
+        $time_obj = DateTime::createFromFormat('H:i', $time);
+        if (!$time_obj || $time_obj->format('H:i') !== $time) {
+            wp_send_json_error(array('message' => 'Formato de hora inválido'));
+            return;
+        }
+
+        // Validación mínima de comensales
+        if ($guests < 1) {
+            wp_send_json_error(array('message' => 'El número de comensales debe ser al menos 1'));
+            return;
+        }
+
         $reason = sanitize_text_field($_POST['reason']);
         $highchair = sanitize_text_field($_POST['highchair'] ?? 'no');
         $notes = sanitize_textarea_field($_POST['notes'] ?? '');
@@ -423,27 +443,32 @@ class MakIA_Bookings {
         // ============================================
         // VALIDACIÓN DE CAPACIDAD TOTAL - MEJORADA
         // ============================================
-        // Calcular total de comensales ya reservados para esa fecha/hora
+        // Usar transacción para evitar race condition en la verificación de capacidad
+        $wpdb->query('START TRANSACTION');
+
+        // Calcular total de comensales ya reservados para esa fecha/hora (con bloqueo FOR UPDATE)
         $existing_guests = $wpdb->get_var($wpdb->prepare(
-            "SELECT COALESCE(SUM(guests), 0) FROM {$this->table_name} 
-             WHERE booking_date = %s 
-             AND booking_time = %s 
-             AND status IN ('pending', 'approved')",
-            $date, 
+            "SELECT COALESCE(SUM(guests), 0) FROM {$this->table_name}
+             WHERE booking_date = %s
+             AND booking_time = %s
+             AND status IN ('pending', 'approved')
+             FOR UPDATE",
+            $date,
             $time
         ));
-        
+
         // Obtener capacidad máxima configurada
         $max_capacity = intval(get_option('makia_max_capacity', 50));
-        
+
         // Verificar si hay espacio suficiente
         if (($existing_guests + $guests) > $max_capacity) {
+            $wpdb->query('ROLLBACK');
             $available_slots = max(0, $max_capacity - $existing_guests);
-            
-            $message = $available_slots > 0 
+
+            $message = $available_slots > 0
                 ? "Lo sentimos, solo quedan {$available_slots} plazas disponibles para ese horario. Estás intentando reservar para {$guests} personas."
                 : "Lo sentimos, no hay plazas disponibles para ese horario. Aforo completo.";
-            
+
             wp_send_json_error(array(
                 'message' => $message,
                 'available' => $available_slots,
@@ -451,17 +476,10 @@ class MakIA_Bookings {
             ));
             return;
         }
-        
-        $total_guests = $existing_guests;
-        
-        if (($total_guests + $guests) > $max_capacity) {
-            wp_send_json_error(array('message' => 'Lo sentimos, no hay disponibilidad para esa fecha y hora'));
-            return;
-        }
-        
+
         // Generar token único para gestión de reserva
         $edit_token = bin2hex(random_bytes(32));
-        
+
         // Insertar reserva
         $result = $wpdb->insert(
             $this->table_name,
@@ -479,18 +497,20 @@ class MakIA_Bookings {
             ),
             array('%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s')
         );
-        
+
         if ($result === false) {
             // Log del error para debugging
             $db_error = $wpdb->last_error;
             error_log('[MakIA Reservas] Error al guardar reserva: ' . $db_error);
-            
+
             // Si el error es por columna desconocida, intentar actualizar la tabla
             if (strpos($db_error, 'Unknown column') !== false || strpos($db_error, 'edit_token') !== false) {
+                $wpdb->query('ROLLBACK');
                 // Intentar añadir la columna edit_token si no existe
                 $wpdb->query("ALTER TABLE {$this->table_name} ADD COLUMN edit_token varchar(64) DEFAULT NULL");
-                
-                // Reintentar la inserción
+
+                // Reintentar la inserción (nueva transacción)
+                $wpdb->query('START TRANSACTION');
                 $result = $wpdb->insert(
                     $this->table_name,
                     array(
@@ -507,8 +527,9 @@ class MakIA_Bookings {
                     ),
                     array('%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s')
                 );
-                
+
                 if ($result !== false) {
+                    $wpdb->query('COMMIT');
                     // Éxito después de actualizar la tabla
                     $booking_id = $wpdb->insert_id;
                     $this->send_customer_email($booking_id);
@@ -519,11 +540,16 @@ class MakIA_Bookings {
                     ));
                     return;
                 }
+                $wpdb->query('ROLLBACK');
+            } else {
+                $wpdb->query('ROLLBACK');
             }
-            
-            wp_send_json_error(array('message' => 'Error al guardar la reserva. Por favor, inténtalo de nuevo. (DB: ' . $db_error . ')'));
+
+            wp_send_json_error(array('message' => 'Error al guardar la reserva. Por favor, inténtalo de nuevo.'));
             return;
         }
+
+        $wpdb->query('COMMIT');
         
         $booking_id = $wpdb->insert_id;
         
@@ -1114,11 +1140,11 @@ class MakIA_Bookings {
                         </tr>
                     <?php else: ?>
                         <?php foreach ($bookings as $booking): ?>
-                            <tr data-booking-id="<?php echo $booking->id; ?>">
+                            <tr data-booking-id="<?php echo esc_attr($booking->id); ?>">
                                 <td>
-                                    <input type="checkbox" class="makia-booking-checkbox" value="<?php echo $booking->id; ?>">
+                                    <input type="checkbox" class="makia-booking-checkbox" value="<?php echo esc_attr($booking->id); ?>">
                                 </td>
-                                <td><?php echo $booking->id; ?></td>
+                                <td><?php echo esc_attr($booking->id); ?></td>
                                 <td><strong><?php echo esc_html($booking->name); ?></strong></td>
                                 <td>
                                     <?php echo esc_html($booking->email); ?><br>
@@ -1126,7 +1152,7 @@ class MakIA_Bookings {
                                 </td>
                                 <td><?php echo date('d/m/Y', strtotime($booking->booking_date)); ?></td>
                                 <td><?php echo date('H:i', strtotime($booking->booking_time)); ?></td>
-                                <td><?php echo $booking->guests; ?></td>
+                                <td><?php echo esc_attr($booking->guests); ?></td>
                                 <td><?php echo esc_html($booking->occasion ?: '-'); ?></td>
                                 <td>
                                     <?php
@@ -1143,14 +1169,14 @@ class MakIA_Bookings {
                                     <?php if ($booking->status === 'pending'): ?>
                                         <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" data-ajax-action="true" style="display: inline;">
                                             <input type="hidden" name="action" value="makia_update_booking_status">
-                                            <input type="hidden" name="booking_id" value="<?php echo $booking->id; ?>">
+                                            <input type="hidden" name="booking_id" value="<?php echo esc_attr($booking->id); ?>">
                                             <input type="hidden" name="status" value="approved">
                                             <?php wp_nonce_field('makia_booking_status_action', 'makia_booking_status_nonce'); ?>
                                             <button type="submit" class="button button-primary button-small">✅ Aprobar</button>
                                         </form>
                                         <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" data-ajax-action="true" style="display: inline;">
                                             <input type="hidden" name="action" value="makia_update_booking_status">
-                                            <input type="hidden" name="booking_id" value="<?php echo $booking->id; ?>">
+                                            <input type="hidden" name="booking_id" value="<?php echo esc_attr($booking->id); ?>">
                                             <input type="hidden" name="status" value="rejected">
                                             <?php wp_nonce_field('makia_booking_status_action', 'makia_booking_status_nonce'); ?>
                                             <button type="submit" class="button button-small">❌ Rechazar</button>
@@ -1159,7 +1185,7 @@ class MakIA_Bookings {
                                     
                                     <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" style="display: inline;" onsubmit="return confirm('¿Eliminar esta reserva?');">
                                         <input type="hidden" name="action" value="makia_delete_booking">
-                                        <input type="hidden" name="booking_id" value="<?php echo $booking->id; ?>">
+                                        <input type="hidden" name="booking_id" value="<?php echo esc_attr($booking->id); ?>">
                                         <?php wp_nonce_field('makia_delete_booking_action', 'makia_delete_booking_nonce'); ?>
                                         <button type="submit" class="button button-small">🗑️ Eliminar</button>
                                     </form>
@@ -1185,7 +1211,7 @@ class MakIA_Bookings {
                     </div>
                 <?php else: ?>
                     <?php foreach ($bookings as $booking): ?>
-                        <div class="makia-booking-card" data-booking-id="<?php echo $booking->id; ?>" onclick="makiaShowBookingDetail(<?php echo $booking->id; ?>)">
+                        <div class="makia-booking-card" data-booking-id="<?php echo esc_attr($booking->id); ?>" onclick="makiaShowBookingDetail(<?php echo esc_attr($booking->id); ?>)">
                             <div class="makia-booking-header">
                                 <div class="makia-booking-name"><?php echo esc_html($booking->name); ?></div>
                                 <div class="makia-booking-status">
@@ -1212,7 +1238,7 @@ class MakIA_Bookings {
                                 </div>
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">👥 Personas</div>
-                                    <div class="makia-info-value"><?php echo $booking->guests; ?></div>
+                                    <div class="makia-info-value"><?php echo esc_attr($booking->guests); ?></div>
                                 </div>
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">📧 Email</div>
@@ -1225,10 +1251,10 @@ class MakIA_Bookings {
                                         <a href="tel:<?php echo esc_attr($booking->phone); ?>" class="makia-phone-btn makia-phone-btn-call">
                                             📞 Llamar
                                         </a>
-                                        <a href="sms:<?php echo esc_attr($booking->phone); ?>?body=<?php echo urlencode('Hola ' . $booking->name . ', tu reserva para el ' . date('d/m/Y', strtotime($booking->booking_date)) . ' a las ' . date('H:i', strtotime($booking->booking_time)) . ' ha sido confirmada. ¡Te esperamos! - Restaurante Brote'); ?>" class="makia-phone-btn makia-phone-btn-sms">
+                                        <a href="sms:<?php echo esc_attr($booking->phone); ?>?body=<?php echo urlencode('Hola ' . $booking->name . ', tu reserva para el ' . date('d/m/Y', strtotime($booking->booking_date)) . ' a las ' . date('H:i', strtotime($booking->booking_time)) . ' ha sido confirmada. ¡Te esperamos! - ' . get_option('makia_restaurant_name', get_bloginfo('name')) . ''); ?>" class="makia-phone-btn makia-phone-btn-sms">
                                             💬 SMS
                                         </a>
-                                        <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $booking->phone); ?>?text=<?php echo urlencode('Hola ' . $booking->name . ', tu reserva para el ' . date('d/m/Y', strtotime($booking->booking_date)) . ' a las ' . date('H:i', strtotime($booking->booking_time)) . ' ha sido confirmada. ¡Te esperamos! - Restaurante Brote'); ?>" target="_blank" class="makia-phone-btn makia-phone-btn-whatsapp">
+                                        <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $booking->phone); ?>?text=<?php echo urlencode('Hola ' . $booking->name . ', tu reserva para el ' . date('d/m/Y', strtotime($booking->booking_date)) . ' a las ' . date('H:i', strtotime($booking->booking_time)) . ' ha sido confirmada. ¡Te esperamos! - ' . get_option('makia_restaurant_name', get_bloginfo('name')) . ''); ?>" target="_blank" class="makia-phone-btn makia-phone-btn-whatsapp">
                                             📱 WhatsApp
                                         </a>
                                     </div>
@@ -1252,14 +1278,14 @@ class MakIA_Bookings {
                                 <?php if ($booking->status === 'pending'): ?>
                                     <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" data-ajax-action="true" style="display: inline;">
                         <input type="hidden" name="action" value="makia_update_booking_status">
-                        <input type="hidden" name="booking_id" value="<?php echo $booking->id; ?>">
+                        <input type="hidden" name="booking_id" value="<?php echo esc_attr($booking->id); ?>">
                         <input type="hidden" name="status" value="approved">
                         <?php wp_nonce_field('makia_booking_status_action', 'makia_booking_status_nonce'); ?>
                                         <button type="submit" class="makia-btn-approve">✅ Aprobar</button>
                                     </form>
                                     <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" data-ajax-action="true" style="display: inline;">
                         <input type="hidden" name="action" value="makia_update_booking_status">
-                        <input type="hidden" name="booking_id" value="<?php echo $booking->id; ?>">
+                        <input type="hidden" name="booking_id" value="<?php echo esc_attr($booking->id); ?>">
                         <input type="hidden" name="status" value="rejected">
                         <?php wp_nonce_field('makia_booking_status_action', 'makia_booking_status_nonce'); ?>
                                         <button type="submit" class="makia-btn-reject">❌ Rechazar</button>
@@ -1267,7 +1293,7 @@ class MakIA_Bookings {
                                 <?php endif; ?>
                                 <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" style="display: inline;">
                     <input type="hidden" name="action" value="makia_delete_booking">
-                    <input type="hidden" name="booking_id" value="<?php echo $booking->id; ?>">
+                    <input type="hidden" name="booking_id" value="<?php echo esc_attr($booking->id); ?>">
                     <?php wp_nonce_field('makia_delete_booking_action', 'makia_delete_booking_nonce'); ?>
                                     <button type="submit" class="makia-btn-delete" onclick="return confirm('¿Eliminar esta reserva?');">🗑️ Eliminar</button>
                                 </form>
@@ -1279,6 +1305,11 @@ class MakIA_Bookings {
         </div>
         
         <script>
+        function makiaEscapeHtml(text) {
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
         function makiaShowBookingDetail(bookingId) {
             // Prevenir propagación del click en botones
             if (window.event && (window.event.target.tagName === 'BUTTON' || window.event.target.closest('button'))) {
@@ -1303,27 +1334,27 @@ class MakIA_Bookings {
             
             modalContent.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px;">
-                    <h2 style="margin: 0; font-size: 20px; color: #2271b1;">${name}</h2>
+                    <h2 style="margin: 0; font-size: 20px; color: #2271b1;">${makiaEscapeHtml(name)}</h2>
                     <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666;">&times;</button>
                 </div>
                 <div style="display: grid; gap: 15px;">
                     <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
                         <div style="color: #666; font-size: 12px; margin-bottom: 5px;">ESTADO</div>
-                        <div style="font-size: 18px;">${status}</div>
+                        <div style="font-size: 18px;">${makiaEscapeHtml(status)}</div>
                     </div>
                     ${Array.from(card.querySelectorAll('.makia-info-item')).map(item => {
                         const label = item.querySelector('.makia-info-label').textContent;
                         const value = item.querySelector('.makia-info-value').textContent;
                         return `
                             <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
-                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">${label}</div>
-                                <div style="font-size: 16px; font-weight: 500;">${value}</div>
+                                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">${makiaEscapeHtml(label)}</div>
+                                <div style="font-size: 16px; font-weight: 500;">${makiaEscapeHtml(value)}</div>
                             </div>
                         `;
                     }).join('')}
                     ${notes ? `
                         <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffc107;">
-                            ${notes.innerHTML}
+                            ${makiaEscapeHtml(notes.textContent)}
                         </div>
                     ` : ''}
                 </div>
@@ -1618,30 +1649,34 @@ class MakIA_Bookings {
         // Verificar nonce
         if (!isset($_POST['makia_booking_status_nonce']) || !wp_verify_nonce($_POST['makia_booking_status_nonce'], 'makia_booking_status_action')) {
             wp_send_json_error('Acción no autorizada');
+            return;
         }
-        
+
         // Verificar permisos
         if (!current_user_can('manage_options')) {
             wp_send_json_error('No tienes permisos para realizar esta acción');
+            return;
         }
-        
+
         $booking_id = intval($_POST['booking_id']);
         $new_status = sanitize_text_field($_POST['status']);
-        
+
         // Validar estado
         $valid_statuses = array('pending', 'approved', 'rejected', 'cancelled');
         if (!in_array($new_status, $valid_statuses)) {
             wp_send_json_error('Estado no válido');
+            return;
         }
-        
+
         // Obtener reserva antes de actualizar
         $booking = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$this->table_name} WHERE id = %d",
             $booking_id
         ));
-        
+
         if (!$booking) {
             wp_send_json_error('Reserva no encontrada');
+            return;
         }
         
         // Actualizar estado
@@ -1697,21 +1732,23 @@ class MakIA_Bookings {
         // Verificar nonce
         if (!isset($_POST['makia_note_nonce']) || !wp_verify_nonce($_POST['makia_note_nonce'], 'makia_add_note_action')) {
             wp_send_json_error('Acción no autorizada');
+            return;
         }
 
-
         global $wpdb;
-        
+
         // Verificar permisos
         if (!current_user_can('manage_options')) {
             wp_send_json_error('No tienes permisos para realizar esta acción');
+            return;
         }
-        
+
         $booking_id = intval($_POST['booking_id']);
         $note = sanitize_textarea_field($_POST['note']);
-        
+
         if (empty($note)) {
             wp_send_json_error('La nota no puede estar vacía');
+            return;
         }
         
         $notes_table = $wpdb->prefix . 'makia_booking_notes';
@@ -1763,14 +1800,15 @@ class MakIA_Bookings {
         // Verificar nonce
         if (!isset($_POST['makia_note_nonce']) || !wp_verify_nonce($_POST['makia_note_nonce'], 'makia_get_notes_action')) {
             wp_send_json_error('Acción no autorizada');
+            return;
         }
 
-
         global $wpdb;
-        
+
         // Verificar permisos
         if (!current_user_can('manage_options')) {
             wp_send_json_error('No tienes permisos');
+            return;
         }
         
         $booking_id = intval($_POST['booking_id']);
@@ -1793,10 +1831,13 @@ class MakIA_Bookings {
      */
     public function send_reminder_ajax() {
         global $wpdb;
-        
+
+        check_ajax_referer('makia_admin_nonce', 'nonce');
+
         // Verificar permisos
         if (!current_user_can('manage_options')) {
             wp_send_json_error('No tienes permisos');
+            return;
         }
         
         $booking_id = intval($_POST['booking_id']);
@@ -1810,12 +1851,14 @@ class MakIA_Bookings {
         
         if (!$booking) {
             wp_send_json_error('Reserva no encontrada');
+            return;
         }
-        
+
         // Generar mensaje de recordatorio
         $fecha = date('d/m/Y', strtotime($booking->booking_date));
         $hora = date('H:i', strtotime($booking->booking_time));
-        $message = "Hola {$booking->name}, te recordamos tu reserva para el {$fecha} a las {$hora}. ¡Te esperamos! - Restaurante Brote";
+        $restaurant_name = get_option('makia_restaurant_name', get_bloginfo('name'));
+        $message = "Hola {$booking->name}, te recordamos tu reserva para el {$fecha} a las {$hora}. ¡Te esperamos! - {$restaurant_name}";
         
         // Generar URL según el método
         if ($method === 'whatsapp') {
@@ -1861,8 +1904,13 @@ class MakIA_Bookings {
         }
         
         $action = sanitize_text_field($_POST['bulk_action']);
-        $booking_ids = array_map('intval', $_POST['booking_ids']);
-        
+
+        if (!isset($_POST['booking_ids']) || !is_array($_POST['booking_ids'])) {
+            wp_send_json_error('Invalid booking IDs');
+            return;
+        }
+        $booking_ids = array_slice(array_map('intval', $_POST['booking_ids']), 0, 100);
+
         if (empty($booking_ids)) {
             wp_send_json_error('No se seleccionaron reservas');
             return;
@@ -1883,6 +1931,7 @@ class MakIA_Bookings {
                     );
                     if ($result !== false) {
                         $success_count++;
+                        MakIA_Audit::log_action('booking_status_changed', $id, array('new_status' => 'approved'));
                     }
                 }
                 wp_send_json_success(array('message' => "$success_count reservas aprobadas correctamente"));
@@ -1899,6 +1948,7 @@ class MakIA_Bookings {
                     );
                     if ($result !== false) {
                         $success_count++;
+                        MakIA_Audit::log_action('booking_status_changed', $id, array('new_status' => 'rejected'));
                     }
                 }
                 wp_send_json_success(array('message' => "$success_count reservas rechazadas correctamente"));
@@ -1915,6 +1965,7 @@ class MakIA_Bookings {
                     );
                     if ($result !== false) {
                         $success_count++;
+                        MakIA_Audit::log_action('booking_status_changed', $id, array('new_status' => 'cancelled'));
                     }
                 }
                 wp_send_json_success(array('message' => "$success_count reservas canceladas correctamente"));
@@ -2017,6 +2068,7 @@ class MakIA_Bookings {
                             // Incrementar no-show en lista negra
                             $blacklist->increment_no_show($booking->email, $booking->phone);
                             $success_count++;
+                            MakIA_Audit::log_action('booking_status_changed', $id, array('new_status' => 'noshow'));
                         }
                     }
                     wp_send_json_success(array('message' => "$success_count reservas marcadas como No-Show y añadidas a lista negra"));
@@ -2070,9 +2122,37 @@ class MakIA_Bookings {
         $new_date = sanitize_text_field($_POST['date'] ?? '');
         $new_time = sanitize_text_field($_POST['time'] ?? '');
         $new_guests = intval($_POST['guests'] ?? 0);
-        
+
         if (empty($new_date) || empty($new_time) || $new_guests < 1) {
             wp_send_json_error(array('message' => 'Datos incompletos'));
+            return;
+        }
+
+        // Validar que comensales esté dentro de rango permitido
+        $max_per_reservation = intval(get_option('makia_max_guests_per_reservation', 20));
+        if ($new_guests < 1 || $new_guests > $max_per_reservation) {
+            wp_send_json_error(array('message' => "El número de comensales debe ser entre 1 y {$max_per_reservation}"));
+            return;
+        }
+
+        // Validar formato de fecha (Y-m-d)
+        $date_obj = DateTime::createFromFormat('Y-m-d', $new_date);
+        if (!$date_obj || $date_obj->format('Y-m-d') !== $new_date) {
+            wp_send_json_error(array('message' => 'Formato de fecha inválido'));
+            return;
+        }
+
+        // Validar que la fecha no esté en el pasado
+        $today = new DateTime('today');
+        if ($date_obj < $today) {
+            wp_send_json_error(array('message' => 'No se pueden hacer reservas para fechas pasadas'));
+            return;
+        }
+
+        // Validar formato de hora (H:i)
+        $time_obj = DateTime::createFromFormat('H:i', $new_time);
+        if (!$time_obj || $time_obj->format('H:i') !== $new_time) {
+            wp_send_json_error(array('message' => 'Formato de hora inválido'));
             return;
         }
         
@@ -2323,13 +2403,13 @@ class MakIA_Bookings {
         $message .= "Comensales: {$booking->guests}\n\n";
         $message .= "Esperamos verte en otra ocasión.\n\n";
         $message .= "Saludos,\n$restaurant_name";
-        
+
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
             'Reply-To: ' . $restaurant_email,
-            'Content-Type: text/html; charset=UTF-8'
+            'Content-Type: text/plain; charset=UTF-8'
         );
-        
+
         wp_mail($booking->email, $subject, $message, $headers);
     }
 }

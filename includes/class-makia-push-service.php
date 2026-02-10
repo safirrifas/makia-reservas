@@ -85,10 +85,14 @@ class MakIA_Push_Service {
 
 		// Obtener todos los operarios
 		$operators = $wpdb->get_results(
-			"SELECT u.ID FROM {$users_table} u
-			INNER JOIN {$usermeta_table} um ON u.ID = um.user_id
-			WHERE um.meta_key = '{$wpdb->prefix}capabilities'
-			AND um.meta_value LIKE '%makia_operator%'"
+			$wpdb->prepare(
+				"SELECT u.ID FROM {$wpdb->users} u
+				INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+				WHERE um.meta_key = %s
+				AND um.meta_value LIKE %s",
+				$wpdb->prefix . 'capabilities',
+				'%makia_operator%'
+			)
 		);
 
 		foreach ( $operators as $operator ) {
@@ -179,9 +183,22 @@ class MakIA_Push_Service {
 	 * Generar header de autorización VAPID
 	 */
 	private function get_authorization_header() {
-		// Aquí se usaría una librería JWT real
-		// Por ahora, retornar un placeholder
-		return 'vapid t=' . base64_encode( 'token' ) . ', k=' . $this->vapid_public_key;
+		$vapid_private = get_option('makia_vapid_private_key', '');
+		if (empty($vapid_private)) {
+			MakIA_Logger::log('error', 'VAPID private key not configured');
+			return '';
+		}
+
+		// Basic VAPID header - requires proper JWT library for production
+		$header = base64_encode(wp_json_encode(array('typ' => 'JWT', 'alg' => 'HS256')));
+		$payload = base64_encode(wp_json_encode(array(
+			'aud' => 'https://fcm.googleapis.com',
+			'exp' => time() + 86400,
+			'sub' => 'mailto:' . get_option('makia_restaurant_email', '')
+		)));
+		$signature = hash_hmac('sha256', $header . '.' . $payload, $vapid_private);
+
+		return 'vapid t=' . $header . '.' . $payload . '.' . $signature . ', k=' . $this->vapid_public_key;
 	}
 
 	/**

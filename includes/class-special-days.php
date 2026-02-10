@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Gestión de Días Especiales
  * Permite marcar días como cerrados o con horarios especiales
@@ -144,7 +145,7 @@ class MakIA_Special_Days {
                                 <td data-label="Acciones">
                                     <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" style="display: inline;">
                                         <input type="hidden" name="action" value="makia_delete_special_day">
-                                        <input type="hidden" name="day_index" value="<?php echo $index; ?>">
+                                        <input type="hidden" name="day_date" value="<?php echo esc_attr($day['date']); ?>">
                                         <?php wp_nonce_field('makia_delete_special_day_action', 'makia_delete_special_day_nonce'); ?>
                                         <button type="submit" class="button button-small" onclick="return confirm('¿Eliminar este día especial?')">Eliminar</button>
                                     </form>
@@ -176,7 +177,12 @@ class MakIA_Special_Days {
         $date = sanitize_text_field($_POST['special_date']);
         $type = sanitize_text_field($_POST['special_type']);
         $reason = sanitize_text_field($_POST['special_reason'] ?? '');
-        
+
+        $valid_types = array('closed', 'special_hours', 'exceptional_opening');
+        if (!in_array($type, $valid_types, true)) {
+            wp_die('Tipo de día especial no válido');
+        }
+
         // Validar fecha
         if (strtotime($date) < strtotime('today')) {
             add_settings_error('makia_special_days', 'invalid_date', 'No puedes agregar días en el pasado', 'error');
@@ -192,8 +198,8 @@ class MakIA_Special_Days {
             'reason' => $reason
         );
         
-        // Agregar horarios si es horario especial
-        if ($type === 'special_hours') {
+        // Agregar horarios si es horario especial o apertura excepcional
+        if ($type === 'special_hours' || $type === 'exceptional_opening') {
             $special_day['start'] = sanitize_text_field($_POST['special_start']);
             $special_day['end'] = sanitize_text_field($_POST['special_end']);
         }
@@ -241,19 +247,15 @@ class MakIA_Special_Days {
             wp_die('No tienes permisos para realizar esta acción');
         }
         
-        // Obtener índice
-        $index = intval($_POST['day_index']);
-        
-        // Obtener días especiales
+        $date_to_delete = sanitize_text_field($_POST['day_date'] ?? '');
         $special_days = get_option('makia_special_days', array());
-        
-        // Eliminar
-        if (isset($special_days[$index])) {
-            array_splice($special_days, $index, 1);
-            update_option('makia_special_days', $special_days);
-            
-            add_settings_error('makia_special_days', 'day_deleted', 'Día especial eliminado', 'success');
-        }
+        $special_days = array_filter($special_days, function($day) use ($date_to_delete) {
+            return $day['date'] !== $date_to_delete;
+        });
+        $special_days = array_values($special_days);
+        update_option('makia_special_days', $special_days);
+
+        add_settings_error('makia_special_days', 'day_deleted', 'Día especial eliminado', 'success');
         
         set_transient('settings_errors', get_settings_errors(), 30);
         

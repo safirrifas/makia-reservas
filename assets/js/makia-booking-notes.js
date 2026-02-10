@@ -3,30 +3,36 @@
  */
 
 jQuery(document).ready(function($) {
-    console.log('[MakIA Notes] Script cargado');
-    
+
+    var notesConfig = (typeof makiaNotesConfig !== 'undefined') ? makiaNotesConfig :
+                      (typeof makiaAdminConfig !== 'undefined') ? makiaAdminConfig : null;
+    if (!notesConfig) {
+        console.warn('[MakIA] Notes config not defined');
+        return;
+    }
+
     // Agregar nota interna
     $(document).on('submit', '#makia-add-note-form', function(e) {
         e.preventDefault();
-        
+
         const form = $(this);
         const bookingId = form.find('input[name="booking_id"]').val();
         const note = form.find('textarea[name="note"]').val().trim();
         const button = form.find('button[type="submit"]');
-        
+
         if (!note) {
             showNotification('La nota no puede estar vacía', 'error');
             return;
         }
-        
+
         button.prop('disabled', true).text('Guardando...');
-        
+
         $.ajax({
             url: ajaxurl,
             type: 'POST',
             data: {
                 action: 'makia_add_booking_note',
-                makia_note_nonce: makiaAdminConfig.noteNonce,
+                makia_note_nonce: notesConfig.noteNonce,
                 booking_id: bookingId,
                 note: note
             },
@@ -43,28 +49,29 @@ jQuery(document).ready(function($) {
                 showNotification('Error al guardar la nota', 'error');
             },
             complete: function() {
-                button.prop('disabled', false).text('💾 Guardar Nota');
+                button.prop('disabled', false).text('Guardar Nota');
             }
         });
     });
-    
+
     // Enviar recordatorio
     $(document).on('click', '.makia-send-reminder', function(e) {
         e.preventDefault();
-        
+
         const button = $(this);
         const bookingId = button.data('booking-id');
         const method = button.data('method'); // 'sms' o 'whatsapp'
-        
+
         button.prop('disabled', true);
-        
+
         $.ajax({
             url: ajaxurl,
             type: 'POST',
             data: {
                 action: 'makia_send_reminder',
                 booking_id: bookingId,
-                method: method
+                method: method,
+                nonce: notesConfig.noteNonce
             },
             success: function(response) {
                 if (response.success) {
@@ -83,7 +90,7 @@ jQuery(document).ready(function($) {
             }
         });
     });
-    
+
     // Función para cargar notas de una reserva
     window.loadBookingNotes = function(bookingId) {
         $.ajax({
@@ -91,45 +98,48 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 action: 'makia_get_booking_notes',
-                makia_note_nonce: makiaAdminConfig.noteNonce,
+                makia_note_nonce: notesConfig.noteNonce,
                 booking_id: bookingId
             },
             success: function(response) {
                 if (response.success) {
                     renderBookingNotes(response.data.notes);
                 }
+            },
+            error: function() {
+                showNotification('Error al cargar las notas', 'error');
             }
         });
     };
-    
+
     // Función para renderizar notas
     function renderBookingNotes(notes) {
         const container = $('#makia-notes-list');
-        
+
         if (!notes || notes.length === 0) {
             container.html('<div class="makia-no-notes">No hay notas internas</div>');
             return;
         }
-        
+
         let html = '';
         notes.forEach(function(note) {
             const date = new Date(note.created_at);
             const dateStr = date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
-            
+
             html += `
                 <div class="makia-note-item">
                     <div class="makia-note-header">
-                        <strong>${note.user_name}</strong>
+                        <strong>${escapeHtml(note.user_name)}</strong>
                         <span class="makia-note-date">${dateStr}</span>
                     </div>
                     <div class="makia-note-content">${escapeHtml(note.note)}</div>
                 </div>
             `;
         });
-        
+
         container.html(html);
     }
-    
+
     // Función para escapar HTML
     function escapeHtml(text) {
         const map = {
@@ -141,16 +151,19 @@ jQuery(document).ready(function($) {
         };
         return text.replace(/[&<>"']/g, function(m) { return map[m]; });
     }
-    
+
     // Función para mostrar notificaciones
     function showNotification(message, type) {
-        const notification = $('<div class="makia-notification makia-notification-' + type + '">' + message + '</div>');
+        type = type || 'success';
+        const notification = $('<div class="makia-notification"></div>')
+            .addClass('makia-notification-' + type)
+            .text(message);
         $('body').append(notification);
-        
+
         setTimeout(function() {
             notification.addClass('makia-notification-show');
         }, 10);
-        
+
         setTimeout(function() {
             notification.removeClass('makia-notification-show');
             setTimeout(function() {

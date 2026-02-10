@@ -1,5 +1,6 @@
 <!-- Botón para abrir el modal de reservas -->
 <?php
+if (!defined('ABSPATH')) { exit; }
 $style = get_option('makia_style_theme', 'gold');
 $button_text = get_option('makia_button_text', 'Reservar Mesa');
 $restaurant_name = get_option('makia_restaurant_name', 'Restaurante Brote');

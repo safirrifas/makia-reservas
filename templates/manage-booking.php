@@ -398,7 +398,11 @@ $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
     function makiaShowMessage(message, type) {
         var container = document.getElementById('makia-message-container');
         var className = type === 'success' ? 'makia-success' : 'makia-error';
-        container.innerHTML = '<div class="' + className + '">' + message + '</div>';
+        var div = document.createElement('div');
+        div.className = className;
+        div.textContent = message;
+        container.innerHTML = '';
+        container.appendChild(div);
         container.scrollIntoView({ behavior: 'smooth' });
     }
 })();

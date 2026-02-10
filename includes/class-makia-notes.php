@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * MakIA Notes Manager
  * Sistema de notas internas para reservas
@@ -14,14 +15,24 @@ class MakIA_Notes {
     public function __construct() {
         global $wpdb;
         $this->table_name = $wpdb->prefix . 'makia_notes';
-        
-        // Crear tabla si no existe
-        add_action('plugins_loaded', array($this, 'create_table'));
-        
+
+        // Crear tabla si no existe (con verificación de versión)
+        $this->maybe_create_table();
+
         // AJAX para gestión de notas
         add_action('wp_ajax_makia_add_note', array($this, 'add_note_ajax'));
         add_action('wp_ajax_makia_get_notes', array($this, 'get_notes_ajax'));
         add_action('wp_ajax_makia_delete_note', array($this, 'delete_note_ajax'));
+    }
+
+    /**
+     * Crear tabla solo si la versión ha cambiado
+     */
+    private function maybe_create_table() {
+        if (get_option('makia_notes_db_version') !== MAKIA_VERSION) {
+            $this->create_table();
+            update_option('makia_notes_db_version', MAKIA_VERSION);
+        }
     }
     
     /**
@@ -313,7 +324,7 @@ class MakIA_Notes {
         
         <script>
         jQuery(document).ready(function($) {
-            var bookingId = <?php echo $booking_id; ?>;
+            var bookingId = <?php echo intval($booking_id); ?>;
             
             // Mostrar formulario
             $('#makia-add-note-btn').on('click', function() {
@@ -473,7 +484,7 @@ class MakIA_Notes {
                     '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">' +
                         '<div style="display: flex; align-items: center; gap: 8px;">' +
                             '<span style="font-size: 20px;">' + icon + '</span>' +
-                            '<strong style="color: #333;">' + note.author_name + '</strong>' +
+                            '<strong style="color: #333;">' + escapeHtml(note.author_name) + '</strong>' +
                             importantBadge +
                         '</div>' +
                         '<button type="button" class="makia-delete-note" data-note-id="' + note.id + '" style="background: none; border: none; color: #d63638; cursor: pointer; font-size: 18px; padding: 0; line-height: 1;" title="Eliminar nota">🗑️</button>' +
@@ -579,7 +590,7 @@ class MakIA_Notes {
         $border_left = $note->is_important ? '#d63638' : '#667eea';
         ?>
         
-        <div class="makia-note-item<?php echo $important_class; ?>" data-note-id="<?php echo $note->id; ?>" style="background: <?php echo $bg_color; ?>; border: 1px solid <?php echo $border_color; ?>; border-left: 4px solid <?php echo $border_left; ?>; border-radius: 8px; padding: 15px; margin-bottom: 12px;">
+        <div class="makia-note-item<?php echo $important_class; ?>" data-note-id="<?php echo esc_attr($note->id); ?>" style="background: <?php echo $bg_color; ?>; border: 1px solid <?php echo $border_color; ?>; border-left: 4px solid <?php echo $border_left; ?>; border-radius: 8px; padding: 15px; margin-bottom: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 20px;"><?php echo $icon; ?></span>
@@ -588,7 +599,7 @@ class MakIA_Notes {
                         <span style="background: #d63638; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">IMPORTANTE</span>
                     <?php endif; ?>
                 </div>
-                <button type="button" class="makia-delete-note" data-note-id="<?php echo $note->id; ?>" style="background: none; border: none; color: #d63638; cursor: pointer; font-size: 18px; padding: 0; line-height: 1;" title="Eliminar nota">🗑️</button>
+                <button type="button" class="makia-delete-note" data-note-id="<?php echo esc_attr($note->id); ?>" style="background: none; border: none; color: #d63638; cursor: pointer; font-size: 18px; padding: 0; line-height: 1;" title="Eliminar nota">🗑️</button>
             </div>
             <p style="margin: 0 0 10px 0; color: #555; line-height: 1.6; white-space: pre-wrap;"><?php echo esc_html($note->note_text); ?></p>
             <div style="font-size: 12px; color: #999;">

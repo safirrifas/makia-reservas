@@ -47,7 +47,7 @@
             });
             
             // Animación de cierre del modal
-            $(document).on('click', '#makia-close-modal, .makia-modal-overlay', function(e) {
+            $(document).on('click', '#makia-close-modal, #makia-modal-overlay', function(e) {
                 if (e.target === this) {
                     const $overlay = $('#makia-modal-overlay');
                     $overlay.fadeOut(300);
@@ -303,7 +303,7 @@
          */
         
         showTooltip: function($element, message) {
-            const $tooltip = $('<div class="makia-tooltip">' + message + '</div>');
+            const $tooltip = $('<div class="makia-tooltip"></div>').text(message);
             
             $tooltip.css({
                 position: 'absolute',
@@ -343,7 +343,7 @@
         },
         
         announceToScreenReader: function(message) {
-            const $announcement = $('<div role="status" aria-live="polite" class="sr-only">' + message + '</div>');
+            const $announcement = $('<div role="status" aria-live="polite" class="sr-only"></div>').text(message);
             $('body').append($announcement);
             
             setTimeout(function() {

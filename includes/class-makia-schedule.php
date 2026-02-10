@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Gestión de Horarios Semanales
  * Permite configurar los días y horarios de apertura del restaurante
@@ -15,7 +16,7 @@ class Makia_Schedule {
         return self::$instance;
     }
     
-    public function __construct() {
+    private function __construct() {
         add_action('wp_ajax_makia_save_schedule', array($this, 'save_schedule_ajax'));
     }
     
@@ -291,8 +292,9 @@ class Makia_Schedule {
         
         if (!current_user_can('manage_options')) {
             wp_send_json_error('No tienes permisos para realizar esta acción');
+            return;
         }
-        
+
         $days_data = isset($_POST['days']) ? $_POST['days'] : array();
         $business_hours = array();
         

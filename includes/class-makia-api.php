@@ -15,6 +15,11 @@ class MakIA_API {
 	private $namespace = 'makia/v1';
 
 	/**
+	 * Static flag to ensure push table creation only runs once per request
+	 */
+	private static $push_table_ensured = false;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
@@ -67,13 +72,30 @@ class MakIA_API {
 				'callback'            => array( $this, 'get_operator_bookings' ),
 				'permission_callback' => array( $this, 'check_operator_permission' ),
 				'args'                => array(
-					'date'   => array(
+					'date'     => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+						'validate_callback' => function( $value ) {
+							if ( empty( $value ) ) {
+								return true;
+							}
+							$d = DateTime::createFromFormat( 'Y-m-d', $value );
+							return $d && $d->format( 'Y-m-d' ) === $value;
+						},
+					),
+					'status'   => array(
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'status' => array(
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_text_field',
+					'per_page' => array(
+						'type'              => 'integer',
+						'default'           => 20,
+						'sanitize_callback' => 'absint',
+					),
+					'page'     => array(
+						'type'              => 'integer',
+						'default'           => 1,
+						'sanitize_callback' => 'absint',
 					),
 				),
 			)
@@ -188,14 +210,14 @@ class MakIA_API {
 			)
 		);
 
-		// Verificar estado de licencia
+		// Verificar estado de licencia (requires authentication)
 		register_rest_route(
 			$this->namespace,
 			'/license/status',
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'get_license_status' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'check_operator_permission' ),
 			)
 		);
 	}
@@ -232,7 +254,7 @@ class MakIA_API {
 		}
 
 		// Generar JWT token
-		$token = $this->generate_jwt_token( $user );
+		$token = $this->generate_jwt_token( $user->ID );
 
 		return new WP_REST_Response(
 			array(
@@ -257,19 +279,33 @@ class MakIA_API {
 
 		if ( ! $operator_id ) {
 			return new WP_REST_Response(
-				array( 'message' => 'No autorizado' ),
+				array(
+					'success' => false,
+					'message' => 'No autorizado',
+				),
 				401
 			);
 		}
 
 		$user = get_user_by( 'id', $operator_id );
 
+		if ( ! $user ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => 'Usuario no encontrado',
+				),
+				404
+			);
+		}
+
 		return new WP_REST_Response(
 			array(
-				'id'    => $user->ID,
-				'email' => $user->user_email,
-				'name'  => $user->display_name,
-				'role'  => $user->roles[0] ?? 'makia_operator',
+				'success' => true,
+				'id'      => $user->ID,
+				'email'   => $user->user_email,
+				'name'    => $user->display_name,
+				'role'    => $user->roles[0] ?? 'makia_operator',
 			),
 			200
 		);
@@ -277,13 +313,18 @@ class MakIA_API {
 
 	/**
 	 * Obtener reservas del operario
+	 * Note: Returns all bookings for the restaurant, not scoped to operator.
+	 * This is intentional as operators need visibility into all restaurant bookings.
 	 */
 	public function get_operator_bookings( $request ) {
 		$operator_id = $this->get_operator_from_token( $request );
 
 		if ( ! $operator_id ) {
 			return new WP_REST_Response(
-				array( 'message' => 'No autorizado' ),
+				array(
+					'success' => false,
+					'message' => 'No autorizado',
+				),
 				401
 			);
 		}
@@ -291,8 +332,22 @@ class MakIA_API {
 		global $wpdb;
 		$table = $wpdb->prefix . 'makia_bookings';
 
-		$date   = $request->get_param( 'date' );
-		$status = $request->get_param( 'status' );
+		$date     = $request->get_param( 'date' );
+		$status   = $request->get_param( 'status' );
+		$per_page = $request->get_param( 'per_page' ) ? absint( $request->get_param( 'per_page' ) ) : 20;
+		$page     = $request->get_param( 'page' ) ? absint( $request->get_param( 'page' ) ) : 1;
+
+		if ( $per_page < 1 ) {
+			$per_page = 20;
+		}
+		if ( $per_page > 100 ) {
+			$per_page = 100;
+		}
+		if ( $page < 1 ) {
+			$page = 1;
+		}
+
+		$offset = ( $page - 1 ) * $per_page;
 
 		$query = "SELECT * FROM {$table} WHERE 1=1";
 
@@ -305,10 +360,19 @@ class MakIA_API {
 		}
 
 		$query .= ' ORDER BY booking_date DESC';
+		$query .= $wpdb->prepare( ' LIMIT %d OFFSET %d', $per_page, $offset );
 
 		$bookings = $wpdb->get_results( $query );
 
-		return new WP_REST_Response( $bookings, 200 );
+		return new WP_REST_Response(
+			array(
+				'success'  => true,
+				'bookings' => $bookings,
+				'page'     => $page,
+				'per_page' => $per_page,
+			),
+			200
+		);
 	}
 
 	/**
@@ -319,7 +383,10 @@ class MakIA_API {
 
 		if ( ! $operator_id ) {
 			return new WP_REST_Response(
-				array( 'message' => 'No autorizado' ),
+				array(
+					'success' => false,
+					'message' => 'No autorizado',
+				),
 				401
 			);
 		}
@@ -327,8 +394,32 @@ class MakIA_API {
 		$booking_id = $request->get_param( 'id' );
 		$status     = $request->get_param( 'status' );
 
+		// Validate status value
+		$allowed_statuses = array( 'pending', 'approved', 'rejected', 'cancelled', 'noshow' );
+		if ( ! in_array( $status, $allowed_statuses, true ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => 'Estado no válido',
+				),
+				400
+			);
+		}
+
 		global $wpdb;
 		$table = $wpdb->prefix . 'makia_bookings';
+
+		// Verify booking exists before updating
+		$booking = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM {$table} WHERE id = %d", $booking_id ) );
+		if ( ! $booking ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => 'Reserva no encontrada',
+				),
+				404
+			);
+		}
 
 		$result = $wpdb->update(
 			$table,
@@ -341,9 +432,12 @@ class MakIA_API {
 			array( '%d' )
 		);
 
-		if ( ! $result ) {
+		if ( false === $result ) {
 			return new WP_REST_Response(
-				array( 'message' => 'Error al actualizar la reserva' ),
+				array(
+					'success' => false,
+					'message' => 'Error al actualizar la reserva',
+				),
 				500
 			);
 		}
@@ -377,7 +471,10 @@ class MakIA_API {
 
 		if ( ! $operator_id ) {
 			return new WP_REST_Response(
-				array( 'message' => 'No autorizado' ),
+				array(
+					'success' => false,
+					'message' => 'No autorizado',
+				),
 				401
 			);
 		}
@@ -401,7 +498,10 @@ class MakIA_API {
 
 		if ( ! $result ) {
 			return new WP_REST_Response(
-				array( 'message' => 'Error al guardar la nota' ),
+				array(
+					'success' => false,
+					'message' => 'Error al guardar la nota',
+				),
 				500
 			);
 		}
@@ -424,7 +524,10 @@ class MakIA_API {
 
 		if ( ! $operator_id ) {
 			return new WP_REST_Response(
-				array( 'message' => 'No autorizado' ),
+				array(
+					'success' => false,
+					'message' => 'No autorizado',
+				),
 				401
 			);
 		}
@@ -436,7 +539,7 @@ class MakIA_API {
 		$users_table = $wpdb->prefix . 'users';
 
 		$query = $wpdb->prepare(
-			"SELECT n.*, u.display_name as operator_name 
+			"SELECT n.*, u.display_name as operator_name
 			FROM {$notes_table} n
 			LEFT JOIN {$users_table} u ON n.operator_id = u.ID
 			WHERE n.booking_id = %d
@@ -446,7 +549,13 @@ class MakIA_API {
 
 		$notes = $wpdb->get_results( $query );
 
-		return new WP_REST_Response( $notes, 200 );
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'notes'   => $notes,
+			),
+			200
+		);
 	}
 
 	/**
@@ -457,7 +566,10 @@ class MakIA_API {
 
 		if ( ! $operator_id ) {
 			return new WP_REST_Response(
-				array( 'message' => 'No autorizado' ),
+				array(
+					'success' => false,
+					'message' => 'No autorizado',
+				),
 				401
 			);
 		}
@@ -469,9 +581,58 @@ class MakIA_API {
 		global $wpdb;
 		$table = $wpdb->prefix . 'makia_push_subscriptions';
 
-		// Crear tabla si no existe
+		// Ensure push subscriptions table exists (runs once per request)
+		$this->ensure_push_table_exists();
+
+		// Insertar o actualizar subscripción
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				"INSERT INTO {$table} (operator_id, endpoint, auth, p256dh)
+				VALUES (%d, %s, %s, %s)
+				ON DUPLICATE KEY UPDATE
+				auth = VALUES(auth),
+				p256dh = VALUES(p256dh)",
+				$operator_id,
+				$endpoint,
+				$auth,
+				$p256dh
+			)
+		);
+
+		if ( false === $result ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => 'Error al registrar dispositivo',
+				),
+				500
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'message' => 'Dispositivo registrado para notificaciones',
+			),
+			201
+		);
+	}
+
+	/**
+	 * Ensure push subscriptions table exists.
+	 * Uses a static flag so it only runs once per request.
+	 * Ideally, this should be handled on plugin activation instead.
+	 */
+	private function ensure_push_table_exists() {
+		if ( self::$push_table_ensured ) {
+			return;
+		}
+
+		global $wpdb;
+		$table           = $wpdb->prefix . 'makia_push_subscriptions';
 		$charset_collate = $wpdb->get_charset_collate();
-		$sql             = "CREATE TABLE IF NOT EXISTS {$table} (
+
+		$sql = "CREATE TABLE IF NOT EXISTS {$table} (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			operator_id bigint(20) NOT NULL,
 			endpoint varchar(500) NOT NULL,
@@ -485,28 +646,7 @@ class MakIA_API {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 
-		// Insertar o actualizar subscripción
-		$wpdb->query(
-			$wpdb->prepare(
-				"INSERT INTO {$table} (operator_id, endpoint, auth, p256dh) 
-				VALUES (%d, %s, %s, %s)
-				ON DUPLICATE KEY UPDATE 
-				auth = VALUES(auth), 
-				p256dh = VALUES(p256dh)",
-				$operator_id,
-				$endpoint,
-				$auth,
-				$p256dh
-			)
-		);
-
-		return new WP_REST_Response(
-			array(
-				'success' => true,
-				'message' => 'Dispositivo registrado para notificaciones',
-			),
-			201
-		);
+		self::$push_table_ensured = true;
 	}
 
 	/**
@@ -517,7 +657,10 @@ class MakIA_API {
 
 		if ( ! $operator_id ) {
 			return new WP_REST_Response(
-				array( 'message' => 'No autorizado' ),
+				array(
+					'success' => false,
+					'message' => 'No autorizado',
+				),
 				401
 			);
 		}
@@ -525,7 +668,13 @@ class MakIA_API {
 		$query = $request->get_param( 'q' );
 
 		if ( ! $query ) {
-			return new WP_REST_Response( array(), 200 );
+			return new WP_REST_Response(
+				array(
+					'success'  => true,
+					'bookings' => array(),
+				),
+				200
+			);
 		}
 
 		global $wpdb;
@@ -533,7 +682,7 @@ class MakIA_API {
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} 
+				"SELECT * FROM {$table}
 				WHERE (customer_name LIKE %s OR customer_email LIKE %s OR customer_phone LIKE %s)
 				ORDER BY booking_date DESC
 				LIMIT 20",
@@ -543,64 +692,90 @@ class MakIA_API {
 			)
 		);
 
-		return new WP_REST_Response( $results, 200 );
-	}
-
-	/**
-	 * Generar JWT token
-	 */
-	private function generate_jwt_token( $user ) {
-		$secret = defined( 'JWT_AUTH_SECRET_KEY' ) ? JWT_AUTH_SECRET_KEY : wp_salt();
-		$issued_at = time();
-		$expire = $issued_at + ( 7 * 24 * 60 * 60 ); // 7 días
-
-		$payload = array(
-			'iss' => get_bloginfo( 'url' ),
-			'iat' => $issued_at,
-			'exp' => $expire,
-			'user_id' => $user->ID,
-			'email' => $user->user_email,
+		return new WP_REST_Response(
+			array(
+				'success'  => true,
+				'bookings' => $results,
+			),
+			200
 		);
-
-		// Aquí se usaría una librería JWT real como firebase/php-jwt
-		// Por ahora, retornar un token simulado
-		return base64_encode( wp_json_encode( $payload ) );
 	}
 
 	/**
-	 * Obtener operario desde token
+	 * Generar JWT token con HMAC-SHA256
+	 */
+	private function generate_jwt_token( $user_id ) {
+		$secret    = defined( 'AUTH_KEY' ) ? AUTH_KEY : wp_salt( 'auth' );
+		$issued_at = time();
+		$expire    = $issued_at + ( 7 * 24 * 60 * 60 );
+
+		$header  = base64_encode( wp_json_encode( array( 'typ' => 'JWT', 'alg' => 'HS256' ) ) );
+		$payload = base64_encode( wp_json_encode( array(
+			'user_id' => $user_id,
+			'iat'     => $issued_at,
+			'exp'     => $expire,
+			'iss'     => get_site_url(),
+		) ) );
+
+		$signature = hash_hmac( 'sha256', $header . '.' . $payload, $secret );
+
+		return $header . '.' . $payload . '.' . $signature;
+	}
+
+	/**
+	 * Obtener operario desde token con verificación HMAC
 	 */
 	private function get_operator_from_token( $request ) {
 		$auth_header = $request->get_header( 'Authorization' );
 
-		if ( ! $auth_header ) {
+		if ( ! $auth_header || strpos( $auth_header, 'Bearer ' ) !== 0 ) {
 			return false;
 		}
 
-		// Extraer token del header "Bearer <token>"
-		$parts = explode( ' ', $auth_header );
-		if ( count( $parts ) !== 2 || 'Bearer' !== $parts[0] ) {
+		$token = substr( $auth_header, 7 );
+		$parts = explode( '.', $token );
+
+		if ( count( $parts ) !== 3 ) {
 			return false;
 		}
 
-		$token = $parts[1];
+		list( $header, $payload, $signature ) = $parts;
 
-		// Decodificar token
-		$payload = json_decode( base64_decode( $token ), true );
+		$secret             = defined( 'AUTH_KEY' ) ? AUTH_KEY : wp_salt( 'auth' );
+		$expected_signature = hash_hmac( 'sha256', $header . '.' . $payload, $secret );
 
-		if ( ! isset( $payload['user_id'] ) ) {
+		if ( ! hash_equals( $expected_signature, $signature ) ) {
 			return false;
 		}
 
-		return $payload['user_id'];
+		$data = json_decode( base64_decode( $payload ), true );
+
+		if ( ! $data || ! isset( $data['user_id'] ) || ! isset( $data['exp'] ) ) {
+			return false;
+		}
+
+		if ( $data['exp'] < time() ) {
+			return false;
+		}
+
+		return $data['user_id'];
 	}
 
 	/**
-	 * Verificar permiso de operario
+	 * Verificar permiso de operario (checks role)
 	 */
 	public function check_operator_permission( $request ) {
 		$operator_id = $this->get_operator_from_token( $request );
-		return (bool) $operator_id;
+		if ( ! $operator_id ) {
+			return false;
+		}
+
+		$user = get_user_by( 'id', $operator_id );
+		if ( ! $user ) {
+			return false;
+		}
+
+		return in_array( 'administrator', $user->roles, true ) || in_array( 'makia_operator', $user->roles, true );
 	}
 
 	/**
@@ -608,12 +783,13 @@ class MakIA_API {
 	 */
 	public function get_license_status( $request ) {
 		$license_manager = new MakIA_License_Manager();
-		$is_active = $license_manager->is_license_active();
+		$is_active       = $license_manager->is_license_active();
 
 		if ( ! $is_active ) {
 			return new WP_REST_Response(
 				array(
-					'active' => false,
+					'success' => false,
+					'active'  => false,
 					'message' => 'Licencia no activa',
 				),
 				403
@@ -621,18 +797,17 @@ class MakIA_API {
 		}
 
 		$plan = $license_manager->get_current_plan();
-		$license_info = $license_manager->get_license_info();
 
 		return new WP_REST_Response(
 			array(
-				'active' => true,
-				'plan' => $plan,
-				'license_info' => $license_info,
+				'success'     => true,
+				'active'      => true,
+				'plan'        => $plan,
 				'usage_stats' => array(
-					'plan_name' => $plan['name'] ?? 'Unknown',
-					'current_count' => $license_manager->get_current_booking_count(),
-					'remaining' => ( $plan['limit'] ?? 0 ) - $license_manager->get_current_booking_count(),
-					'usage_percentage' => round( ( $license_manager->get_current_booking_count() / ( $plan['limit'] ?? 1 ) ) * 100 ),
+					'plan_name'        => $plan['name'] ?? 'Unknown',
+					'current_count'    => $license_manager->get_current_booking_count(),
+					'remaining'        => ( $plan['limit'] ?? 0 ) - $license_manager->get_current_booking_count(),
+					'usage_percentage' => round( ( $license_manager->get_current_booking_count() / max( $plan['limit'] ?? 1, 1 ) ) * 100 ),
 				),
 			),
 			200

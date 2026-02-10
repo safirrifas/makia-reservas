@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * UI de Configuración de Capacidad por Franjas Horarias
  */
@@ -13,7 +14,7 @@ class MakIA_Capacity_UI {
         $default_block_length = $makia_capacity->get_config('default_dining_block_length', '120');
         
         // Guardar configuración si se envió el formulario
-        if (isset($_POST['save_capacity_config']) && check_admin_referer('makia_capacity_config', 'makia_capacity_nonce')) {
+        if (isset($_POST['save_capacity_config']) && current_user_can('manage_options') && check_admin_referer('makia_capacity_config', 'makia_capacity_nonce')) {
             $enable = isset($_POST['enable_capacity_restrictions']) ? '1' : '0';
             $default_block = intval($_POST['default_dining_block_length']);
             
@@ -173,6 +174,14 @@ class MakIA_Capacity_UI {
                 });
             }
             
+            // Helper para escapar HTML y prevenir XSS
+            function escapeHtml(str) {
+                if (!str) return '';
+                var div = document.createElement('div');
+                div.appendChild(document.createTextNode(String(str)));
+                return div.innerHTML;
+            }
+
             // Renderizar franjas horarias
             function renderTimeSlots(slots) {
                 var html = '';
@@ -192,25 +201,25 @@ class MakIA_Capacity_UI {
                             'sunday': 'Domingo'
                         }[slot.day_of_week] || slot.day_of_week;
                         
-                        var maxReservations = slot.max_reservations ? slot.max_reservations + ' reservas' : 'Sin límite';
-                        var maxPeople = slot.max_people ? slot.max_people + ' personas' : 'Sin límite';
+                        var maxReservations = slot.max_reservations ? escapeHtml(slot.max_reservations) + ' reservas' : 'Sin límite';
+                        var maxPeople = slot.max_people ? escapeHtml(slot.max_people) + ' personas' : 'Sin límite';
                         var statusBadge = slot.is_active == 1 ? '<span style="background: #46b450; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✓ Activa</span>' : '<span style="background: #dc3232; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✗ Inactiva</span>';
-                        
+
                         html += '<div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">';
                         html += '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">';
                         html += '<div>';
-                        html += '<h4 style="margin: 0 0 5px 0; color: #667eea; font-size: 16px;">' + slot.name + ' ' + statusBadge + '</h4>';
-                        html += '<p style="margin: 0; color: #666; font-size: 14px;">' + dayLabel + ' • ' + slot.start_time.substring(0, 5) + ' - ' + slot.end_time.substring(0, 5) + '</p>';
+                        html += '<h4 style="margin: 0 0 5px 0; color: #667eea; font-size: 16px;">' + escapeHtml(slot.name) + ' ' + statusBadge + '</h4>';
+                        html += '<p style="margin: 0; color: #666; font-size: 14px;">' + escapeHtml(dayLabel) + ' • ' + escapeHtml(slot.start_time.substring(0, 5)) + ' - ' + escapeHtml(slot.end_time.substring(0, 5)) + '</p>';
                         html += '</div>';
                         html += '<div style="display: flex; gap: 10px;">';
-                        html += '<button class="button edit-slot" data-id="' + slot.id + '">✏️ Editar</button>';
-                        html += '<button class="button delete-slot" data-id="' + slot.id + '" style="color: #dc3232;">🗑️ Eliminar</button>';
+                        html += '<button class="button edit-slot" data-id="' + escapeHtml(slot.id) + '">✏️ Editar</button>';
+                        html += '<button class="button delete-slot" data-id="' + escapeHtml(slot.id) + '" style="color: #dc3232;">🗑️ Eliminar</button>';
                         html += '</div>';
                         html += '</div>';
                         html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">';
                         html += '<div style="background: #fff; padding: 10px; border-radius: 4px;">';
                         html += '<p style="margin: 0; color: #666; font-size: 12px;">Duración bloque</p>';
-                        html += '<p style="margin: 5px 0 0 0; font-weight: 600; color: #333;">' + slot.dining_block_length + ' min</p>';
+                        html += '<p style="margin: 5px 0 0 0; font-weight: 600; color: #333;">' + escapeHtml(slot.dining_block_length) + ' min</p>';
                         html += '</div>';
                         html += '<div style="background: #fff; padding: 10px; border-radius: 4px;">';
                         html += '<p style="margin: 0; color: #666; font-size: 12px;">Máx. reservas</p>';

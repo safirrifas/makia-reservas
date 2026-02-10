@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Shortcodes de MakIA
  * Maneja la renderización del formulario de reservas
@@ -17,7 +18,8 @@ class MakIA_Shortcodes {
      * Cargar scripts y estilos
      */
     public function enqueue_scripts() {
-        if (has_shortcode(get_post()->post_content ?? '', 'makia_reservas')) {
+        $post = get_post();
+        if ($post && has_shortcode($post->post_content, 'makia_reservas')) {
             wp_enqueue_style('makia-styles', MAKIA_PLUGIN_URL . 'assets/css/makia-styles.css', array(), MAKIA_VERSION);
             wp_enqueue_style('makia-modal-mobile', MAKIA_PLUGIN_URL . 'assets/css/makia-modal-mobile.css', array('makia-styles'), MAKIA_VERSION);
             wp_enqueue_script('makia-booking', MAKIA_PLUGIN_URL . 'assets/js/makia-booking.js', array('jquery'), MAKIA_VERSION, true);
@@ -67,6 +69,12 @@ class MakIA_Shortcodes {
      * Renderizar página de gestión de reservas
      */
     public function render_manage_booking($atts) {
+        // Verificar licencia
+        global $makia_license_manager;
+        if (!$makia_license_manager->is_license_active()) {
+            return '<div class="makia-error">El plugin MakIA no está activado. Por favor, contacta con el administrador del sitio.</div>';
+        }
+
         ob_start();
         include MAKIA_PLUGIN_DIR . 'templates/manage-booking.php';
         return ob_get_clean();
