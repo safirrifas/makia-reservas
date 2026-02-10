@@ -51,6 +51,10 @@
                 if (e.target === this) {
                     const $overlay = $('#makia-modal-overlay');
                     $overlay.fadeOut(300);
+                    $('body').css('overflow', 'auto');
+                    // Restaurar estado del formulario
+                    $('#makia-success-message').hide();
+                    $('#makia-booking-form').show();
                 }
             });
             
@@ -210,8 +214,11 @@
             
             $(document).on('keydown', function(e) {
                 // Cerrar modal con ESC
-                if (e.key === 'Escape') {
-                    $('#makia-close-modal').click();
+                if (e.key === 'Escape' && $('#makia-modal-overlay').is(':visible')) {
+                    $('#makia-modal-overlay').fadeOut(300);
+                    $('body').css('overflow', 'auto');
+                    $('#makia-success-message').hide();
+                    $('#makia-booking-form').show();
                 }
                 
                 // Navegación dentro del modal

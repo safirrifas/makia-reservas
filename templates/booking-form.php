@@ -366,7 +366,7 @@ $customizations = array(
                     <h3 style="text-align: center; color: #333; margin-bottom: 15px;">¡Reserva Recibida!</h3>
                     <p style="text-align: center; color: #666; margin-bottom: 20px;">Recibirás un email de confirmación de <?php echo esc_html($restaurant_name); ?>.</p>
                     <div id="makia-reservation-details"></div>
-                    <button type="button" class="makia-new-booking-btn" onclick="makiaResetForm()" style="width: 100%; padding: 14px; background: #667eea; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: all 0.3s;">Nueva reserva</button>
+                    <button type="button" class="makia-new-booking-btn" id="makia-new-booking-btn" style="width: 100%; padding: 14px; background: #667eea; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: all 0.3s;">Nueva reserva</button>
                 </div>
             </div>
         </div>

@@ -116,20 +116,46 @@ jQuery(document).ready(function($) {
             success: function(response) {
 
                 if (response.success) {
-                    messagesContainer.html(
-                        '<div class="makia-message makia-success" style="background:#d4edda;color:#155724;padding:15px;border-radius:5px;margin:15px 0;">' +
-                        '<strong>¡Reserva recibida!</strong><br>' +
-                        escapeHtml(response.data.message || 'Te enviaremos un email de confirmación cuando sea aprobada.') +
-                        '</div>'
-                    );
+                    // Ocultar formulario y mostrar mensaje de éxito
+                    var $form = $(form);
+                    var $successMsg = $('#makia-success-message');
+                    var $details = $('#makia-reservation-details');
+
+                    // Rellenar detalles de la reserva
+                    $details.empty();
+                    var detailsDiv = document.createElement('div');
+                    detailsDiv.style.cssText = 'background:#f8f9fa;padding:15px;border-radius:8px;margin:10px 0;';
+
+                    var items = [
+                        { label: 'Nombre', value: formData.name },
+                        { label: 'Fecha', value: formData.date },
+                        { label: 'Hora', value: formData.time },
+                        { label: 'Personas', value: formData.guests }
+                    ];
+                    for (var d = 0; d < items.length; d++) {
+                        var p = document.createElement('p');
+                        p.style.cssText = 'margin:5px 0;font-size:14px;';
+                        var strong = document.createElement('strong');
+                        strong.textContent = items[d].label + ': ';
+                        p.appendChild(strong);
+                        p.appendChild(document.createTextNode(items[d].value));
+                        detailsDiv.appendChild(p);
+                    }
+                    $details.append(detailsDiv);
+
+                    $form.hide();
+                    messagesContainer.empty();
+                    $successMsg.show();
 
                     form.reset();
 
                     setTimeout(function() {
                         $('#makia-modal-overlay').fadeOut(300);
                         $('body').css('overflow', 'auto');
-                        messagesContainer.empty();
-                    }, 3000);
+                        // Restaurar estado para la próxima apertura
+                        $successMsg.hide();
+                        $form.show();
+                    }, 4000);
                 } else {
                     messagesContainer.html(
                         '<div class="makia-message makia-error" style="background:#f8d7da;color:#721c24;padding:15px;border-radius:5px;margin:15px 0;">' +
@@ -251,7 +277,7 @@ jQuery(document).ready(function($) {
                 var slots = generateTimeSlots(specialOpening.start_time, specialOpening.end_time);
                 timeSelect.append('<option value="">Selecciona una hora</option>');
                 for (var i = 0; i < slots.length; i++) {
-                    timeSelect.append('<option value="' + slots[i] + '">' + slots[i] + '</option>');
+                    timeSelect.append($('<option></option>').val(slots[i]).text(slots[i]));
                 }
                 return;
             }
@@ -288,10 +314,24 @@ jQuery(document).ready(function($) {
 
         if (slots.length > 0) {
             for (var i = 0; i < slots.length; i++) {
-                timeSelect.append('<option value="' + slots[i] + '">' + slots[i] + '</option>');
+                timeSelect.append($('<option></option>').val(slots[i]).text(slots[i]));
             }
         } else {
             timeSelect.append('<option value="">Cerrado</option>');
         }
     }
+
+    // Handler del botón "Nueva reserva"
+    $(document).on('click', '#makia-new-booking-btn', function() {
+        var $form = $('#makia-booking-form');
+        var $successMsg = $('#makia-success-message');
+        $successMsg.hide();
+        $form.show();
+        $form[0].reset();
+        $('#makia-booking-messages').empty();
+        // Recargar horarios para hoy
+        var today = new Date().toISOString().split('T')[0];
+        $('#makia-date').val(today);
+        loadAvailableHours(today);
+    });
 });

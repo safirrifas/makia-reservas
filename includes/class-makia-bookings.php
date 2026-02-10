@@ -1230,15 +1230,15 @@ class MakIA_Bookings {
                             <div class="makia-booking-info">
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">📅 Fecha</div>
-                                    <div class="makia-info-value"><?php echo date('d/m/Y', strtotime($booking->booking_date)); ?></div>
+                                    <div class="makia-info-value"><?php echo esc_html(date('d/m/Y', strtotime($booking->booking_date))); ?></div>
                                 </div>
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">🕒 Hora</div>
-                                    <div class="makia-info-value"><?php echo date('H:i', strtotime($booking->booking_time)); ?></div>
+                                    <div class="makia-info-value"><?php echo esc_html(date('H:i', strtotime($booking->booking_time))); ?></div>
                                 </div>
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">👥 Personas</div>
-                                    <div class="makia-info-value"><?php echo esc_attr($booking->guests); ?></div>
+                                    <div class="makia-info-value"><?php echo intval($booking->guests); ?></div>
                                 </div>
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">📧 Email</div>
@@ -1315,7 +1315,11 @@ class MakIA_Bookings {
             if (window.event && (window.event.target.tagName === 'BUTTON' || window.event.target.closest('button'))) {
                 return;
             }
-            
+
+            // Validar bookingId como entero
+            bookingId = parseInt(bookingId, 10);
+            if (isNaN(bookingId) || bookingId <= 0) return;
+
             // Obtener datos de la reserva
             const card = document.querySelector('[data-booking-id="' + bookingId + '"]');
             if (!card) return;
