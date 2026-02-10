@@ -51,6 +51,9 @@ jQuery(document).ready(function($) {
         if (e.target === this) {
             $('#makia-modal-overlay').fadeOut(300);
             $('body').css('overflow', 'auto');
+            // Restaurar estado del formulario
+            $('#makia-success-message').hide();
+            $('#makia-booking-form').show();
         }
     });
 
@@ -104,8 +107,8 @@ jQuery(document).ready(function($) {
             legal: $('#makia-legal').is(':checked') ? 'on' : ''
         };
 
-        // Deshabilitar botón
-        submitBtn.prop('disabled', true).text('Procesando...');
+        // Deshabilitar botón (usar clases CSS para preservar estructura de spans)
+        submitBtn.prop('disabled', true).addClass('loading');
         messagesContainer.empty();
 
         // Enviar AJAX
@@ -148,6 +151,7 @@ jQuery(document).ready(function($) {
                     $successMsg.show();
 
                     form.reset();
+                    $(document).trigger('makia:booking:success');
 
                     setTimeout(function() {
                         $('#makia-modal-overlay').fadeOut(300);
@@ -167,6 +171,7 @@ jQuery(document).ready(function($) {
             },
             error: function(xhr, status, error) {
                 console.error('[MakIA] Error AJAX:', error);
+                $(document).trigger('makia:booking:error');
                 messagesContainer.html(
                     '<div class="makia-message makia-error" style="background:#f8d7da;color:#721c24;padding:15px;border-radius:5px;margin:15px 0;">' +
                     '<strong>Error de conexión:</strong> No se pudo enviar la reserva.' +
@@ -174,7 +179,7 @@ jQuery(document).ready(function($) {
                 );
             },
             complete: function() {
-                submitBtn.prop('disabled', false).text('Confirmar Reserva');
+                submitBtn.prop('disabled', false).removeClass('loading');
                 isSubmitting = false;
             }
         });

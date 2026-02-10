@@ -223,7 +223,7 @@
                 
                 // Navegación dentro del modal
                 if ($('#makia-modal-overlay').is(':visible')) {
-                    const $focusable = $(focusableElements).filter(':visible');
+                    const $focusable = $('#makia-modal-overlay').find(focusableElements).filter(':visible');
                     const $currentFocus = $(':focus');
                     const currentIndex = $focusable.index($currentFocus);
                     
@@ -278,29 +278,8 @@
          * Estados de carga
          */
         loadingStates: function() {
-            // Mostrar loading en el botón de envío
-            $('form').on('submit', function() {
-                const $btn = $(this).find('button[type="submit"]');
-                const originalText = $btn.text();
-                
-                $btn.addClass('loading')
-                    .prop('disabled', true)
-                    .data('original-text', originalText)
-                    .text('');
-                
-                // Mostrar overlay de carga
-                MakiaBookingEnhanced.showLoadingOverlay();
-            });
-            
-            // Ocultar loading al recibir respuesta
+            // Ocultar loading overlay al recibir respuesta del booking principal
             $(document).on('makia:booking:success makia:booking:error', function() {
-                const $btn = $('button[type="submit"]');
-                const originalText = $btn.data('original-text');
-                
-                $btn.removeClass('loading')
-                    .prop('disabled', false)
-                    .text(originalText);
-                
                 MakiaBookingEnhanced.hideLoadingOverlay();
             });
         },
