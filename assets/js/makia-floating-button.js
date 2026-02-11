@@ -170,49 +170,24 @@
      * Abrir el modal de reservas
      */
     function openBookingModal() {
-        // Buscar el modal de reservas de MakIA (ID correcto: makia-modal-overlay)
+        // Usar la función centralizada de makia-booking.js si está disponible
+        if (typeof window.makiaOpenModal === 'function') {
+            window.makiaOpenModal();
+            return;
+        }
+
+        // Fallback: abrir modal directamente con display:flex
         var $modal = $('#makia-modal-overlay');
-        
         if ($modal.length) {
-            // Si existe el modal, mostrarlo
-            $modal.fadeIn(300).addClass('makia-modal-open');
-            $('body').addClass('makia-modal-body-open');
-            
-            // Prevenir scroll del body
+            $modal.addClass('active').css('opacity', 0).animate({opacity: 1}, 300);
             $('body').css('overflow', 'hidden');
-            
             return;
         }
-        
-        // Fallback: buscar otros posibles IDs del modal
-        var $modalAlt = $('#makia-booking-modal, .makia-modal-overlay');
-        if ($modalAlt.length) {
-            $modalAlt.first().fadeIn(300).addClass('makia-modal-open');
-            $('body').addClass('makia-modal-body-open').css('overflow', 'hidden');
-            return;
-        }
-        
-        // Si no existe el modal, simular clic en el botón de abrir modal
+
+        // Último fallback: simular clic en el botón de abrir modal
         var $openButton = $('#makia-open-modal, .makia-reserve-button');
         if ($openButton.length) {
             $openButton.first().trigger('click');
-            return;
-        }
-        
-        // Último fallback: buscar el formulario de reservas y hacer scroll
-        var $bookingForm = $('.makia-booking-form, #makia-booking-form, [data-makia-booking]');
-        if ($bookingForm.length) {
-            $('html, body').animate({
-                scrollTop: $bookingForm.offset().top - 100
-            }, 500);
-        } else {
-            // Fallback final: buscar cualquier elemento con clase de reservas
-            var $reservasSection = $('[class*="reserva"], [id*="reserva"]').first();
-            if ($reservasSection.length) {
-                $('html, body').animate({
-                    scrollTop: $reservasSection.offset().top - 100
-                }, 500);
-            }
         }
     }
     

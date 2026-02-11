@@ -1,6 +1,6 @@
 /**
  * MakIA Reservas - JavaScript (Ultra Robusta - WordPress Compatible)
- * Version: 3.2.3
+ * Version: 4.3.0
  */
 
 jQuery(document).ready(function($) {
@@ -39,24 +39,52 @@ jQuery(document).ready(function($) {
         console.warn('[MakIA] makiaConfig no definido');
     }
 
-    // Inicializar modal
+    // =========================================================================
+    // MODAL: Abrir / Cerrar (usa display:flex para centrado correcto)
+    // =========================================================================
 
+    function openModal() {
+        var $overlay = $('#makia-modal-overlay');
+        if (!$overlay.length) return;
+        $overlay.addClass('active').css('opacity', 0).animate({opacity: 1}, 300);
+        $('body').css('overflow', 'hidden');
+    }
+
+    function closeModal() {
+        var $overlay = $('#makia-modal-overlay');
+        if (!$overlay.length || !$overlay.hasClass('active')) return;
+        $overlay.animate({opacity: 0}, 300, function() {
+            $(this).removeClass('active').css('opacity', '');
+        });
+        $('body').css('overflow', 'auto');
+        $('#makia-success-message').hide();
+        $('#makia-booking-form').show();
+    }
+
+    // Exponer openModal globalmente para el botón flotante
+    window.makiaOpenModal = openModal;
+
+    // Abrir modal
     $(document).on('click', '#makia-open-modal', function(e) {
         e.preventDefault();
-        $('#makia-modal-overlay').fadeIn(300);
-        $('body').css('overflow', 'hidden');
+        openModal();
     });
 
+    // Cerrar modal (clic en botón cerrar o en overlay)
     $(document).on('click', '#makia-close-modal, #makia-modal-overlay', function(e) {
         if (e.target === this) {
-            $('#makia-modal-overlay').fadeOut(300);
-            $('body').css('overflow', 'auto');
-            // Restaurar estado del formulario
-            $('#makia-success-message').hide();
-            $('#makia-booking-form').show();
+            closeModal();
         }
     });
 
+    // Cerrar modal con tecla ESC
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape' && $('#makia-modal-overlay').hasClass('active')) {
+            closeModal();
+        }
+    });
+
+    // Evitar que clics dentro del contenedor cierren el modal
     $(document).on('click', '.makia-modal-container', function(e) {
         e.stopPropagation();
     });
@@ -67,7 +95,10 @@ jQuery(document).ready(function($) {
         loadAvailableHours(dateValue);
     });
 
-    // Manejar envío del formulario
+    // =========================================================================
+    // FORMULARIO: Envío AJAX
+    // =========================================================================
+
     $(document).on('submit', '#makia-booking-form', function(e) {
         e.preventDefault();
 
@@ -154,11 +185,7 @@ jQuery(document).ready(function($) {
                     $(document).trigger('makia:booking:success');
 
                     setTimeout(function() {
-                        $('#makia-modal-overlay').fadeOut(300);
-                        $('body').css('overflow', 'auto');
-                        // Restaurar estado para la próxima apertura
-                        $successMsg.hide();
-                        $form.show();
+                        closeModal();
                     }, 4000);
                 } else {
                     messagesContainer.html(
@@ -184,6 +211,10 @@ jQuery(document).ready(function($) {
             }
         });
     });
+
+    // =========================================================================
+    // HORARIOS
+    // =========================================================================
 
     // Establecer fecha mínima
     var today = new Date().toISOString().split('T')[0];
