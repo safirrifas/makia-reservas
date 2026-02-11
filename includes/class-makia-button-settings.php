@@ -30,10 +30,13 @@ class MakIA_Button_Settings {
     public function __construct() {
         // Registrar opciones
         add_action('admin_init', array($this, 'register_settings'));
-        
+
         // Agregar botón flotante al frontend
         add_action('wp_footer', array($this, 'render_floating_button'));
-        
+
+        // Renderizar modal SIEMPRE en el footer (independiente del botón flotante)
+        add_action('wp_footer', array($this, 'ensure_modal_rendered'), 5);
+
         // Cargar assets del botón
         add_action('wp_enqueue_scripts', array($this, 'enqueue_button_assets'));
     }
@@ -82,6 +85,7 @@ class MakIA_Button_Settings {
     
     /**
      * Cargar assets del botón en el frontend
+     * Siempre carga los assets del modal para que esté disponible en todas las páginas
      */
     public function enqueue_button_assets() {
         $floating_enabled = $this->get_option('makia_floating_enabled');
@@ -93,43 +97,43 @@ class MakIA_Button_Settings {
             MAKIA_VERSION
         );
 
-        if ($floating_enabled) {
-            // Cargar estilos y scripts del modal en todas las páginas
-            // para que el botón flotante pueda abrir el modal desde cualquier página
-            wp_enqueue_style('makia-styles', MAKIA_PLUGIN_URL . 'assets/css/makia-styles.css', array(), MAKIA_VERSION);
-            wp_enqueue_style('makia-modal-mobile', MAKIA_PLUGIN_URL . 'assets/css/makia-modal-mobile.css', array('makia-styles'), MAKIA_VERSION);
+        // SIEMPRE cargar los assets del modal en todas las páginas del frontend
+        wp_enqueue_style('makia-styles', MAKIA_PLUGIN_URL . 'assets/css/makia-styles.css', array(), MAKIA_VERSION);
+        wp_enqueue_style('makia-modal-mobile', MAKIA_PLUGIN_URL . 'assets/css/makia-modal-mobile.css', array('makia-styles'), MAKIA_VERSION);
 
-            wp_enqueue_script(
-                'makia-booking',
-                MAKIA_PLUGIN_URL . 'assets/js/makia-booking.js',
-                array('jquery'),
-                MAKIA_VERSION,
-                true
-            );
+        wp_enqueue_script(
+            'makia-booking',
+            MAKIA_PLUGIN_URL . 'assets/js/makia-booking.js',
+            array('jquery'),
+            MAKIA_VERSION,
+            true
+        );
 
-            // Localizar makiaConfig para makia-booking.js
-            if (!isset($GLOBALS['makia_config_localized'])) {
-                $special_days = get_option('makia_special_days', array());
-                if (is_string($special_days)) {
-                    $special_days = maybe_unserialize($special_days);
-                }
-                if (!is_array($special_days)) {
-                    $special_days = array();
-                }
-
-                wp_localize_script('makia-booking', 'makiaConfig', array(
-                    'ajaxUrl' => admin_url('admin-ajax.php'),
-                    'nonce' => wp_create_nonce('makia_booking_nonce'),
-                    'apiUrl' => get_option('makia_api_url', MAKIA_API_URL),
-                    'restaurantName' => get_option('makia_restaurant_name'),
-                    'businessHours' => get_option('makia_business_hours'),
-                    'specialDays' => $special_days,
-                    'maxCapacity' => get_option('makia_max_capacity', 50),
-                    'maxGuestsPerReservation' => get_option('makia_max_guests_per_reservation', 20)
-                ));
-                $GLOBALS['makia_config_localized'] = true;
+        // Localizar makiaConfig para makia-booking.js
+        if (!isset($GLOBALS['makia_config_localized'])) {
+            $special_days = get_option('makia_special_days', array());
+            if (is_string($special_days)) {
+                $special_days = maybe_unserialize($special_days);
+            }
+            if (!is_array($special_days)) {
+                $special_days = array();
             }
 
+            wp_localize_script('makia-booking', 'makiaConfig', array(
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('makia_booking_nonce'),
+                'apiUrl' => get_option('makia_api_url', MAKIA_API_URL),
+                'restaurantName' => get_option('makia_restaurant_name'),
+                'businessHours' => get_option('makia_business_hours'),
+                'specialDays' => $special_days,
+                'maxCapacity' => get_option('makia_max_capacity', 50),
+                'maxGuestsPerReservation' => get_option('makia_max_guests_per_reservation', 20)
+            ));
+            $GLOBALS['makia_config_localized'] = true;
+        }
+
+        // Cargar scripts del botón flotante si está habilitado
+        if ($floating_enabled) {
             wp_enqueue_script(
                 'makia-floating-button',
                 MAKIA_PLUGIN_URL . 'assets/js/makia-floating-button.js',
@@ -138,7 +142,6 @@ class MakIA_Button_Settings {
                 true
             );
 
-            // Pasar opciones al JavaScript
             wp_localize_script('makia-floating-button', 'makiaButtonOptions', array(
                 'scrollOffset' => intval($this->get_option('makia_floating_scroll_offset')),
                 'position' => $this->get_option('makia_floating_position'),
@@ -149,6 +152,19 @@ class MakIA_Button_Settings {
 
         // Agregar estilos inline personalizados
         $this->add_custom_styles();
+    }
+
+    /**
+     * Asegurar que el modal HTML esté siempre en el DOM
+     * Se ejecuta en wp_footer con prioridad 5 (antes del botón flotante)
+     */
+    public function ensure_modal_rendered() {
+        if (!empty($GLOBALS['makia_modal_rendered'])) {
+            return;
+        }
+        $GLOBALS['makia_modal_rendered'] = true;
+        $GLOBALS['makia_skip_inline_button'] = true;
+        include MAKIA_PLUGIN_DIR . 'templates/booking-form.php';
     }
     
     /**
@@ -276,13 +292,6 @@ class MakIA_Button_Settings {
     public function render_floating_button() {
         if (!$this->get_option('makia_floating_enabled')) {
             return;
-        }
-
-        // Si el shortcode no renderizó el modal, renderizarlo aquí
-        if (empty($GLOBALS['makia_modal_rendered'])) {
-            $GLOBALS['makia_modal_rendered'] = true;
-            $GLOBALS['makia_skip_inline_button'] = true;
-            include MAKIA_PLUGIN_DIR . 'templates/booking-form.php';
         }
 
         $position = $this->get_option('makia_floating_position');
