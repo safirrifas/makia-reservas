@@ -176,18 +176,12 @@
             return;
         }
 
-        // Fallback: abrir modal directamente con display:flex
+        // Fallback: abrir modal directamente con clase CSS
         var $modal = $('#makia-modal-overlay');
         if ($modal.length) {
-            $modal.addClass('active').css('opacity', 0).animate({opacity: 1}, 300);
+            $modal.addClass('active');
             $('body').css('overflow', 'hidden');
             return;
-        }
-
-        // Último fallback: simular clic en el botón de abrir modal
-        var $openButton = $('#makia-open-modal, .makia-reserve-button');
-        if ($openButton.length) {
-            $openButton.first().trigger('click');
         }
     }
     

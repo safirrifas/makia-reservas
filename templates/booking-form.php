@@ -88,24 +88,7 @@ $customizations = array(
     }
 }
 
-.makia-modal-overlay {
-    animation: fadeIn 0.3s ease;
-}
-
-.makia-modal-container {
-    animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.makia-modal-overlay.active .makia-form-group {
-    animation: slideInUp 0.3s ease both;
-}
-
-.makia-modal-overlay.active .makia-form-row:nth-child(1) .makia-form-group { animation-delay: 0.1s; }
-.makia-modal-overlay.active .makia-form-row:nth-child(2) .makia-form-group { animation-delay: 0.15s; }
-.makia-modal-overlay.active .makia-form-row:nth-child(3) .makia-form-group { animation-delay: 0.2s; }
-.makia-modal-overlay.active .makia-form-row:nth-child(4) .makia-form-group { animation-delay: 0.25s; }
-.makia-modal-overlay.active .makia-form-row:nth-child(5) .makia-form-group { animation-delay: 0.3s; }
-.makia-modal-overlay.active .makia-form-row:nth-child(6) .makia-form-group { animation-delay: 0.35s; }
+/* Las transiciones del modal se manejan desde makia-styles.css */
 
 .makia-submit-btn:active {
     animation: pulse 0.3s ease;

@@ -46,16 +46,14 @@ jQuery(document).ready(function($) {
     function openModal() {
         var $overlay = $('#makia-modal-overlay');
         if (!$overlay.length) return;
-        $overlay.addClass('active').css('opacity', 0).animate({opacity: 1}, 300);
+        $overlay.addClass('active');
         $('body').css('overflow', 'hidden');
     }
 
     function closeModal() {
         var $overlay = $('#makia-modal-overlay');
         if (!$overlay.length || !$overlay.hasClass('active')) return;
-        $overlay.animate({opacity: 0}, 300, function() {
-            $(this).removeClass('active').css('opacity', '');
-        });
+        $overlay.removeClass('active');
         $('body').css('overflow', 'auto');
         $('#makia-success-message').hide();
         $('#makia-booking-form').show();
