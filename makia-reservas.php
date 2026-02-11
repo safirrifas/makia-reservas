@@ -3,7 +3,7 @@
  * Plugin Name: MakIA - Sistema de Reservas
  * Plugin URI: https://contacpro.app
  * Description: Sistema completo de reservas con IA para restaurantes. Incluye formulario de reservas, gestión de horarios, control de capacidad, plantillas personalizables con vista previa en vivo, y lista negra de usuarios.
- * Version: 4.2.0
+ * Version: 4.3.0
  * Author: MakIA Team
  * Author URI: https://contacpro.app
  * License: GPL v2 or later
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Definir constantes del plugin
-define('MAKIA_VERSION', '4.2.0');
+define('MAKIA_VERSION', '4.3.0');
 define('MAKIA_PLUGIN_FILE', __FILE__);
 define('MAKIA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MAKIA_PLUGIN_URL', plugin_dir_url(__FILE__));

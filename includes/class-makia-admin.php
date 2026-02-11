@@ -159,6 +159,7 @@ class MakIA_Admin {
                         <li><button data-tab="design"><span class="dashicons dashicons-admin-customizer"></span> Diseño</button></li>
                         <li><button data-tab="button"><span class="dashicons dashicons-button"></span> Botón Reservas</button></li>
                         <li><button data-tab="templates"><span class="dashicons dashicons-email"></span> Plantillas</button></li>
+                        <li><button data-tab="whatsapp"><span class="dashicons dashicons-smartphone"></span> WhatsApp</button></li>
                         <li><button data-tab="blacklist"><span class="dashicons dashicons-dismiss"></span> Lista Negra</button></li>
                         <li><button data-tab="license"><span class="dashicons dashicons-admin-network"></span> Licencia</button></li>
                     </ul>
@@ -230,6 +231,11 @@ class MakIA_Admin {
                     <?php MakIA_Templates::render_page(); ?>
                 </div>
                 
+                <!-- WhatsApp -->
+                <div id="makia-tab-whatsapp" class="makia-tab-content">
+                    <?php $this->render_whatsapp_tab(); ?>
+                </div>
+
                 <!-- Lista Negra -->
                 <div id="makia-tab-blacklist" class="makia-tab-content">
                     <?php MakIA_Blacklist::render_page(); ?>
@@ -1147,6 +1153,213 @@ class MakIA_Admin {
             $('input[name="makia_button_style"], input[name="makia_button_size"]').on('change', updatePreview);
         });
         </script>
+        <?php
+    }
+
+    /**
+     * Renderizar pestaña de WhatsApp Business
+     */
+    private function render_whatsapp_tab() {
+        // Guardar configuración WhatsApp
+        if (isset($_POST['save_whatsapp_settings']) && current_user_can('manage_options') && check_admin_referer('makia_whatsapp_settings', 'makia_whatsapp_nonce')) {
+            update_option('makia_whatsapp_phone', sanitize_text_field($_POST['makia_whatsapp_phone']));
+            update_option('makia_whatsapp_phone_number_id', sanitize_text_field($_POST['makia_whatsapp_phone_number_id']));
+            update_option('makia_whatsapp_business_account_id', sanitize_text_field($_POST['makia_whatsapp_business_account_id']));
+            update_option('makia_whatsapp_access_token', sanitize_text_field($_POST['makia_whatsapp_access_token']));
+            update_option('makia_whatsapp_enabled', isset($_POST['makia_whatsapp_enabled']) ? '1' : '0');
+            update_option('makia_whatsapp_auto_confirm', isset($_POST['makia_whatsapp_auto_confirm']) ? '1' : '0');
+            update_option('makia_whatsapp_auto_reminder', isset($_POST['makia_whatsapp_auto_reminder']) ? '1' : '0');
+            update_option('makia_whatsapp_confirmation_template', sanitize_textarea_field($_POST['makia_whatsapp_confirmation_template']));
+            update_option('makia_whatsapp_reminder_template', sanitize_textarea_field($_POST['makia_whatsapp_reminder_template']));
+
+            echo '<div class="notice notice-success"><p>Configuraci&oacute;n de WhatsApp guardada correctamente.</p></div>';
+        }
+
+        // Obtener valores actuales
+        $wa_phone = get_option('makia_whatsapp_phone', '');
+        $wa_phone_id = get_option('makia_whatsapp_phone_number_id', '');
+        $wa_business_id = get_option('makia_whatsapp_business_account_id', '');
+        $wa_token = get_option('makia_whatsapp_access_token', '');
+        $wa_enabled = get_option('makia_whatsapp_enabled', '0');
+        $wa_auto_confirm = get_option('makia_whatsapp_auto_confirm', '0');
+        $wa_auto_reminder = get_option('makia_whatsapp_auto_reminder', '0');
+        $wa_confirm_tpl = get_option('makia_whatsapp_confirmation_template', 'Hola {customer_name}, tu reserva ha sido confirmada para el {booking_date} a las {booking_time}. ¡Te esperamos en {restaurant_name}!');
+        $wa_reminder_tpl = get_option('makia_whatsapp_reminder_template', 'Recordatorio: Tu reserva es mañana a las {booking_time} en {restaurant_name}. ¿Necesitas cambiar algo? Responde SÍ o NO.');
+        $is_configured = !empty($wa_phone) && !empty($wa_phone_id) && !empty($wa_token);
+        ?>
+
+        <style>
+            .makia-wa-wrap { max-width: 900px; }
+            .makia-wa-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 30px; margin-bottom: 24px; }
+            .makia-wa-card h3 { margin: 0 0 20px; color: #25d366; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+            .makia-wa-status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+            .makia-wa-status.active { background: #d4edda; color: #155724; }
+            .makia-wa-status.inactive { background: #f8d7da; color: #721c24; }
+            .makia-wa-field { margin-bottom: 20px; }
+            .makia-wa-field label { display: block; font-weight: 600; margin-bottom: 6px; color: #333; }
+            .makia-wa-field input[type="text"],
+            .makia-wa-field input[type="tel"],
+            .makia-wa-field textarea { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+            .makia-wa-field textarea { min-height: 80px; resize: vertical; }
+            .makia-wa-field .description { color: #666; font-size: 12px; margin-top: 5px; }
+            .makia-wa-field input[type="password"] { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: monospace; }
+            .makia-wa-toggle { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: #f8f9fa; border-radius: 8px; margin-bottom: 16px; }
+            .makia-wa-toggle-info h4 { margin: 0 0 4px; color: #333; font-size: 15px; }
+            .makia-wa-toggle-info p { margin: 0; color: #666; font-size: 13px; }
+            .makia-wa-switch { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
+            .makia-wa-switch input { opacity: 0; width: 0; height: 0; }
+            .makia-wa-switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; transition: .3s; border-radius: 28px; }
+            .makia-wa-switch .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background: #fff; transition: .3s; border-radius: 50%; }
+            .makia-wa-switch input:checked + .slider { background: #25d366; }
+            .makia-wa-switch input:checked + .slider:before { transform: translateX(24px); }
+            .makia-wa-vars { background: #f0f7f1; border-radius: 8px; padding: 14px 18px; margin-top: 10px; }
+            .makia-wa-vars code { background: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; display: inline-block; margin: 3px 2px; border: 1px solid #e0e0e0; }
+            .makia-wa-vars code:hover { background: #25d366; color: #fff; border-color: #25d366; }
+            .makia-wa-submit { background: #25d366; color: #fff; border: none; padding: 14px 30px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+            .makia-wa-submit:hover { background: #128c7e; transform: translateY(-1px); }
+            .makia-wa-help { background: #e8f5e9; border-left: 4px solid #25d366; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 20px; }
+            .makia-wa-help a { color: #128c7e; font-weight: 600; }
+        </style>
+
+        <div class="makia-wa-wrap">
+            <!-- Estado actual -->
+            <div class="makia-wa-card">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                    <h3 style="margin-bottom: 0;">
+                        <span style="font-size: 28px;">📱</span> WhatsApp Business
+                    </h3>
+                    <?php if ($is_configured && $wa_enabled === '1'): ?>
+                        <span class="makia-wa-status active">🟢 Conectado y activo</span>
+                    <?php elseif ($is_configured): ?>
+                        <span class="makia-wa-status inactive">🟡 Configurado pero desactivado</span>
+                    <?php else: ?>
+                        <span class="makia-wa-status inactive">🔴 No configurado</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Ayuda -->
+            <div class="makia-wa-help">
+                <strong>¿C&oacute;mo configurar WhatsApp Business?</strong><br>
+                <ol style="margin: 10px 0 0; padding-left: 20px; color: #333; line-height: 1.8;">
+                    <li>Ve a <a href="https://developers.facebook.com/" target="_blank">Meta for Developers</a> y crea una app de tipo Business</li>
+                    <li>A&ntilde;ade el producto "WhatsApp" a tu app</li>
+                    <li>Copia el <strong>Phone Number ID</strong>, <strong>Business Account ID</strong> y <strong>Access Token</strong></li>
+                    <li>P&eacute;galos en los campos de abajo y guarda</li>
+                </ol>
+            </div>
+
+            <form method="post" action="">
+                <?php wp_nonce_field('makia_whatsapp_settings', 'makia_whatsapp_nonce'); ?>
+
+                <!-- Datos de conexión -->
+                <div class="makia-wa-card">
+                    <h3><span class="dashicons dashicons-admin-network"></span> Datos de Conexi&oacute;n</h3>
+
+                    <div class="makia-wa-field">
+                        <label for="makia_whatsapp_phone">N&uacute;mero de WhatsApp Business *</label>
+                        <input type="tel" name="makia_whatsapp_phone" id="makia_whatsapp_phone"
+                               value="<?php echo esc_attr($wa_phone); ?>"
+                               placeholder="Ej: +34 612 345 678">
+                        <p class="description">Tu n&uacute;mero de tel&eacute;fono de WhatsApp Business con c&oacute;digo de pa&iacute;s</p>
+                    </div>
+
+                    <div class="makia-wa-field">
+                        <label for="makia_whatsapp_phone_number_id">Phone Number ID *</label>
+                        <input type="text" name="makia_whatsapp_phone_number_id" id="makia_whatsapp_phone_number_id"
+                               value="<?php echo esc_attr($wa_phone_id); ?>"
+                               placeholder="Ej: 123456789012345">
+                        <p class="description">ID del n&uacute;mero en Meta Business (lo encuentras en la configuraci&oacute;n de WhatsApp de tu app)</p>
+                    </div>
+
+                    <div class="makia-wa-field">
+                        <label for="makia_whatsapp_business_account_id">Business Account ID</label>
+                        <input type="text" name="makia_whatsapp_business_account_id" id="makia_whatsapp_business_account_id"
+                               value="<?php echo esc_attr($wa_business_id); ?>"
+                               placeholder="Ej: 123456789012345">
+                        <p class="description">ID de tu cuenta de negocio en Meta Business</p>
+                    </div>
+
+                    <div class="makia-wa-field">
+                        <label for="makia_whatsapp_access_token">Access Token *</label>
+                        <input type="password" name="makia_whatsapp_access_token" id="makia_whatsapp_access_token"
+                               value="<?php echo esc_attr($wa_token); ?>"
+                               placeholder="EAAxxxxxxx...">
+                        <p class="description">Token de acceso permanente de tu app en Meta. <strong>Se guarda de forma segura.</strong></p>
+                    </div>
+                </div>
+
+                <!-- Activación y automatización -->
+                <div class="makia-wa-card">
+                    <h3><span class="dashicons dashicons-controls-play"></span> Activaci&oacute;n y Automatizaci&oacute;n</h3>
+
+                    <div class="makia-wa-toggle">
+                        <div class="makia-wa-toggle-info">
+                            <h4>Activar notificaciones WhatsApp</h4>
+                            <p>Enviar mensajes a los clientes por WhatsApp</p>
+                        </div>
+                        <label class="makia-wa-switch">
+                            <input type="checkbox" name="makia_whatsapp_enabled" value="1" <?php checked($wa_enabled, '1'); ?>>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="makia-wa-toggle">
+                        <div class="makia-wa-toggle-info">
+                            <h4>Confirmaci&oacute;n autom&aacute;tica</h4>
+                            <p>Enviar mensaje de confirmaci&oacute;n autom&aacute;ticamente al aprobar una reserva</p>
+                        </div>
+                        <label class="makia-wa-switch">
+                            <input type="checkbox" name="makia_whatsapp_auto_confirm" value="1" <?php checked($wa_auto_confirm, '1'); ?>>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="makia-wa-toggle">
+                        <div class="makia-wa-toggle-info">
+                            <h4>Recordatorio autom&aacute;tico</h4>
+                            <p>Enviar recordatorio al cliente el d&iacute;a anterior a la reserva</p>
+                        </div>
+                        <label class="makia-wa-switch">
+                            <input type="checkbox" name="makia_whatsapp_auto_reminder" value="1" <?php checked($wa_auto_reminder, '1'); ?>>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Plantillas de mensajes -->
+                <div class="makia-wa-card">
+                    <h3><span class="dashicons dashicons-edit"></span> Plantillas de Mensajes</h3>
+
+                    <div class="makia-wa-field">
+                        <label for="makia_whatsapp_confirmation_template">Mensaje de Confirmaci&oacute;n</label>
+                        <textarea name="makia_whatsapp_confirmation_template" id="makia_whatsapp_confirmation_template"
+                                  rows="4"><?php echo esc_textarea($wa_confirm_tpl); ?></textarea>
+                    </div>
+
+                    <div class="makia-wa-field">
+                        <label for="makia_whatsapp_reminder_template">Mensaje de Recordatorio</label>
+                        <textarea name="makia_whatsapp_reminder_template" id="makia_whatsapp_reminder_template"
+                                  rows="4"><?php echo esc_textarea($wa_reminder_tpl); ?></textarea>
+                    </div>
+
+                    <div class="makia-wa-vars">
+                        <strong style="font-size: 13px;">Variables disponibles</strong> <span style="font-size: 12px; color: #666;">(haz clic para copiar)</span><br>
+                        <code onclick="navigator.clipboard.writeText('{customer_name}')">{customer_name}</code>
+                        <code onclick="navigator.clipboard.writeText('{customer_email}')">{customer_email}</code>
+                        <code onclick="navigator.clipboard.writeText('{customer_phone}')">{customer_phone}</code>
+                        <code onclick="navigator.clipboard.writeText('{booking_date}')">{booking_date}</code>
+                        <code onclick="navigator.clipboard.writeText('{booking_time}')">{booking_time}</code>
+                        <code onclick="navigator.clipboard.writeText('{guests}')">{guests}</code>
+                        <code onclick="navigator.clipboard.writeText('{restaurant_name}')">{restaurant_name}</code>
+                    </div>
+                </div>
+
+                <button type="submit" name="save_whatsapp_settings" class="makia-wa-submit">
+                    💾 Guardar Configuraci&oacute;n WhatsApp
+                </button>
+            </form>
+        </div>
         <?php
     }
 }
