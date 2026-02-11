@@ -3,7 +3,7 @@
  * Plugin Name: MakIA - Sistema de Reservas
  * Plugin URI: https://contacpro.app
  * Description: Sistema completo de reservas con IA para restaurantes. Incluye formulario de reservas, gestión de horarios, control de capacidad, plantillas personalizables con vista previa en vivo, y lista negra de usuarios.
- * Version: 4.3.0
+ * Version: 4.3.1
  * Author: MakIA Team
  * Author URI: https://contacpro.app
  * License: GPL v2 or later
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Definir constantes del plugin
-define('MAKIA_VERSION', '4.3.0');
+define('MAKIA_VERSION', '4.3.1');
 define('MAKIA_PLUGIN_FILE', __FILE__);
 define('MAKIA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MAKIA_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -257,40 +257,8 @@ function makia_init() {
 }
 add_action('plugins_loaded', 'makia_init');
 
-/**
- * Cargar assets del frontend
- */
-function makia_enqueue_scripts() {
-    // Solo cargar si hay shortcode en la página
-    global $post;
-    if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'makia_reservas')) {
-        wp_enqueue_style(
-            'makia-styles',
-            MAKIA_PLUGIN_URL . 'assets/css/makia-styles.css',
-            array(),
-            MAKIA_VERSION
-        );
-        
-        wp_enqueue_script(
-            'makia-booking',
-            MAKIA_PLUGIN_URL . 'assets/js/makia-booking.js',
-            array('jquery'),
-            MAKIA_VERSION,
-            true
-        );
-        
-        // Pasar datos al JavaScript
-        wp_localize_script('makia-booking', 'makiaData', array(
-            'apiUrl' => MAKIA_API_URL,
-            'nonce' => wp_create_nonce('makia_booking'),
-            'restaurantName' => get_option('makia_restaurant_name', ''),
-            'maxCapacity' => get_option('makia_max_capacity', 50),
-            'maxPerReservation' => get_option('makia_max_per_reservation', 12),
-            'businessHours' => get_option('makia_business_hours', array())
-        ));
-    }
-}
-add_action('wp_enqueue_scripts', 'makia_enqueue_scripts');
+// Los assets del frontend se cargan desde MakIA_Shortcodes::enqueue_scripts()
+// y MakIA_Button_Settings::enqueue_button_assets()
 
 /**
  * Agregar enlaces en la página de plugins

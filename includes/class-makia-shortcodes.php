@@ -15,16 +15,24 @@ class MakIA_Shortcodes {
     }
     
     /**
-     * Cargar scripts y estilos
+     * Cargar scripts y estilos (detección temprana via has_shortcode)
      */
     public function enqueue_scripts() {
         $post = get_post();
         if ($post && has_shortcode($post->post_content, 'makia_reservas')) {
-            wp_enqueue_style('makia-styles', MAKIA_PLUGIN_URL . 'assets/css/makia-styles.css', array(), MAKIA_VERSION);
-            wp_enqueue_style('makia-modal-mobile', MAKIA_PLUGIN_URL . 'assets/css/makia-modal-mobile.css', array('makia-styles'), MAKIA_VERSION);
-            wp_enqueue_script('makia-booking', MAKIA_PLUGIN_URL . 'assets/js/makia-booking.js', array('jquery'), MAKIA_VERSION, true);
-            
-            // Pasar configuración al JavaScript
+            self::enqueue_modal_assets();
+        }
+    }
+
+    /**
+     * Encolar los assets del modal de reservas (reutilizable)
+     */
+    public static function enqueue_modal_assets() {
+        wp_enqueue_style('makia-styles', MAKIA_PLUGIN_URL . 'assets/css/makia-styles.css', array(), MAKIA_VERSION);
+        wp_enqueue_style('makia-modal-mobile', MAKIA_PLUGIN_URL . 'assets/css/makia-modal-mobile.css', array('makia-styles'), MAKIA_VERSION);
+        wp_enqueue_script('makia-booking', MAKIA_PLUGIN_URL . 'assets/js/makia-booking.js', array('jquery'), MAKIA_VERSION, true);
+
+        if (!isset($GLOBALS['makia_config_localized'])) {
             $special_days = get_option('makia_special_days', array());
             if (is_string($special_days)) {
                 $special_days = maybe_unserialize($special_days);
@@ -32,7 +40,7 @@ class MakIA_Shortcodes {
             if (!is_array($special_days)) {
                 $special_days = array();
             }
-            
+
             wp_localize_script('makia-booking', 'makiaConfig', array(
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('makia_booking_nonce'),
@@ -43,6 +51,7 @@ class MakIA_Shortcodes {
                 'maxCapacity' => get_option('makia_max_capacity', 50),
                 'maxGuestsPerReservation' => get_option('makia_max_guests_per_reservation', 20)
             ));
+            $GLOBALS['makia_config_localized'] = true;
         }
     }
     
@@ -55,11 +64,17 @@ class MakIA_Shortcodes {
         if (!$makia_license_manager->is_license_active()) {
             return '<div class="makia-error">El plugin MakIA no está activado. Por favor, contacta con el administrador del sitio.</div>';
         }
-        
+
+        // Fallback: encolar assets si has_shortcode() no los detectó
+        // (ej. shortcode via page builder, widget, o template)
+        self::enqueue_modal_assets();
+
+        $GLOBALS['makia_modal_rendered'] = true;
+
         $atts = shortcode_atts(array(
             'theme' => 'light'
         ), $atts);
-        
+
         ob_start();
         include MAKIA_PLUGIN_DIR . 'templates/booking-form.php';
         return ob_get_clean();

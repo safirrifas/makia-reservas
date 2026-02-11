@@ -1,4 +1,4 @@
-<!-- Botón para abrir el modal de reservas -->
+<!-- Formulario de reservas MakIA -->
 <?php
 if (!defined('ABSPATH')) { exit; }
 $style = get_option('makia_style_theme', 'gold');
@@ -18,11 +18,13 @@ $customizations = array(
 );
 ?>
 
+<?php if (empty($GLOBALS['makia_skip_inline_button'])): ?>
 <div class="makia-booking-wrapper makia-style-<?php echo esc_attr($style); ?>">
     <button type="button" class="makia-reserve-button" id="makia-open-modal">
         <?php echo esc_html($button_text); ?>
     </button>
 </div>
+<?php endif; ?>
 
 <!-- Estilos personalizados en línea -->
 <style>
@@ -94,17 +96,16 @@ $customizations = array(
     animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.makia-form-group {
-    animation: slideInUp 0.3s ease forwards;
-    opacity: 0;
+.makia-modal-overlay.active .makia-form-group {
+    animation: slideInUp 0.3s ease both;
 }
 
-.makia-form-row:nth-child(1) .makia-form-group { animation-delay: 0.1s; }
-.makia-form-row:nth-child(2) .makia-form-group { animation-delay: 0.15s; }
-.makia-form-row:nth-child(3) .makia-form-group { animation-delay: 0.2s; }
-.makia-form-row:nth-child(4) .makia-form-group { animation-delay: 0.25s; }
-.makia-form-row:nth-child(5) .makia-form-group { animation-delay: 0.3s; }
-.makia-form-row:nth-child(6) .makia-form-group { animation-delay: 0.35s; }
+.makia-modal-overlay.active .makia-form-row:nth-child(1) .makia-form-group { animation-delay: 0.1s; }
+.makia-modal-overlay.active .makia-form-row:nth-child(2) .makia-form-group { animation-delay: 0.15s; }
+.makia-modal-overlay.active .makia-form-row:nth-child(3) .makia-form-group { animation-delay: 0.2s; }
+.makia-modal-overlay.active .makia-form-row:nth-child(4) .makia-form-group { animation-delay: 0.25s; }
+.makia-modal-overlay.active .makia-form-row:nth-child(5) .makia-form-group { animation-delay: 0.3s; }
+.makia-modal-overlay.active .makia-form-row:nth-child(6) .makia-form-group { animation-delay: 0.35s; }
 
 .makia-submit-btn:active {
     animation: pulse 0.3s ease;
