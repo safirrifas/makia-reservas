@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Clase para gestionar el enlace a la PWA en el panel del plugin
  * Proporciona acceso directo a la aplicación móvil desde el panel de administración

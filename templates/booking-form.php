@@ -3,7 +3,7 @@
 if (!defined('ABSPATH')) { exit; }
 $style = get_option('makia_style_theme', 'gold');
 $button_text = get_option('makia_button_text', 'Reservar Mesa');
-$restaurant_name = get_option('makia_restaurant_name', 'Restaurante Brote');
+$restaurant_name = get_option('makia_restaurant_name', get_bloginfo('name'));
 
 // Obtener plantilla y personalizaciones
 $active_template = get_option('makia_active_template', 'modern');

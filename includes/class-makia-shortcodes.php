@@ -61,7 +61,7 @@ class MakIA_Shortcodes {
     public function render_booking_form($atts) {
         // Verificar licencia
         global $makia_license_manager;
-        if (!$makia_license_manager->is_license_active()) {
+        if ($makia_license_manager && !$makia_license_manager->is_license_active()) {
             return '<div class="makia-error">El plugin MakIA no está activado. Por favor, contacta con el administrador del sitio.</div>';
         }
 
@@ -86,7 +86,7 @@ class MakIA_Shortcodes {
     public function render_manage_booking($atts) {
         // Verificar licencia
         global $makia_license_manager;
-        if (!$makia_license_manager->is_license_active()) {
+        if ($makia_license_manager && !$makia_license_manager->is_license_active()) {
             return '<div class="makia-error">El plugin MakIA no está activado. Por favor, contacta con el administrador del sitio.</div>';
         }
 

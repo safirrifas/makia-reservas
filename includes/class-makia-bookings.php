@@ -657,7 +657,7 @@ class MakIA_Bookings {
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
             'Reply-To: ' . $restaurant_email,
-            'Content-Type: text/html; charset=UTF-8'
+            'Content-Type: text/plain; charset=UTF-8'
         );
         
         $result = wp_mail($booking->email, $subject, $message, $headers);
@@ -847,7 +847,7 @@ class MakIA_Bookings {
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
             'Reply-To: ' . $restaurant_email,
-            'Content-Type: text/html; charset=UTF-8'
+            'Content-Type: text/plain; charset=UTF-8'
         );
         
         wp_mail($booking->email, $subject, $message, $headers);
@@ -2045,7 +2045,7 @@ class MakIA_Bookings {
                         $headers = array(
                             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
                             'Reply-To: ' . $restaurant_email,
-                            'Content-Type: text/html; charset=UTF-8'
+                            'Content-Type: text/plain; charset=UTF-8'
                         );
                         
                         if (wp_mail($booking->email, $subject, $message, $headers)) {
@@ -2385,7 +2385,7 @@ class MakIA_Bookings {
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
             'Reply-To: ' . $restaurant_email,
-            'Content-Type: text/html; charset=UTF-8'
+            'Content-Type: text/plain; charset=UTF-8'
         );
         
         wp_mail($booking->email, $subject, $message, $headers);

@@ -26,42 +26,14 @@
          * Configurar animaciones
          */
         setupAnimations: function() {
-            // Animación de entrada del modal
-            $(document).on('click', '#makia-open-modal', function() {
-                const $overlay = $('#makia-modal-overlay');
-                const animationsEnabled = $overlay.hasClass('makia-enable-animations');
-                
-                $overlay.fadeIn(animationsEnabled ? 300 : 0);
-                
-                if (animationsEnabled) {
-                    $('.makia-modal-container').css({
-                        opacity: 0,
-                        transform: 'scale(0.9)'
-                    }).animate({
-                        opacity: 1
-                    }, 300).css({
-                        transform: 'scale(1)',
-                        transition: 'transform 0.3s ease'
-                    });
-                }
-            });
-            
-            // Animación de cierre del modal
-            $(document).on('click', '#makia-close-modal, #makia-modal-overlay', function(e) {
-                if (e.target === this) {
-                    const $overlay = $('#makia-modal-overlay');
-                    $overlay.fadeOut(300);
-                    $('body').css('overflow', 'auto');
-                    // Restaurar estado del formulario
-                    $('#makia-success-message').hide();
-                    $('#makia-booking-form').show();
-                }
-            });
-            
+            // Modal open/close se gestiona en makia-booking.js (via CSS class toggle)
+            // Aquí solo añadimos animaciones complementarias que no interfieren
+
             // Animación de campos al escribir
-            $('input, select, textarea').on('focus', function() {
+            $(document).on('focus', '#makia-booking-form input, #makia-booking-form select, #makia-booking-form textarea', function() {
                 $(this).closest('.makia-form-group').addClass('focused');
-            }).on('blur', function() {
+            });
+            $(document).on('blur', '#makia-booking-form input, #makia-booking-form select, #makia-booking-form textarea', function() {
                 $(this).closest('.makia-form-group').removeClass('focused');
             });
         },
@@ -213,14 +185,8 @@
             let focusableElements = 'input, select, textarea, button, [tabindex]:not([tabindex="-1"])';
             
             $(document).on('keydown', function(e) {
-                // Cerrar modal con ESC
-                if (e.key === 'Escape' && $('#makia-modal-overlay').is(':visible')) {
-                    $('#makia-modal-overlay').fadeOut(300);
-                    $('body').css('overflow', 'auto');
-                    $('#makia-success-message').hide();
-                    $('#makia-booking-form').show();
-                }
-                
+                // ESC se gestiona en makia-booking.js
+
                 // Navegación dentro del modal
                 if ($('#makia-modal-overlay').is(':visible')) {
                     const $focusable = $('#makia-modal-overlay').find(focusableElements).filter(':visible');

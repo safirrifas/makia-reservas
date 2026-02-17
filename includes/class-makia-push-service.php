@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Clase para gestionar Web Push Notifications
  * Envía notificaciones push a los operarios en tiempo real

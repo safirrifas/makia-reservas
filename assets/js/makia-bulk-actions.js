@@ -4,7 +4,6 @@
  */
 
 jQuery(document).ready(function($) {
-    console.log('[MakIA Bulk] Script cargado');
     
     // Variables
     let selectedBookings = [];

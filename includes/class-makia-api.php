@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Clase para gestionar la API REST del plugin
  * Proporciona endpoints para sincronizar datos con la app PWA

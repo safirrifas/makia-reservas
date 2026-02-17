@@ -7,7 +7,6 @@
     'use strict';
     
     $(document).ready(function() {
-        console.log('[MakIA Admin] JavaScript cargado');
         
         // Manejar aprobar/rechazar con AJAX
         $(document).on('submit', 'form[data-ajax-action]', function(e) {

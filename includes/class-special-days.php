@@ -200,8 +200,13 @@ class MakIA_Special_Days {
         
         // Agregar horarios si es horario especial o apertura excepcional
         if ($type === 'special_hours' || $type === 'exceptional_opening') {
-            $special_day['start'] = sanitize_text_field($_POST['special_start']);
-            $special_day['end'] = sanitize_text_field($_POST['special_end']);
+            $start = sanitize_text_field($_POST['special_start']);
+            $end = sanitize_text_field($_POST['special_end']);
+            $special_day['start'] = $start;
+            $special_day['end'] = $end;
+            // Claves adicionales para compatibilidad con frontend JS
+            $special_day['start_time'] = $start;
+            $special_day['end_time'] = $end;
         }
         
         // Obtener días especiales existentes

@@ -152,7 +152,6 @@ class MakIA_Admin {
                         <li><button class="active" data-tab="principal"><span class="dashicons dashicons-admin-home"></span> Principal</button></li>
                         <li><button data-tab="reservations"><span class="dashicons dashicons-calendar-alt"></span> Reservas</button></li>
                         <li><button data-tab="settings"><span class="dashicons dashicons-admin-generic"></span> Configuración</button></li>
-                        <li><button data-tab="appearance"><span class="dashicons dashicons-admin-appearance"></span> Apariencia</button></li>
                         <li><button data-tab="schedule"><span class="dashicons dashicons-clock"></span> Horarios</button></li>
                         <li><button data-tab="special-days"><span class="dashicons dashicons-calendar"></span> Días Especiales</button></li>
                         <li><button data-tab="capacity"><span class="dashicons dashicons-clock"></span> Capacidad</button></li>
@@ -196,10 +195,6 @@ class MakIA_Admin {
                     <?php $this->render_settings_tab(); ?>
                 </div>
                 
-                <!-- Apariencia -->
-                <div id="makia-tab-appearance" class="makia-tab-content">
-                    <?php $this->render_appearance_tab(); ?>
-                </div>
                 
                 <!-- Horarios Semanales -->
                 <div id="makia-tab-schedule" class="makia-tab-content">
@@ -339,7 +334,7 @@ class MakIA_Admin {
                     <strong style="color: #667eea;">⚙️ Configuración:</strong> Configura horarios, capacidad y datos del restaurante
                 </li>
                 <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
-                    <strong style="color: #667eea;">🎨 Apariencia:</strong> Personaliza los colores y estilos del formulario
+                    <strong style="color: #667eea;">🎨 Diseño:</strong> Personaliza los colores y estilos del formulario
                 </li>
                 <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
                     <strong style="color: #667eea;">📧 Plantillas:</strong> Personaliza los mensajes de email, SMS y WhatsApp
@@ -510,15 +505,6 @@ class MakIA_Admin {
         <?php
     }
     
-    /**
-     * Renderizar pestaña de Apariencia
-     */
-    private function render_appearance_tab() {
-        echo '<div style="background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">';
-        echo '<h2 style="margin: 0 0 20px 0; color: #667eea;">🎨 Personalización de Apariencia</h2>';
-        echo '<p>Funcionalidad de personalización de colores y estilos próximamente.</p>';
-        echo '</div>';
-    }
     
     /**
      * Renderizar pestaña de Licencia con información detallada del plan

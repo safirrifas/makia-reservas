@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Clase para gestionar WhatsApp con WhatsApp Business API
  * 

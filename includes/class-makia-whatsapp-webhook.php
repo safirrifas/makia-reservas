@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) { exit; }
 /**
  * Clase para manejar webhooks de WhatsApp
  * 
@@ -73,11 +74,14 @@ class MakIA_WhatsApp_Webhook {
      * @return WP_REST_Response
      */
     public function handle_webhook( WP_REST_Request $request ) {
-        // Verify X-Hub-Signature-256
-        $signature = $request->get_header('X-Hub-Signature-256');
+        // Verify X-Hub-Signature-256 (obligatorio cuando app_secret está configurado)
         $app_secret = get_option('makia_whatsapp_app_secret', '');
 
-        if ($app_secret && $signature) {
+        if ($app_secret) {
+            $signature = $request->get_header('X-Hub-Signature-256');
+            if (!$signature) {
+                return new WP_REST_Response('Forbidden', 403);
+            }
             $expected = 'sha256=' . hash_hmac('sha256', $request->get_body(), $app_secret);
             if (!hash_equals($expected, $signature)) {
                 return new WP_REST_Response('Forbidden', 403);
