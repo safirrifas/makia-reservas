@@ -214,8 +214,9 @@ jQuery(document).ready(function($) {
     // HORARIOS
     // =========================================================================
 
-    // Establecer fecha mínima
-    var today = new Date().toISOString().split('T')[0];
+    // Establecer fecha mínima (usar fecha local, no UTC)
+    var now = new Date();
+    var today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
     $('#makia-date').attr('min', today);
 
     // Cargar horarios para hoy
@@ -363,8 +364,9 @@ jQuery(document).ready(function($) {
         $form.show();
         $form[0].reset();
         $('#makia-booking-messages').empty();
-        // Recargar horarios para hoy
-        var today = new Date().toISOString().split('T')[0];
+        // Recargar horarios para hoy (usar fecha local, no UTC)
+        var now = new Date();
+        var today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
         $('#makia-date').val(today);
         loadAvailableHours(today);
     });

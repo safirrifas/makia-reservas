@@ -197,8 +197,8 @@ $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
     }
     
     // Formatear fecha y hora
-    $date_formatted = date('d/m/Y', strtotime($booking->booking_date));
-    $time_formatted = date('H:i', strtotime($booking->booking_time));
+    $date_formatted = wp_date('d/m/Y', strtotime($booking->booking_date));
+    $time_formatted = wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time));
     
     // Traducir estado
     $status_labels = array(

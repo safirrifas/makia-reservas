@@ -307,36 +307,42 @@ class MakIA_Bookings {
         // ============================================
         // VALIDACIÓN DE FECHA Y HORA
         // ============================================
-        $booking_date = strtotime($date);
-        $today = strtotime(date('Y-m-d'));
-        
+        // Usar timezone de WordPress en lugar del servidor
+        $wp_tz = wp_timezone();
+        $now = new DateTime('now', $wp_tz);
+        $today_dt = new DateTime('today', $wp_tz);
+        $booking_date_dt = DateTime::createFromFormat('Y-m-d', $date, $wp_tz);
+        $booking_date_dt->setTime(0, 0, 0);
+
         // No se puede reservar en el pasado
-        if ($booking_date < $today) {
+        if ($booking_date_dt < $today_dt) {
             wp_send_json_error(array(
                 'message' => 'No se pueden hacer reservas para fechas pasadas',
                 'field' => 'date'
             ));
             return;
         }
-        
+
         // Reserva con al menos X horas de antelación (configurable)
         $min_hours_advance = intval(get_option('makia_min_hours_advance', 2));
-        $min_booking_time = strtotime("+{$min_hours_advance} hours");
-        $booking_datetime = strtotime($date . ' ' . $time);
-        
-        if ($booking_datetime < $min_booking_time) {
+        $min_booking_dt = clone $now;
+        $min_booking_dt->modify("+{$min_hours_advance} hours");
+        $booking_datetime_dt = DateTime::createFromFormat('Y-m-d H:i', $date . ' ' . $time, $wp_tz);
+
+        if ($booking_datetime_dt < $min_booking_dt) {
             wp_send_json_error(array(
                 'message' => "Las reservas deben hacerse con al menos {$min_hours_advance} horas de antelación",
                 'field' => 'date'
             ));
             return;
         }
-        
+
         // Límite máximo de antelación (configurable, por defecto 3 meses)
         $max_months_advance = intval(get_option('makia_max_months_advance', 3));
-        $max_advance_date = strtotime("+{$max_months_advance} months");
-        
-        if ($booking_date > $max_advance_date) {
+        $max_advance_dt = clone $now;
+        $max_advance_dt->modify("+{$max_months_advance} months");
+
+        if ($booking_date_dt > $max_advance_dt) {
             wp_send_json_error(array(
                 'message' => "No se pueden hacer reservas con más de {$max_months_advance} meses de antelación",
                 'field' => 'date'
@@ -347,8 +353,8 @@ class MakIA_Bookings {
         // ============================================
         // VALIDACIÓN DE HORARIOS DE NEGOCIO
         // ============================================
-        // Obtener día de la semana
-        $day_of_week = strtolower(date('l', strtotime($date)));
+        // Obtener día de la semana (usando timezone de WordPress)
+        $day_of_week = strtolower($booking_date_dt->format('l'));
         $day_map = array(
             'monday' => 'monday',
             'tuesday' => 'tuesday',
@@ -611,8 +617,8 @@ class MakIA_Bookings {
         $message .= "Hemos recibido tu solicitud de reserva en $restaurant_name.\n\n";
         $message .= "DETALLES DE LA RESERVA:\n";
         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($booking->booking_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($booking->booking_time)) . "\n";
+        $message .= "Fecha: " . wp_date('d/m/Y', strtotime($booking->booking_date)) . "\n";
+        $message .= "Hora: " . wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time)) . "\n";
         $message .= "Comensales: {$booking->guests}\n";
         if ($booking->occasion) {
             $message .= "Motivo: {$booking->occasion}\n";
@@ -685,8 +691,8 @@ class MakIA_Bookings {
         $message .= "Teléfono: {$booking->phone}\n\n";
         $message .= "DETALLES DE LA RESERVA:\n";
         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($booking->booking_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($booking->booking_time)) . "\n";
+        $message .= "Fecha: " . wp_date('d/m/Y', strtotime($booking->booking_date)) . "\n";
+        $message .= "Hora: " . wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time)) . "\n";
         $message .= "Comensales: {$booking->guests}\n";
         if ($booking->occasion) {
             $message .= "Motivo: {$booking->occasion}\n";
@@ -808,8 +814,8 @@ class MakIA_Bookings {
         $message .= $status_messages[$new_status] . "\n\n";
         $message .= "DETALLES DE LA RESERVA:\n";
         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($booking->booking_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($booking->booking_time)) . "\n";
+        $message .= "Fecha: " . wp_date('d/m/Y', strtotime($booking->booking_date)) . "\n";
+        $message .= "Hora: " . wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time)) . "\n";
         $message .= "Comensales: {$booking->guests}\n";
         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
         
@@ -1150,8 +1156,8 @@ class MakIA_Bookings {
                                     <?php echo esc_html($booking->email); ?><br>
                                     <small><?php echo esc_html($booking->phone); ?></small>
                                 </td>
-                                <td><?php echo date('d/m/Y', strtotime($booking->booking_date)); ?></td>
-                                <td><?php echo date('H:i', strtotime($booking->booking_time)); ?></td>
+                                <td><?php echo wp_date('d/m/Y', strtotime($booking->booking_date)); ?></td>
+                                <td><?php echo wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time)); ?></td>
                                 <td><?php echo esc_attr($booking->guests); ?></td>
                                 <td><?php echo esc_html($booking->occasion ?: '-'); ?></td>
                                 <td>
@@ -1230,11 +1236,11 @@ class MakIA_Bookings {
                             <div class="makia-booking-info">
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">📅 Fecha</div>
-                                    <div class="makia-info-value"><?php echo esc_html(date('d/m/Y', strtotime($booking->booking_date))); ?></div>
+                                    <div class="makia-info-value"><?php echo esc_html(wp_date('d/m/Y', strtotime($booking->booking_date))); ?></div>
                                 </div>
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">🕒 Hora</div>
-                                    <div class="makia-info-value"><?php echo esc_html(date('H:i', strtotime($booking->booking_time))); ?></div>
+                                    <div class="makia-info-value"><?php echo esc_html(wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time))); ?></div>
                                 </div>
                                 <div class="makia-info-item">
                                     <div class="makia-info-label">👥 Personas</div>
@@ -1251,10 +1257,10 @@ class MakIA_Bookings {
                                         <a href="tel:<?php echo esc_attr($booking->phone); ?>" class="makia-phone-btn makia-phone-btn-call">
                                             📞 Llamar
                                         </a>
-                                        <a href="sms:<?php echo esc_attr($booking->phone); ?>?body=<?php echo urlencode('Hola ' . $booking->name . ', tu reserva para el ' . date('d/m/Y', strtotime($booking->booking_date)) . ' a las ' . date('H:i', strtotime($booking->booking_time)) . ' ha sido confirmada. ¡Te esperamos! - ' . get_option('makia_restaurant_name', get_bloginfo('name')) . ''); ?>" class="makia-phone-btn makia-phone-btn-sms">
+                                        <a href="sms:<?php echo esc_attr($booking->phone); ?>?body=<?php echo urlencode('Hola ' . $booking->name . ', tu reserva para el ' . wp_date('d/m/Y', strtotime($booking->booking_date)) . ' a las ' . wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time)) . ' ha sido confirmada. ¡Te esperamos! - ' . get_option('makia_restaurant_name', get_bloginfo('name')) . ''); ?>" class="makia-phone-btn makia-phone-btn-sms">
                                             💬 SMS
                                         </a>
-                                        <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $booking->phone); ?>?text=<?php echo urlencode('Hola ' . $booking->name . ', tu reserva para el ' . date('d/m/Y', strtotime($booking->booking_date)) . ' a las ' . date('H:i', strtotime($booking->booking_time)) . ' ha sido confirmada. ¡Te esperamos! - ' . get_option('makia_restaurant_name', get_bloginfo('name')) . ''); ?>" target="_blank" class="makia-phone-btn makia-phone-btn-whatsapp">
+                                        <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $booking->phone); ?>?text=<?php echo urlencode('Hola ' . $booking->name . ', tu reserva para el ' . wp_date('d/m/Y', strtotime($booking->booking_date)) . ' a las ' . wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time)) . ' ha sido confirmada. ¡Te esperamos! - ' . get_option('makia_restaurant_name', get_bloginfo('name')) . ''); ?>" target="_blank" class="makia-phone-btn makia-phone-btn-whatsapp">
                                             📱 WhatsApp
                                         </a>
                                     </div>
@@ -1859,8 +1865,8 @@ class MakIA_Bookings {
         }
 
         // Generar mensaje de recordatorio
-        $fecha = date('d/m/Y', strtotime($booking->booking_date));
-        $hora = date('H:i', strtotime($booking->booking_time));
+        $fecha = wp_date('d/m/Y', strtotime($booking->booking_date));
+        $hora = wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time));
         $restaurant_name = get_option('makia_restaurant_name', get_bloginfo('name'));
         $message = "Hola {$booking->name}, te recordamos tu reserva para el {$fecha} a las {$hora}. ¡Te esperamos! - {$restaurant_name}";
         
@@ -1994,8 +2000,8 @@ class MakIA_Bookings {
                         $message .= "Te recordamos tu reserva en $restaurant_name:\n\n";
                         $message .= "DETALLES DE LA RESERVA:\n";
                         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-                        $message .= "Fecha: " . date('d/m/Y', strtotime($booking->booking_date)) . "\n";
-                        $message .= "Hora: " . date('H:i', strtotime($booking->booking_time)) . "\n";
+                        $message .= "Fecha: " . wp_date('d/m/Y', strtotime($booking->booking_date)) . "\n";
+                        $message .= "Hora: " . wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time)) . "\n";
                         $message .= "Comensales: {$booking->guests}\n";
                         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
                         
@@ -2139,22 +2145,25 @@ class MakIA_Bookings {
             return;
         }
 
+        // Usar timezone de WordPress
+        $wp_tz = wp_timezone();
+
         // Validar formato de fecha (Y-m-d)
-        $date_obj = DateTime::createFromFormat('Y-m-d', $new_date);
+        $date_obj = DateTime::createFromFormat('Y-m-d', $new_date, $wp_tz);
         if (!$date_obj || $date_obj->format('Y-m-d') !== $new_date) {
             wp_send_json_error(array('message' => 'Formato de fecha inválido'));
             return;
         }
 
         // Validar que la fecha no esté en el pasado
-        $today = new DateTime('today');
-        if ($date_obj < $today) {
+        $today = new DateTime('today', $wp_tz);
+        if ($date_obj->setTime(0, 0, 0) < $today) {
             wp_send_json_error(array('message' => 'No se pueden hacer reservas para fechas pasadas'));
             return;
         }
 
         // Validar formato de hora (H:i)
-        $time_obj = DateTime::createFromFormat('H:i', $new_time);
+        $time_obj = DateTime::createFromFormat('H:i', $new_time, $wp_tz);
         if (!$time_obj || $time_obj->format('H:i') !== $new_time) {
             wp_send_json_error(array('message' => 'Formato de hora inválido'));
             return;
@@ -2275,12 +2284,12 @@ class MakIA_Bookings {
         $message .= "EMAIL: {$booking->email}\n";
         $message .= "TELÉFONO: {$booking->phone}\n\n";
         $message .= "DATOS ANTERIORES:\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($old_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($old_time)) . "\n";
+        $message .= "Fecha: " . wp_date('d/m/Y', strtotime($old_date)) . "\n";
+        $message .= "Hora: " . wp_date('H:i', strtotime($old_date . ' ' . $old_time)) . "\n";
         $message .= "Comensales: $old_guests\n\n";
         $message .= "NUEVOS DATOS:\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($new_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($new_time)) . "\n";
+        $message .= "Fecha: " . wp_date('d/m/Y', strtotime($new_date)) . "\n";
+        $message .= "Hora: " . wp_date('H:i', strtotime($new_date . ' ' . $new_time)) . "\n";
         $message .= "Comensales: $new_guests\n\n";
         $message .= "La reserva ha vuelto a estado PENDIENTE para tu revisión.\n\n";
         $message .= "Gestionar en: " . admin_url('admin.php?page=makia');
@@ -2316,8 +2325,8 @@ class MakIA_Bookings {
         $message .= "EMAIL: {$booking->email}\n";
         $message .= "TELÉFONO: {$booking->phone}\n\n";
         $message .= "DATOS DE LA RESERVA:\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($booking->booking_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($booking->booking_time)) . "\n";
+        $message .= "Fecha: " . wp_date('d/m/Y', strtotime($booking->booking_date)) . "\n";
+        $message .= "Hora: " . wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time)) . "\n";
         $message .= "Comensales: {$booking->guests}\n\n";
         $message .= "Gestionar en: " . admin_url('admin.php?page=makia');
         
@@ -2349,8 +2358,8 @@ class MakIA_Bookings {
         $message = "Hola {$booking->name},\n\n";
         $message .= "Tu reserva ha sido modificada correctamente.\n\n";
         $message .= "NUEVOS DATOS:\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($booking->booking_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($booking->booking_time)) . "\n";
+        $message .= "Fecha: " . wp_date('d/m/Y', strtotime($booking->booking_date)) . "\n";
+        $message .= "Hora: " . wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time)) . "\n";
         $message .= "Comensales: {$booking->guests}\n\n";
         $message .= "El restaurante revisará los cambios y te confirmará la disponibilidad.\n\n";
         
@@ -2402,8 +2411,8 @@ class MakIA_Bookings {
         $message = "Hola {$booking->name},\n\n";
         $message .= "Tu reserva ha sido cancelada correctamente.\n\n";
         $message .= "DATOS DE LA RESERVA CANCELADA:\n";
-        $message .= "Fecha: " . date('d/m/Y', strtotime($booking->booking_date)) . "\n";
-        $message .= "Hora: " . date('H:i', strtotime($booking->booking_time)) . "\n";
+        $message .= "Fecha: " . wp_date('d/m/Y', strtotime($booking->booking_date)) . "\n";
+        $message .= "Hora: " . wp_date('H:i', strtotime($booking->booking_date . ' ' . $booking->booking_time)) . "\n";
         $message .= "Comensales: {$booking->guests}\n\n";
         $message .= "Esperamos verte en otra ocasión.\n\n";
         $message .= "Saludos,\n$restaurant_name";
