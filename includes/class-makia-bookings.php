@@ -779,7 +779,7 @@ class MakIA_Bookings {
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
             'Reply-To: ' . $restaurant_email,
-            'Content-Type: text/plain; charset=UTF-8'
+            'Content-Type: text/html; charset=UTF-8'
         );
 
         $result = wp_mail($booking->email, $subject, $message, $headers);
@@ -1035,7 +1035,7 @@ class MakIA_Bookings {
         $headers = array(
             'From: ' . $restaurant_name . ' <' . $restaurant_email . '>',
             'Reply-To: ' . $restaurant_email,
-            'Content-Type: text/plain; charset=UTF-8'
+            'Content-Type: text/html; charset=UTF-8'
         );
 
         wp_mail($booking->email, $subject, $message, $headers);
@@ -1201,6 +1201,7 @@ class MakIA_Bookings {
                             <option value="">📋 Todos</option>
                             <option value="pending" <?php selected($filter_status, 'pending'); ?>>⏳ Pendientes</option>
                             <option value="approved" <?php selected($filter_status, 'approved'); ?>>✅ Aprobadas</option>
+                            <option value="rejected" <?php selected($filter_status, 'rejected'); ?>>❌ Rechazadas</option>
                             <option value="cancelled" <?php selected($filter_status, 'cancelled'); ?>>🚫 Canceladas</option>
                         </select>
                     </div>
@@ -1216,26 +1217,10 @@ class MakIA_Bookings {
                     <!-- Limpiar -->
                     <button type="button" id="clear-filters" class="button" style="padding: 8px 15px;" title="Limpiar filtros">✕</button>
                 </div>
-
-                <!-- Búsqueda por texto -->
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">🔍 Buscar</label>
-                    <input type="text" id="filter-search" placeholder="Buscar por nombre, email o teléfono..." style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ddd; font-size: 14px;">
-                </div>
-
-                <!-- Botones -->
-                <div class="makia-filter-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" id="apply-filters" class="button button-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 10px 20px;">
-                        🔍 Aplicar Filtros
-                    </button>
-                    <button type="button" id="clear-filters" class="button" style="padding: 10px 20px;">
-                        🗑️ Limpiar Filtros
-                    </button>
-                </div>
-
-                </div><!-- #filters-content -->
-            </div><!-- .makia-advanced-filters -->
+            </div><!-- .makia-filters-bar -->
             
+            <input type="hidden" id="makia_bulk_nonce" value="<?php echo wp_create_nonce('makia_bulk_action'); ?>">
+
             <!-- Barra de acciones grupales -->
             <div class="makia-bulk-actions-bar" style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;">
                 <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
@@ -1347,7 +1332,7 @@ class MakIA_Bookings {
                             </tr>
                             <?php if ($booking->special_requests): ?>
                                 <tr>
-                                    <td colspan="9" style="background: #f9f9f9; padding: 10px;">
+                                    <td colspan="10" style="background: #f9f9f9; padding: 10px;">
                                         <strong>Notas:</strong> <?php echo esc_html($booking->special_requests); ?>
                                     </td>
                                 </tr>
@@ -1956,7 +1941,7 @@ class MakIA_Bookings {
      */
     public function get_booking_notes_ajax() {
         // Verificar nonce
-        if (!isset($_POST['makia_note_nonce']) || !wp_verify_nonce($_POST['makia_note_nonce'], 'makia_get_notes_action')) {
+        if (!isset($_POST['makia_note_nonce']) || !wp_verify_nonce($_POST['makia_note_nonce'], 'makia_add_note_action')) {
             wp_send_json_error('Acción no autorizada');
             return;
         }
@@ -1990,7 +1975,10 @@ class MakIA_Bookings {
     public function send_reminder_ajax() {
         global $wpdb;
 
-        check_ajax_referer('makia_admin_nonce', 'nonce');
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'makia_add_note_action')) {
+            wp_send_json_error('Token de seguridad inválido');
+            return;
+        }
 
         // Verificar permisos
         if (!current_user_can('manage_options')) {
@@ -2089,7 +2077,7 @@ class MakIA_Bookings {
                     );
                     if ($result !== false) {
                         $success_count++;
-                        MakIA_Audit::log_action('booking_status_changed', $id, array('new_status' => 'approved'));
+                        MakIA_Audit::log_action('booking_status_changed', 'booking', $id, array('new_status' => 'approved'));
                     }
                 }
                 wp_send_json_success(array('message' => "$success_count reservas aprobadas correctamente"));
@@ -2106,7 +2094,7 @@ class MakIA_Bookings {
                     );
                     if ($result !== false) {
                         $success_count++;
-                        MakIA_Audit::log_action('booking_status_changed', $id, array('new_status' => 'rejected'));
+                        MakIA_Audit::log_action('booking_status_changed', 'booking', $id, array('new_status' => 'rejected'));
                     }
                 }
                 wp_send_json_success(array('message' => "$success_count reservas rechazadas correctamente"));
@@ -2123,7 +2111,7 @@ class MakIA_Bookings {
                     );
                     if ($result !== false) {
                         $success_count++;
-                        MakIA_Audit::log_action('booking_status_changed', $id, array('new_status' => 'cancelled'));
+                        MakIA_Audit::log_action('booking_status_changed', 'booking', $id, array('new_status' => 'cancelled'));
                     }
                 }
                 wp_send_json_success(array('message' => "$success_count reservas canceladas correctamente"));
@@ -2163,10 +2151,8 @@ class MakIA_Bookings {
 ";
                             $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ";
-                            $message .= "<a href=\"$modify_url\">📝 Modificar mi reserva</a>
-";
-                            $message .= "<a href=\"$cancel_url\">❌ Cancelar mi reserva</a>
-";
+                            $message .= "📝 Modificar mi reserva: $modify_url\n";
+                            $message .= "❌ Cancelar mi reserva: $cancel_url\n";
                             $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ";
@@ -2224,9 +2210,9 @@ class MakIA_Bookings {
                             );
                             
                             // Incrementar no-show en lista negra
-                            $blacklist->increment_no_show($booking->email, $booking->phone);
+                            $blacklist->increment_noshow($booking->email, $booking->phone);
                             $success_count++;
-                            MakIA_Audit::log_action('booking_status_changed', $id, array('new_status' => 'noshow'));
+                            MakIA_Audit::log_action('booking_status_changed', 'booking', $id, array('new_status' => 'noshow'));
                         }
                     }
                     wp_send_json_success(array('message' => "$success_count reservas marcadas como No-Show y añadidas a lista negra"));
@@ -2520,10 +2506,8 @@ class MakIA_Bookings {
 ";
         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ";
-        $message .= "<a href=\"$modify_url\">📝 Modificar mi reserva</a>
-";
-        $message .= "<a href=\"$cancel_url\">❌ Cancelar mi reserva</a>
-";
+        $message .= "📝 Modificar mi reserva: $modify_url\n";
+        $message .= "❌ Cancelar mi reserva: $cancel_url\n";
         $message .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ";

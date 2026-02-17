@@ -186,7 +186,7 @@ class MakIA_Push_Service {
 	private function get_authorization_header() {
 		$vapid_private = get_option('makia_vapid_private_key', '');
 		if (empty($vapid_private)) {
-			MakIA_Logger::log('error', 'VAPID private key not configured');
+			MakIA_Logger::log('VAPID private key not configured', 'ERROR');
 			return '';
 		}
 

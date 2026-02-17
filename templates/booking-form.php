@@ -292,7 +292,6 @@ $customizations = array(
                             <label for="makia-reason">Motivo *</label>
                             <select id="makia-reason" name="reason" required>
                                 <option value="">Selecciona...</option>
-                                <option value="Degustar Cochinillo">Degustar Cochinillo</option>
                                 <option value="Cumpleaños">Cumpleaños</option>
                                 <option value="Aniversario">Aniversario</option>
                                 <option value="Negocios">Negocios</option>

@@ -2,14 +2,10 @@
 if (!defined('ABSPATH')) { exit; }
 /**
  * Clase para gestionar WhatsApp con WhatsApp Business API
- * 
+ *
  * @package MakIA_Reservas
  * @subpackage WhatsApp
  */
-
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
-}
 
 class MakIA_WhatsApp {
     /**

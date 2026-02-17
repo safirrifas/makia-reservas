@@ -103,7 +103,8 @@
                     const statusMap = {
                         'pending': ['pendiente', 'pending'],
                         'approved': ['aprobada', 'approved', 'confirmada'],
-                        'cancelled': ['cancelada', 'cancelled', 'rechazada']
+                        'rejected': ['rechazada', 'rejected'],
+                        'cancelled': ['cancelada', 'cancelled']
                     };
                     const validStatuses = statusMap[statusFilter] || [statusFilter];
                     matchesStatus = validStatuses.some(s => status.includes(s));
@@ -267,8 +268,6 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        console.log('[MakIA Admin] Reserva actualizada:', response.data);
-                        
                         // Actualizar UI
                         updateBookingCard(bookingId, newStatus, response.data);
                         

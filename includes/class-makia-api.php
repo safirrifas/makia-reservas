@@ -5,10 +5,6 @@ if (!defined('ABSPATH')) { exit; }
  * Proporciona endpoints para sincronizar datos con la app PWA
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 class MakIA_API {
 	/**
 	 * Namespace de la API
@@ -353,7 +349,7 @@ class MakIA_API {
 		do_action( 'makia_booking_status_changed', $booking_id, $status, $operator_id );
 
 		// Enviar notificación push si hay nuevas reservas
-		if ( 'confirmed' === $status ) {
+		if ( 'approved' === $status ) {
 			$this->send_push_notification(
 				$operator_id,
 				'Reserva confirmada',
@@ -393,8 +389,8 @@ class MakIA_API {
 			$notes_table,
 			array(
 				'booking_id'  => $booking_id,
-				'operator_id' => $operator_id,
-				'content'     => $content,
+				'user_id'     => $operator_id,
+				'note'        => $content,
 				'created_at'  => current_time( 'mysql' ),
 			),
 			array( '%d', '%d', '%s', '%s' )
@@ -439,7 +435,7 @@ class MakIA_API {
 		$query = $wpdb->prepare(
 			"SELECT n.*, u.display_name as operator_name 
 			FROM {$notes_table} n
-			LEFT JOIN {$users_table} u ON n.operator_id = u.ID
+			LEFT JOIN {$users_table} u ON n.user_id = u.ID
 			WHERE n.booking_id = %d
 			ORDER BY n.created_at DESC",
 			$booking_id
