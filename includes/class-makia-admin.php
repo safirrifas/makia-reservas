@@ -17,8 +17,8 @@ class MakIA_Admin {
      */
     public function add_admin_menu() {
         add_menu_page(
-            'MakIA Reservas',
-            'MakIA Reservas',
+            'MakIA Restaurante',
+            'MakIA Restaurante',
             'makia_manage_bookings',
             'makia',
             array($this, 'render_main_page'),
@@ -144,7 +144,7 @@ class MakIA_Admin {
             <!-- Sidebar del Menú -->
             <div class="makia-sidebar">
                 <div class="makia-sidebar-header">
-                    <h2>MakIA Reservas</h2>
+                    <h2>MakIA Restaurante</h2>
                     <button class="makia-pin-btn" title="Pegar/Despegar menú">📍</button>
                 </div>
                 <nav class="makia-sidebar-nav">

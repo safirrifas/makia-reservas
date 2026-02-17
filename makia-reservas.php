@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: MakIA - Sistema de Reservas
+ * Plugin Name: MakIA Restaurante
  * Plugin URI: https://contacpro.app
- * Description: Sistema completo de reservas con IA para restaurantes. Incluye formulario de reservas, gestión de horarios, control de capacidad, plantillas personalizables con vista previa en vivo, y lista negra de usuarios.
- * Version: 4.3.1
+ * Description: MakIA Restaurante - Sistema completo de reservas con IA para restaurantes. Incluye formulario de reservas, gestión de horarios, control de capacidad, plantillas personalizables con vista previa en vivo, y lista negra de usuarios.
+ * Version: 4.5.0
  * Author: MakIA Team
  * Author URI: https://contacpro.app
  * License: GPL v2 or later
@@ -12,6 +12,39 @@
  * Domain Path: /languages
  * Requires at least: 5.0
  * Requires PHP: 7.4
+ *
+ * ============================================================================
+ * CONFIGURACIÓN REQUERIDA EN wp-config.php
+ * ============================================================================
+ *
+ * Variables de entorno opcionales (pero recomendadas para seguridad):
+ *
+ * 1. JWT_AUTH_SECRET_KEY (Recomendado para API REST)
+ *    - Clave secreta para firmar tokens JWT
+ *    - Si no se define, se usará una combinación de las salts de WordPress
+ *    - Ejemplo: define('JWT_AUTH_SECRET_KEY', 'tu-clave-secreta-muy-larga-y-aleatoria');
+ *    - Genera una clave segura en: https://api.wordpress.org/secret-key/1.1/salt/
+ *
+ * 2. MAKIA_VAPID_PUBLIC_KEY (Requerido para Push Notifications)
+ *    - Clave pública VAPID para Web Push
+ *    - Ejemplo: define('MAKIA_VAPID_PUBLIC_KEY', 'BEl62i...');
+ *
+ * 3. MAKIA_VAPID_PRIVATE_KEY (Requerido para Push Notifications)
+ *    - Clave privada VAPID para Web Push
+ *    - Ejemplo: define('MAKIA_VAPID_PRIVATE_KEY', 'UUxI4o...');
+ *
+ * Configuración de Twilio para SMS (Opcional):
+ *    - Las credenciales de Twilio se configuran en el panel de administración
+ *    - El SDK de Twilio es opcional: si no está instalado, el plugin funciona sin SMS
+ *    - Para instalar Twilio: composer require twilio/sdk
+ *
+ * Filtros de WordPress disponibles:
+ *    - 'makia_rate_limit_ip': Límite de intentos por IP (default: 5)
+ *    - 'makia_rate_limit_email': Límite de intentos por email (default: 3)
+ *    - 'makia_rate_limit_window': Ventana de tiempo en segundos (default: 900 = 15 min)
+ *    - 'makia_trusted_proxies': Array de IPs de proxies confiables para X-Forwarded-For
+ *
+ * ============================================================================
  */
 
 // Evitar acceso directo
@@ -20,7 +53,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Definir constantes del plugin
-define('MAKIA_VERSION', '4.3.1');
+define('MAKIA_VERSION', '4.5.0');
 define('MAKIA_PLUGIN_FILE', __FILE__);
 define('MAKIA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MAKIA_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -177,43 +210,50 @@ function makia_insert_default_templates() {
             'type' => 'email_customer_pending',
             'name' => 'Email Cliente - Pendiente',
             'subject' => 'Reserva pendiente de confirmación - {restaurante}',
-            'body' => "Hola {nombre},\n\nHemos recibido tu solicitud de reserva en {restaurante}.\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\nMotivo: {motivo}\nNotas: {notas}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nTu reserva está PENDIENTE DE CONFIRMACIÓN.\nTe enviaremos un email cuando el restaurante la apruebe.\n\n🔗 GESTIONAR RESERVA:\nPuedes modificar o cancelar tu reserva en cualquier momento:\n{enlace_gestion}\n\nSi tienes alguna pregunta, puedes contactarnos en:\nEmail: {email_restaurante}\nTeléfono: {telefono_restaurante}\n\nGracias por elegir {restaurante}.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPowered by MakIA Reservas - https://contacpro.app",
+            'body' => "Hola {nombre},\n\nHemos recibido tu solicitud de reserva en {restaurante}.\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\nMotivo: {motivo}\nNotas: {notas}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nTu reserva está PENDIENTE DE CONFIRMACIÓN.\nTe enviaremos un email cuando el restaurante la apruebe.\n\n🔗 GESTIONAR RESERVA:\nPuedes modificar o cancelar tu reserva en cualquier momento:\n{enlace_gestion}\n\nSi tienes alguna pregunta, puedes contactarnos en:\nEmail: {email_restaurante}\nTeléfono: {telefono_restaurante}\n\nGracias por elegir {restaurante}.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPowered by MakIA Restaurante - https://contacpro.app",
             'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","motivo":"Motivo de la reserva","notas":"Notas especiales","restaurante":"Nombre del restaurante","email_restaurante":"Email del restaurante","telefono_restaurante":"Teléfono del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
         ),
         array(
             'type' => 'email_customer_approved',
             'name' => 'Email Cliente - Aprobada',
             'subject' => '✅ Reserva confirmada - {restaurante}',
-            'body' => "Hola {nombre},\n\n¡Buenas noticias! Tu reserva ha sido CONFIRMADA.\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n¡Te esperamos en {restaurante}!\n\n🔗 GESTIONAR RESERVA:\nSi necesitas modificar o cancelar tu reserva:\n{enlace_gestion}\n\nO contáctanos directamente:\nEmail: {email_restaurante}\nTeléfono: {telefono_restaurante}\n\nGracias por elegirnos.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPowered by MakIA Reservas - https://contacpro.app",
+            'body' => "Hola {nombre},\n\n¡Buenas noticias! Tu reserva ha sido CONFIRMADA.\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n¡Te esperamos en {restaurante}!\n\n🔗 GESTIONAR RESERVA:\nSi necesitas modificar o cancelar tu reserva:\n{enlace_gestion}\n\nO contáctanos directamente:\nEmail: {email_restaurante}\nTeléfono: {telefono_restaurante}\n\nGracias por elegirnos.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPowered by MakIA Restaurante - https://contacpro.app",
             'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","restaurante":"Nombre del restaurante","email_restaurante":"Email del restaurante","telefono_restaurante":"Teléfono del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
         ),
         array(
             'type' => 'email_restaurant',
             'name' => 'Email Restaurante - Nueva Reserva',
             'subject' => 'Nueva reserva pendiente de aprobación',
-            'body' => "Nueva solicitud de reserva en {restaurante}:\n\nDATOS DEL CLIENTE:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNombre: {nombre}\nEmail: {email}\nTeléfono: {telefono}\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\nMotivo: {motivo}\nNotas: {notas}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPara gestionar esta reserva, accede al panel de administración:\n{url_admin}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nMakIA Reservas - https://contacpro.app",
+            'body' => "Nueva solicitud de reserva en {restaurante}:\n\nDATOS DEL CLIENTE:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNombre: {nombre}\nEmail: {email}\nTeléfono: {telefono}\n\nDETALLES DE LA RESERVA:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFecha: {fecha}\nHora: {hora}\nComensales: {comensales}\nMotivo: {motivo}\nNotas: {notas}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPara gestionar esta reserva, accede al panel de administración:\n{url_admin}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nMakIA Restaurante - https://contacpro.app",
             'variables' => '{"nombre":"Nombre del cliente","email":"Email del cliente","telefono":"Teléfono del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","motivo":"Motivo de la reserva","notas":"Notas especiales","restaurante":"Nombre del restaurante","url_admin":"URL del panel admin"}'
         ),
         array(
             'type' => 'sms',
             'name' => 'SMS - Confirmación',
             'subject' => null,
-            'body' => 'Hola {nombre}, tu reserva para el {fecha} a las {hora} ha sido confirmada. Gestionar: {enlace_gestion} - {restaurante}',
+            'body' => '{restaurante}: Reserva confirmada para {nombre} el {fecha} a las {hora}. Modificar/cancelar: {enlace_gestion}',
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+        ),
+        array(
+            'type' => 'sms_reminder',
+            'name' => 'SMS - Recordatorio',
+            'subject' => null,
+            'body' => 'Recordatorio {restaurante}: Tu reserva es mañana {fecha} a las {hora}. Modificar/cancelar: {enlace_gestion}',
             'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
         ),
         array(
             'type' => 'whatsapp',
             'name' => 'WhatsApp - Confirmación',
             'subject' => null,
-            'body' => 'Hola {nombre}, tu reserva para el {fecha} a las {hora} en {restaurante} ha sido confirmada. ¡Te esperamos! 🍽️\n\nGestionar reserva: {enlace_gestion}',
-            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+            'body' => '✅ *{restaurante}*\n\nHola {nombre}, tu reserva ha sido *confirmada*:\n\n📅 {fecha}\n🕐 {hora}\n👥 {comensales} personas\n\n¡Te esperamos! 🍽️\n\n📝 Modificar o cancelar:\n{enlace_gestion}',
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
         ),
         array(
             'type' => 'whatsapp_reminder',
             'name' => 'WhatsApp - Recordatorio',
             'subject' => null,
-            'body' => 'Hola {nombre}, te recordamos tu reserva para el {fecha} a las {hora}. ¡Te esperamos!\n\nGestionar: {enlace_gestion} - {restaurante}',
-            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
+            'body' => '⏰ *Recordatorio - {restaurante}*\n\nHola {nombre}, te recordamos tu reserva:\n\n📅 {fecha}\n🕐 {hora}\n👥 {comensales} personas\n\n¡Te esperamos!\n\n📝 Modificar o cancelar:\n{enlace_gestion}',
+            'variables' => '{"nombre":"Nombre del cliente","fecha":"Fecha de la reserva","hora":"Hora de la reserva","comensales":"Número de comensales","restaurante":"Nombre del restaurante","enlace_gestion":"Enlace para gestionar la reserva"}'
         )
     );
     

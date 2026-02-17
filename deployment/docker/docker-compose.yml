@@ -1,0 +1,237 @@
+# =============================================================================
+# MakIA Restaurante - Docker Compose para Producción
+# contacpro.app
+# =============================================================================
+#
+# Uso:
+#   docker-compose up -d
+#
+# Variables de entorno requeridas en .env
+#
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # API Principal
+  # ===========================================
+  api:
+    build:
+      context: ../../platform/api
+      dockerfile: Dockerfile
+    container_name: makia-api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://makia:${DB_PASSWORD}@postgres:5432/makia_production
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=7d
+      - APP_URL=https://contacpro.app
+      - API_URL=https://api.contacpro.app
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM=${SMTP_FROM}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+      - WHATSAPP_API_TOKEN=${WHATSAPP_API_TOKEN}
+      - WHATSAPP_PHONE_NUMBER_ID=${WHATSAPP_PHONE_NUMBER_ID}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - makia-network
+    volumes:
+      - api-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # ===========================================
+  # PostgreSQL
+  # ===========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: makia-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=makia
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=makia_production
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - makia-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U makia -d makia_production"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  # ===========================================
+  # Redis
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: makia-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - makia-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # ===========================================
+  # Nginx (Reverse Proxy)
+  # ===========================================
+  nginx:
+    image: nginx:alpine
+    container_name: makia-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - dashboard-dist:/var/www/dashboard:ro
+      - widget-dist:/var/www/widget:ro
+      - www-dist:/var/www/main:ro
+    depends_on:
+      - api
+    networks:
+      - makia-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # Certbot (SSL)
+  # ===========================================
+  certbot:
+    image: certbot/certbot
+    container_name: makia-certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot:rw
+      - ./certbot/conf:/etc/letsencrypt:rw
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - makia-network
+
+  # ===========================================
+  # Cron Jobs (Tareas programadas)
+  # ===========================================
+  cron:
+    build:
+      context: ../../platform/api
+      dockerfile: Dockerfile.cron
+    container_name: makia-cron
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://makia:${DB_PASSWORD}@postgres:5432/makia_production
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - makia-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # ===========================================
+  # pgAdmin (Opcional - solo desarrollo)
+  # ===========================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: makia-pgadmin
+    restart: unless-stopped
+    profiles:
+      - dev
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL:-admin@contacpro.app}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-admin123}
+    ports:
+      - "127.0.0.1:5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - makia-network
+
+# ===========================================
+# Redes
+# ===========================================
+networks:
+  makia-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ===========================================
+# Volúmenes
+# ===========================================
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  api-logs:
+    driver: local
+  dashboard-dist:
+    driver: local
+  widget-dist:
+    driver: local
+  www-dist:
+    driver: local
+  pgadmin-data:
+    driver: local

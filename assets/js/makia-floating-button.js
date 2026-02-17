@@ -1,5 +1,5 @@
 /**
- * MakIA Reservas - Botón Flotante
+ * MakIA Restaurante - Botón Flotante
  * Gestiona la aparición del botón flotante según el scroll
  */
 

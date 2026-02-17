@@ -7,7 +7,239 @@
     'use strict';
     
     $(document).ready(function() {
-        
+
+        // ========================================
+        // FILTROS DE RESERVAS
+        // ========================================
+
+        let filterTimeout = null;
+
+        // Búsqueda por texto
+        $('#filter-search').on('input', function() {
+            clearTimeout(filterTimeout);
+            filterTimeout = setTimeout(function() {
+                applyFilters();
+            }, 300);
+        });
+
+        // Filtro por estado
+        $('#filter-status').on('change', function() {
+            applyFilters();
+        });
+
+        // Botones de período
+        $('.makia-period-btn').on('click', function() {
+            const period = $(this).data('period');
+
+            // Resaltar botón activo
+            $('.makia-period-btn').removeClass('button-primary');
+            $(this).addClass('button-primary');
+
+            // Aplicar filtro de período
+            applyPeriodFilter(period);
+        });
+
+        // Limpiar filtros
+        $('#clear-filters').on('click', function() {
+            $('#filter-search').val('');
+            $('#filter-status').val('');
+            $('.makia-period-btn').removeClass('button-primary');
+            showAllBookings();
+        });
+
+        /**
+         * Aplicar filtros de búsqueda y estado
+         */
+        function applyFilters() {
+            const searchText = $('#filter-search').val().toLowerCase().trim();
+            const statusFilter = $('#filter-status').val();
+
+            // Filtrar tarjetas móviles
+            $('.makia-booking-card').each(function() {
+                const $card = $(this);
+                const name = ($card.find('.makia-booking-name').text() || '').toLowerCase();
+                const email = ($card.find('.makia-booking-email').text() || '').toLowerCase();
+                const phone = ($card.find('.makia-booking-phone').text() || '').toLowerCase();
+                const status = $card.data('status') || '';
+
+                let matchesSearch = true;
+                let matchesStatus = true;
+
+                if (searchText) {
+                    matchesSearch = name.includes(searchText) ||
+                                   email.includes(searchText) ||
+                                   phone.includes(searchText);
+                }
+
+                if (statusFilter) {
+                    matchesStatus = status === statusFilter;
+                }
+
+                if (matchesSearch && matchesStatus) {
+                    $card.show();
+                } else {
+                    $card.hide();
+                }
+            });
+
+            // Filtrar filas de tabla desktop
+            $('.makia-bookings-table tbody tr').each(function() {
+                const $row = $(this);
+                const name = ($row.find('td:nth-child(1)').text() || '').toLowerCase();
+                const email = ($row.find('td:nth-child(2)').text() || '').toLowerCase();
+                const phone = ($row.find('td:nth-child(3)').text() || '').toLowerCase();
+                const status = $row.data('status') || $row.find('.status-badge').text().toLowerCase();
+
+                let matchesSearch = true;
+                let matchesStatus = true;
+
+                if (searchText) {
+                    matchesSearch = name.includes(searchText) ||
+                                   email.includes(searchText) ||
+                                   phone.includes(searchText);
+                }
+
+                if (statusFilter) {
+                    const statusMap = {
+                        'pending': ['pendiente', 'pending'],
+                        'approved': ['aprobada', 'approved', 'confirmada'],
+                        'cancelled': ['cancelada', 'cancelled', 'rechazada']
+                    };
+                    const validStatuses = statusMap[statusFilter] || [statusFilter];
+                    matchesStatus = validStatuses.some(s => status.includes(s));
+                }
+
+                if (matchesSearch && matchesStatus) {
+                    $row.show();
+                } else {
+                    $row.hide();
+                }
+            });
+
+            updateVisibleCount();
+        }
+
+        /**
+         * Aplicar filtro de período
+         */
+        function applyPeriodFilter(period) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            const weekEnd = new Date(today);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+
+            if (period === 'all') {
+                showAllBookings();
+                return;
+            }
+
+            // Filtrar tarjetas móviles
+            $('.makia-booking-card').each(function() {
+                const $card = $(this);
+                const dateStr = $card.data('date');
+                if (!dateStr) {
+                    $card.show();
+                    return;
+                }
+
+                const bookingDate = new Date(dateStr);
+                bookingDate.setHours(0, 0, 0, 0);
+
+                let show = false;
+
+                switch(period) {
+                    case 'today':
+                        show = bookingDate.getTime() === today.getTime();
+                        break;
+                    case 'tomorrow':
+                        show = bookingDate.getTime() === tomorrow.getTime();
+                        break;
+                    case 'week':
+                        show = bookingDate >= today && bookingDate <= weekEnd;
+                        break;
+                }
+
+                if (show) {
+                    $card.show();
+                } else {
+                    $card.hide();
+                }
+            });
+
+            // Filtrar filas de tabla desktop
+            $('.makia-bookings-table tbody tr').each(function() {
+                const $row = $(this);
+                const dateStr = $row.data('date') || $row.find('td:nth-child(4)').text();
+                if (!dateStr) {
+                    $row.show();
+                    return;
+                }
+
+                // Parsear fecha en formato dd/mm/yyyy o yyyy-mm-dd
+                let bookingDate;
+                if (dateStr.includes('/')) {
+                    const parts = dateStr.split('/');
+                    bookingDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                } else {
+                    bookingDate = new Date(dateStr);
+                }
+                bookingDate.setHours(0, 0, 0, 0);
+
+                let show = false;
+
+                switch(period) {
+                    case 'today':
+                        show = bookingDate.getTime() === today.getTime();
+                        break;
+                    case 'tomorrow':
+                        show = bookingDate.getTime() === tomorrow.getTime();
+                        break;
+                    case 'week':
+                        show = bookingDate >= today && bookingDate <= weekEnd;
+                        break;
+                }
+
+                if (show) {
+                    $row.show();
+                } else {
+                    $row.hide();
+                }
+            });
+
+            updateVisibleCount();
+        }
+
+        /**
+         * Mostrar todas las reservas
+         */
+        function showAllBookings() {
+            $('.makia-booking-card').show();
+            $('.makia-bookings-table tbody tr').show();
+            updateVisibleCount();
+        }
+
+        /**
+         * Actualizar contador de resultados visibles
+         */
+        function updateVisibleCount() {
+            const visibleCards = $('.makia-booking-card:visible').length;
+            const visibleRows = $('.makia-bookings-table tbody tr:visible').length;
+            const total = visibleCards || visibleRows;
+
+            // Actualizar contador si existe
+            if ($('.makia-filter-count').length) {
+                $('.makia-filter-count').text(total + ' reserva' + (total !== 1 ? 's' : ''));
+            }
+        }
+
+        // ========================================
+        // ACCIONES DE RESERVAS (AJAX)
+        // ========================================
+
         // Manejar aprobar/rechazar con AJAX
         $(document).on('submit', 'form[data-ajax-action]', function(e) {
             e.preventDefault();

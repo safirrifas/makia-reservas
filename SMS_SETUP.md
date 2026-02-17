@@ -2,7 +2,7 @@
 
 ## Introducción
 
-El plugin MakIA Reservas incluye integración con **Twilio** para enviar SMS de confirmación y recordatorios a los clientes. Esta guía te ayudará a configurar el servicio paso a paso.
+El plugin MakIA Restaurante incluye integración con **Twilio** para enviar SMS de confirmación y recordatorios a los clientes. Esta guía te ayudará a configurar el servicio paso a paso.
 
 ## Requisitos
 
@@ -37,7 +37,7 @@ El plugin MakIA Reservas incluye integración con **Twilio** para enviar SMS de 
 ## Paso 4: Configurar en WordPress
 
 1. Accede al panel de administración de WordPress
-2. Ve a **MakIA Reservas** > **Configuración SMS**
+2. Ve a **MakIA Restaurante** > **Configuración SMS**
 3. Ingresa los siguientes datos:
    - **Account SID**: Tu Account SID de Twilio
    - **Auth Token**: Tu Auth Token de Twilio
@@ -94,7 +94,7 @@ Para recibir notificaciones de estado de entrega:
 
 ### Ver Estadísticas de SMS
 
-1. Ve a **MakIA Reservas** > **Estadísticas SMS**
+1. Ve a **MakIA Restaurante** > **Estadísticas SMS**
 2. Selecciona el período (día, semana, mes)
 3. Visualiza:
    - Total de SMS enviados
@@ -104,7 +104,7 @@ Para recibir notificaciones de estado de entrega:
 
 ### Historial de SMS
 
-1. Ve a **MakIA Reservas** > **Historial SMS**
+1. Ve a **MakIA Restaurante** > **Historial SMS**
 2. Visualiza todos los SMS enviados con:
    - Teléfono del cliente
    - Mensaje
@@ -164,7 +164,7 @@ Si tienes problemas con la configuración:
 
 1. Revisa este documento nuevamente
 2. Contacta al soporte de Twilio
-3. Contacta al equipo de MakIA Reservas
+3. Contacta al equipo de MakIA Restaurante
 
 ---
 

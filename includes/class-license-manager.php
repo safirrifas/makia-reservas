@@ -156,13 +156,22 @@ class MakIA_License_Manager {
     }
     
     /**
+     * Obtener el conteo actual de reservas del mes
+     *
+     * @return int
+     */
+    public function get_current_booking_count() {
+        return intval( get_option( 'makia_monthly_bookings_count', 0 ) );
+    }
+
+    /**
      * Obtener estadísticas de uso
      */
     public function get_usage_stats() {
         $current_plan = $this->get_current_plan();
-        $current_count = intval(get_option('makia_monthly_bookings_count', 0));
+        $current_count = $this->get_current_booking_count();
         $reset_date = get_option('makia_monthly_reset_date', date('Y-m-d H:i:s'));
-        
+
         $usage_percentage = ($current_plan['limit'] > 0) ? ($current_count / $current_plan['limit']) * 100 : 100;
         
         // Calcular días hasta el próximo reset
@@ -294,15 +303,20 @@ class MakIA_License_Manager {
     
     /**
      * Verificar licencia
+     * Modo offline: permite funcionar con plan básico si no hay conexión
      */
     public function verify_license() {
         $license_key = get_option('makia_license_key');
+
+        // Si no hay licencia, usar plan gratuito (chupito)
         if (empty($license_key)) {
-            return false;
+            update_option('makia_license_status', 'free');
+            update_option('makia_license_plan', 'chupito');
+            return true; // Permitir funcionamiento con plan gratuito
         }
-        
+
         $domain = parse_url(home_url(), PHP_URL_HOST);
-        
+
         $response = wp_remote_post(MAKIA_API_URL . '/trpc/licenses.verify', array(
             'headers' => array('Content-Type' => 'application/json'),
             'body' => json_encode(array(
@@ -312,27 +326,36 @@ class MakIA_License_Manager {
                 )
             )),
             'timeout' => 15,
-            'sslverify' => true
+            'sslverify' => false // Permitir certificados auto-firmados
         ));
-        
+
         if (is_wp_error($response)) {
-            // En caso de error de conexión, mantener el estado actual por 7 días
+            // En caso de error de conexión, mantener el estado actual por 30 días
             $last_check = get_option('makia_license_last_check', 0);
-            if (time() - $last_check < 7 * 24 * 60 * 60) {
-                return get_option('makia_license_status') === 'active';
+            if (time() - $last_check < 30 * 24 * 60 * 60) {
+                // Mantener estado anterior si está activo
+                if (get_option('makia_license_status') === 'active') {
+                    return true;
+                }
             }
-            return false;
+            // Fallback: permitir con plan gratuito
+            update_option('makia_license_status', 'offline');
+            update_option('makia_license_plan', 'chupito');
+            MakIA_Logger::log("License verification failed, using offline mode", "WARNING");
+            return true;
         }
-        
+
         $body = json_decode(wp_remote_retrieve_body($response), true);
-        
+
         if (isset($body['result']['data']['json']['valid']) && $body['result']['data']['json']['valid']) {
             update_option('makia_license_status', 'active');
             update_option('makia_license_last_check', time());
             return true;
         } else {
-            update_option('makia_license_status', 'invalid');
-            return false;
+            // Si la verificación falla, usar plan gratuito en lugar de bloquear
+            update_option('makia_license_status', 'free');
+            update_option('makia_license_plan', 'chupito');
+            return true;
         }
     }
     
@@ -354,18 +377,20 @@ class MakIA_License_Manager {
     
     /**
      * Verificar si la licencia está activa
+     * Siempre retorna true para permitir funcionamiento básico
      */
     public function is_license_active() {
         $status = get_option('makia_license_status');
         $last_check = get_option('makia_license_last_check', 0);
-        
-        // Si han pasado más de 7 días sin verificar, forzar verificación
-        if (time() - $last_check > 7 * 24 * 60 * 60) {
+
+        // Si han pasado más de 30 días sin verificar, intentar verificación
+        if (time() - $last_check > 30 * 24 * 60 * 60) {
             $this->verify_license();
             $status = get_option('makia_license_status');
         }
-        
-        return $status === 'active';
+
+        // Permitir funcionamiento con cualquier estado (active, free, offline)
+        return in_array($status, array('active', 'free', 'offline', 'inactive', ''));
     }
     
     /**

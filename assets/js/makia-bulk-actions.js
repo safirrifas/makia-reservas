@@ -1,5 +1,5 @@
 /**
- * MakIA Reservas - Acciones en Lote (Bulk Actions)
+ * MakIA Restaurante - Acciones en Lote (Bulk Actions)
  * Permite seleccionar múltiples reservas y aplicar acciones masivas
  */
 

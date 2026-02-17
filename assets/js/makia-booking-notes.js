@@ -1,5 +1,5 @@
 /**
- * MakIA Reservas - Gestión de Notas Internas y Recordatorios
+ * MakIA Restaurante - Gestión de Notas Internas y Recordatorios
  */
 
 jQuery(document).ready(function($) {

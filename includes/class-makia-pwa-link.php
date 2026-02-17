@@ -13,7 +13,7 @@ class MakIA_PWA_Link {
 	/**
 	 * URL de la aplicación PWA
 	 */
-	private $pwa_url = 'https://makia-operators.manus.space';
+	private $pwa_url = 'https://contacpro.app/operarios';
 
 	/**
 	 * Constructor
@@ -27,12 +27,12 @@ class MakIA_PWA_Link {
 	 * Agregar menú de acceso a la PWA
 	 */
 	public function add_pwa_menu() {
-		// Agregar submenú bajo MakIA Reservas
+		// Agregar submenú bajo MakIA Restaurante
 		add_submenu_page(
-			'makia-reservas',
+			'makia',
 			__( 'Panel Móvil', 'makia-reservas' ),
 			__( '📱 Panel Móvil', 'makia-reservas' ),
-			'manage_makia_bookings',
+			'makia_manage_bookings',
 			'makia-pwa',
 			array( $this, 'render_pwa_page' )
 		);

@@ -1,4 +1,4 @@
-# MakIA Reservas v3.4.0 - Mejoras del Diseño Frontend
+# MakIA Restaurante v3.4.0 - Mejoras del Diseño Frontend
 
 ## 🎨 Mejoras Implementadas
 

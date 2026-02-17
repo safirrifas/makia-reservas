@@ -1,4 +1,4 @@
-# 📦 Guía de Instalación y Actualización - MakIA Reservas v4.1.0
+# 📦 Guía de Instalación y Actualización - MakIA Restaurante v4.1.0
 
 ## 🎉 ¡Bienvenido a la versión 4.1.0!
 
@@ -9,7 +9,7 @@ Esta versión incluye mejoras masivas en el sistema de diseño del formulario de
 ## 🆕 Nueva Instalación
 
 ### Paso 1: Subir el Plugin
-1. Descargar `makia-reservas-v4.1.0.zip`
+1. Descargar `makia-restaurante-v4.1.0.zip`
 2. Ir a **WordPress Admin → Plugins → Añadir nuevo**
 3. Hacer clic en **"Subir plugin"**
 4. Seleccionar el archivo ZIP
@@ -17,7 +17,7 @@ Esta versión incluye mejoras masivas en el sistema de diseño del formulario de
 6. Activar el plugin
 
 ### Paso 2: Configuración Inicial
-1. Ir a **MakIA Reservas** en el menú lateral
+1. Ir a **MakIA Restaurante** en el menú lateral
 2. Configurar horarios del restaurante
 3. Configurar capacidad de mesas
 4. Elegir plantilla de diseño en pestaña **Diseño**
@@ -29,28 +29,28 @@ Esta versión incluye mejoras masivas en el sistema de diseño del formulario de
 ### ⚠️ IMPORTANTE: Hacer Backup
 Antes de actualizar, hacer backup de:
 - Base de datos WordPress
-- Carpeta `/wp-content/plugins/makia-reservas/`
+- Carpeta `/wp-content/plugins/makia-restaurante/`
 - Todas las personalizaciones CSS custom (si existen)
 
 ### Método 1: Actualización Manual (Recomendado)
 
 1. **Desactivar** el plugin actual (NO eliminar)
-2. Descargar la nueva versión `makia-reservas-v4.1.0.zip`
+2. Descargar la nueva versión `makia-restaurante-v4.1.0.zip`
 3. Acceder por FTP/cPanel al servidor
 4. Navegar a `/wp-content/plugins/`
-5. **Eliminar** carpeta `makia-reservas/` antigua
-6. Subir y descomprimir `makia-reservas-v4.1.0.zip`
+5. **Eliminar** carpeta `makia-restaurante/` antigua
+6. Subir y descomprimir `makia-restaurante-v4.1.0.zip`
 7. Volver al admin de WordPress
 8. **Activar** el plugin
 
 ### Método 2: Desde WordPress Admin
 
 1. Ir a **Plugins → Plugins instalados**
-2. **Desactivar** MakIA Reservas
+2. **Desactivar** MakIA Restaurante
 3. Hacer clic en **"Eliminar"** (las opciones se conservan)
 4. Ir a **Plugins → Añadir nuevo**
 5. Hacer clic en **"Subir plugin"**
-6. Seleccionar `makia-reservas-v4.1.0.zip`
+6. Seleccionar `makia-restaurante-v4.1.0.zip`
 7. **Instalar** y luego **Activar**
 
 ---
@@ -59,7 +59,7 @@ Antes de actualizar, hacer backup de:
 
 ### 1. Panel de Diseño con 3 Pestañas
 
-Ir a **MakIA Reservas → Diseño**
+Ir a **MakIA Restaurante → Diseño**
 
 #### Pestaña: Plantillas
 - 6 plantillas profesionales mejoradas
@@ -110,7 +110,7 @@ Ir a **MakIA Reservas → Diseño**
 ## 🎨 Cómo Usar las Nuevas Funciones
 
 ### Cambiar Plantilla
-1. Ir a **MakIA Reservas → Diseño**
+1. Ir a **MakIA Restaurante → Diseño**
 2. Navegar a **Plantillas**
 3. Hacer clic en **"Seleccionar"** en la plantilla deseada
 4. ✅ ¡Listo! Se activa automáticamente
@@ -212,11 +212,11 @@ Ir a **MakIA Reservas → Diseño**
 
 ### Tutoriales en Video
 - 🎥 YouTube: [Canal MakIA](https://youtube.com)
-- 📺 Playlist: Configuración de MakIA Reservas
+- 📺 Playlist: Configuración de MakIA Restaurante
 
 ---
 
-## 🎉 ¡Disfruta de MakIA Reservas v4.1.0!
+## 🎉 ¡Disfruta de MakIA Restaurante v4.1.0!
 
 Gracias por usar nuestro plugin. Si te gusta, por favor:
 - ⭐ Deja una reseña en WordPress.org
