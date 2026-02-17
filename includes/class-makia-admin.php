@@ -289,7 +289,7 @@ class MakIA_Admin {
         $upcoming = $wpdb->get_var("SELECT COUNT(*) FROM {$bookings_table} WHERE status = 'approved' AND booking_date >= CURDATE()");
         
         ?>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div class="makia-dashboard-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
             <!-- Total Reservas -->
             <div style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid #667eea;">
                 <h3 style="margin: 0 0 10px 0; color: #667eea; font-size: 16px;">Total Reservas</h3>

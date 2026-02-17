@@ -457,3 +457,269 @@
         color: #333;
     }
 }
+
+/* ==========================================================================
+   TAB DISEÑO - RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 782px) {
+    /* Personalización: grid 2 columnas → 1 columna */
+    .makia-customize-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+
+    /* Vista previa: reducir padding y min-height */
+    .makia-preview-wrapper {
+        padding: 15px !important;
+        min-height: auto !important;
+    }
+
+    /* Vista previa: ajustar escala para móvil */
+    #makia-live-preview {
+        transform: scale(0.7) !important;
+        transform-origin: top center !important;
+    }
+
+    /* Plantillas grid: 1 columna en móvil */
+    .makia-templates-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ==========================================================================
+   TAB LICENCIA - RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 782px) {
+    /* Uso de reservas: 3 columnas → 1 fila apilada */
+    .makia-usage-stats {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    .makia-usage-stat-value {
+        font-size: 22px !important;
+    }
+
+    /* Header de licencia: wrap en móvil */
+    .makia-license-header {
+        flex-wrap: wrap !important;
+    }
+
+    .makia-license-icon {
+        font-size: 36px !important;
+    }
+
+    .makia-license-title h2 {
+        font-size: 22px !important;
+    }
+
+    /* Planes: asegurar 1 columna en móvil */
+    .makia-plan-cards {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Valores grandes de planes */
+    .makia-plan-price strong {
+        font-size: 26px !important;
+    }
+
+    .makia-plan-limit-value {
+        font-size: 28px !important;
+    }
+
+    /* Texto de barra de uso */
+    .makia-usage-fill {
+        font-size: 11px !important;
+    }
+
+    /* Alertas */
+    .makia-alert {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 10px !important;
+    }
+}
+
+/* ==========================================================================
+   TAB BOTÓN RESERVAS - RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 782px) {
+    /* Color picker rows: apilar en móvil */
+    .makia-color-row {
+        flex-wrap: wrap !important;
+    }
+
+    .makia-color-item {
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+
+    /* Opciones de estilo: wrap */
+    .makia-style-options {
+        flex-wrap: wrap !important;
+    }
+
+    .makia-style-option {
+        flex: 1 1 calc(50% - 5px) !important;
+        min-width: calc(50% - 5px) !important;
+    }
+
+    /* Opciones de tamaño: wrap */
+    .makia-size-options {
+        flex-wrap: wrap !important;
+    }
+
+    .makia-size-option {
+        flex: 1 1 calc(50% - 5px) !important;
+        min-width: calc(50% - 5px) !important;
+    }
+
+    /* Opciones de posición: wrap */
+    .makia-pos-options {
+        flex-wrap: wrap !important;
+    }
+
+    .makia-pos-option {
+        flex: 1 1 calc(33% - 7px) !important;
+        min-width: 80px !important;
+    }
+
+    /* Preview box: no sticky en móvil */
+    .makia-preview-box {
+        position: static !important;
+        margin-top: 20px;
+    }
+
+}
+
+/* ==========================================================================
+   TAB RESERVAS (BOOKINGS) - FILTROS RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 782px) {
+    /* Botones de filtro: permitir wrap */
+    .makia-filter-actions {
+        flex-wrap: wrap !important;
+    }
+
+    .makia-filter-actions .button {
+        flex: 1 1 calc(50% - 5px) !important;
+        min-width: 120px !important;
+        text-align: center !important;
+    }
+}
+
+/* ==========================================================================
+   DASHBOARD / BOOKINGS - STAT CARDS RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 782px) {
+    /* Dashboard stats: 2 columnas en móvil */
+    .makia-dashboard-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    /* Dashboard stat cards: reducir padding y font */
+    .makia-dashboard-stats > div {
+        padding: 15px !important;
+    }
+
+    .makia-dashboard-stats > div > h3 {
+        font-size: 12px !important;
+    }
+
+    .makia-dashboard-stats > div > p {
+        font-size: 24px !important;
+    }
+
+    /* Bookings stat cards: reducir font-size */
+    .makia-stats-grid .makia-stat-card p {
+        font-size: 24px !important;
+    }
+
+    .makia-stats-grid .makia-stat-card h3 {
+        font-size: 12px !important;
+    }
+}
+
+/* ==========================================================================
+   FORMULARIOS GENERALES - RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 782px) {
+    /* Inputs con ancho fijo: hacer full-width (targeted by ID) */
+    #makia_button_border_radius,
+    #makia_floating_scroll_offset,
+    #makia_floating_animation {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Form tables en configuración */
+    .makia-main-content .form-table th,
+    .makia-main-content .form-table td {
+        display: block;
+        width: 100%;
+        padding: 5px 0;
+    }
+
+    .makia-main-content .form-table th {
+        padding-top: 15px;
+        padding-bottom: 5px;
+    }
+
+    /* Inputs en form-table: full width y anti-zoom iOS */
+    .makia-main-content .form-table input[type="text"],
+    .makia-main-content .form-table input[type="email"],
+    .makia-main-content .form-table input[type="url"],
+    .makia-main-content .form-table input[type="number"],
+    .makia-main-content .form-table input[type="tel"],
+    .makia-main-content .form-table select,
+    .makia-main-content .form-table textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 16px; /* Evita zoom en iOS */
+        box-sizing: border-box;
+    }
+}
+
+/* ==========================================================================
+   PANTALLAS MUY PEQUEÑAS (< 480px)
+   ========================================================================== */
+
+@media (max-width: 480px) {
+    /* Stats: 1 columna en pantallas muy pequeñas */
+    .makia-stats-grid,
+    .makia-dashboard-stats {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Opciones de posición del botón: apilar */
+    .makia-pos-option {
+        flex: 1 1 100% !important;
+    }
+
+    /* Opciones de estilo y tamaño: 1 columna */
+    .makia-style-option,
+    .makia-size-option {
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+
+    /* Licencia: uso stats horizontal compacto */
+    .makia-usage-stats {
+        gap: 8px !important;
+    }
+
+    .makia-usage-stat {
+        padding: 10px !important;
+    }
+
+    .makia-usage-stat-value {
+        font-size: 18px !important;
+    }
+}

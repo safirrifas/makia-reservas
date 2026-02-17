@@ -294,7 +294,7 @@ class MakIA_Design {
             <div class="makia-design-section" id="makia-section-customize" style="display: none;">
                 <h3 style="color: #333; margin-bottom: 20px; font-size: 20px;">Opciones de Personalización Avanzada</h3>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div class="makia-customize-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
                     <!-- Columna izquierda: Colores y Logo -->
                     <div>
                         <div style="background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
@@ -386,7 +386,7 @@ class MakIA_Design {
             <div class="makia-design-section" id="makia-section-preview" style="display: none;">
                 <h3 style="color: #333; margin-bottom: 20px; font-size: 20px;">Vista Previa en Tiempo Real</h3>
                 
-                <div style="background: #f5f5f5; padding: 40px; border-radius: 12px; min-height: 600px; display: flex; align-items: center; justify-content: center;">
+                <div class="makia-preview-wrapper" style="background: #f5f5f5; padding: 40px; border-radius: 12px; min-height: 600px; display: flex; align-items: center; justify-content: center;">
                     <div id="makia-live-preview" style="max-width: 100%; transform: scale(0.85); transform-origin: center;">
                         <div class="makia-template-<?php echo esc_attr($active_template); ?>" id="makia-preview-container">
                             <?php if ($customizations['logo_url']): ?>

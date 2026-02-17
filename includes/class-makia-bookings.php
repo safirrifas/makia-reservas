@@ -1076,7 +1076,7 @@ class MakIA_Bookings {
                 </div>
                 
                 <!-- Botones -->
-                <div style="display: flex; gap: 10px;">
+                <div class="makia-filter-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <button type="button" id="apply-filters" class="button button-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 10px 20px;">
                         🔍 Aplicar Filtros
                     </button>

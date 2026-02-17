@@ -88,6 +88,7 @@ Principales: `makia-styles.css`, `makia-admin-improved.css`, `makia-booking-temp
 - Null check en $makia_license_manager en shortcodes
 - ABSPATH guard anadido a 6 archivos que faltaban
 - Console.log innecesarios limpiados de admin JS
+- Admin responsive mejorado: Diseno (grid 1fr), Licencia (stats/planes 1col), Boton (flex-wrap), filtros, form-tables, inputs fijos, breakpoint 480px
 
 ## Problemas pendientes (no criticos)
 - JWT de API REST es base64 sin firma criptografica (considerar firebase/php-jwt)
