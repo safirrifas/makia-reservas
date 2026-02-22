@@ -120,10 +120,11 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        // Recopilar datos
+        // Recopilar datos (nonce: campo hidden del form > makiaConfig)
+        var nonceValue = $('#makia_nonce_field').val() || makiaConfig.nonce;
         var formData = {
             action: 'makia_submit_booking',
-            nonce: makiaConfig.nonce,
+            nonce: nonceValue,
             name: $('#makia-name').val(),
             email: $('#makia-email').val(),
             phone: $('#makia-phone').val(),

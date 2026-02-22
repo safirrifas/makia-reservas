@@ -249,6 +249,7 @@ $customizations = array(
                 <div id="makia-booking-messages"></div>
                 
                 <form id="makia-booking-form" class="makia-booking-form">
+                    <?php wp_nonce_field('makia_booking_nonce', 'makia_nonce_field', false); ?>
                     <div class="makia-form-row" style="display: flex; gap: 15px;">
                         <div class="makia-form-group" style="flex: 1;">
                             <label for="makia-name">Nombre *</label>
