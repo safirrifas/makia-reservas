@@ -16,6 +16,8 @@ class MakIA_Bookings {
         // Hooks
         add_action('wp_ajax_makia_submit_booking', array($this, 'submit_booking'));
         add_action('wp_ajax_nopriv_makia_submit_booking', array($this, 'submit_booking'));
+        add_action('wp_ajax_makia_get_fresh_nonce', array($this, 'get_fresh_nonce'));
+        add_action('wp_ajax_nopriv_makia_get_fresh_nonce', array($this, 'get_fresh_nonce'));
         add_action('admin_post_makia_update_booking_status', array($this, 'update_booking_status'));
         add_action('admin_post_makia_delete_booking', array($this, 'delete_booking'));
         add_action('wp_ajax_makia_update_booking_status_ajax', array($this, 'update_booking_status_ajax'));
@@ -117,6 +119,13 @@ class MakIA_Bookings {
         dbDelta($sql_notes);
     }
     
+    /**
+     * Devolver nonce fresco (para páginas cacheadas)
+     */
+    public function get_fresh_nonce() {
+        wp_send_json_success(array('nonce' => wp_create_nonce('makia_booking_nonce')));
+    }
+
     /**
      * Procesar envío de reserva (AJAX)
      */

@@ -120,11 +120,12 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        // Recopilar datos (nonce: campo hidden del form > makiaConfig)
-        var nonceValue = $('#makia_nonce_field').val() || makiaConfig.nonce;
-        var formData = {
-            action: 'makia_submit_booking',
-            nonce: nonceValue,
+        // Deshabilitar botón
+        submitBtn.prop('disabled', true).addClass('loading');
+        messagesContainer.empty();
+
+        // Recopilar datos del formulario
+        var formFields = {
             name: $('#makia-name').val(),
             email: $('#makia-email').val(),
             phone: $('#makia-phone').val(),
@@ -137,15 +138,17 @@ jQuery(document).ready(function($) {
             legal: $('#makia-legal').is(':checked') ? 'on' : ''
         };
 
-        // Deshabilitar botón (usar clases CSS para preservar estructura de spans)
-        submitBtn.prop('disabled', true).addClass('loading');
-        messagesContainer.empty();
+        // Paso 1: Pedir nonce fresco al servidor (evita problemas de caché de página)
+        $.post(makiaConfig.ajaxUrl, { action: 'makia_get_fresh_nonce' }, function(nonceResponse) {
+            var freshNonce = (nonceResponse && nonceResponse.success) ? nonceResponse.data.nonce : makiaConfig.nonce;
 
-        // Enviar AJAX
-        $.ajax({
-            url: makiaConfig.ajaxUrl,
-            method: 'POST',
-            data: formData,
+            var formData = $.extend({ action: 'makia_submit_booking', nonce: freshNonce }, formFields);
+
+            // Paso 2: Enviar reserva con nonce fresco
+            $.ajax({
+                url: makiaConfig.ajaxUrl,
+                method: 'POST',
+                data: formData,
             success: function(response) {
 
                 if (response.success) {
@@ -208,6 +211,40 @@ jQuery(document).ready(function($) {
                 submitBtn.prop('disabled', false).removeClass('loading');
                 isSubmitting = false;
             }
+        });
+        }).fail(function() {
+            // Si falla obtener nonce fresco, intentar con el de la página
+            var formData = $.extend({ action: 'makia_submit_booking', nonce: makiaConfig.nonce }, formFields);
+            $.ajax({
+                url: makiaConfig.ajaxUrl,
+                method: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        $(form).hide();
+                        messagesContainer.empty();
+                        $('#makia-success-message').show();
+                        form.reset();
+                    } else {
+                        messagesContainer.html(
+                            '<div class="makia-message makia-error" style="background:#f8d7da;color:#721c24;padding:15px;border-radius:5px;margin:15px 0;">' +
+                            '<strong>Error:</strong> ' + escapeHtml(response.data.message || 'Error desconocido') +
+                            '</div>'
+                        );
+                    }
+                },
+                error: function() {
+                    messagesContainer.html(
+                        '<div class="makia-message makia-error" style="background:#f8d7da;color:#721c24;padding:15px;border-radius:5px;margin:15px 0;">' +
+                        '<strong>Error de conexión:</strong> No se pudo enviar la reserva.' +
+                        '</div>'
+                    );
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false).removeClass('loading');
+                    isSubmitting = false;
+                }
+            });
         });
     });
 
