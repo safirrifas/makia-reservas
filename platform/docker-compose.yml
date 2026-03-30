@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # BASE DE DATOS
+  # ============================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: makia-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: makia
+      POSTGRES_PASSWORD: makia_secret
+      POSTGRES_DB: makia_reservas
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U makia -d makia_reservas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # REDIS (Cache + Queue)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: makia-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # API
+  # ============================================
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: makia-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://makia:makia_secret@postgres:5432/makia_reservas
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: makia-network

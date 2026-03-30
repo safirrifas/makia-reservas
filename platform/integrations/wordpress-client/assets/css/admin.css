@@ -1,0 +1,951 @@
+/**
+ * MakIA Restaurante - Admin Styles
+ *
+ * Estilos para el panel de administración de licencias
+ */
+
+/* Variables */
+:root {
+    --makia-primary: #4f46e5;
+    --makia-primary-dark: #4338ca;
+    --makia-primary-light: #818cf8;
+    --makia-success: #10b981;
+    --makia-warning: #f59e0b;
+    --makia-danger: #ef4444;
+    --makia-gray-50: #f9fafb;
+    --makia-gray-100: #f3f4f6;
+    --makia-gray-200: #e5e7eb;
+    --makia-gray-300: #d1d5db;
+    --makia-gray-400: #9ca3af;
+    --makia-gray-500: #6b7280;
+    --makia-gray-600: #4b5563;
+    --makia-gray-700: #374151;
+    --makia-gray-800: #1f2937;
+    --makia-gray-900: #111827;
+    --makia-border-radius: 8px;
+    --makia-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --makia-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Wrap principal */
+.makia-wrap {
+    max-width: 1200px;
+    margin: 20px 20px 20px 0;
+}
+
+.makia-wrap h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--makia-gray-900);
+    margin-bottom: 24px;
+}
+
+/* Header con logo */
+.makia-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.makia-logo {
+    display: inline-flex;
+}
+
+.makia-logo svg {
+    width: 32px;
+    height: 32px;
+}
+
+/* Dashboard grid */
+.makia-dashboard {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+@media (max-width: 1024px) {
+    .makia-dashboard {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Cards */
+.makia-card {
+    background: white;
+    border: 1px solid var(--makia-gray-200);
+    border-radius: var(--makia-border-radius);
+    box-shadow: var(--makia-shadow);
+    overflow: hidden;
+}
+
+.makia-card-primary {
+    border-color: var(--makia-primary);
+    border-width: 2px;
+}
+
+.makia-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--makia-gray-200);
+    background: var(--makia-gray-50);
+}
+
+.makia-card-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--makia-gray-900);
+}
+
+.makia-card-body {
+    padding: 20px;
+}
+
+/* Badges */
+.makia-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.makia-badge-active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.makia-badge-inactive {
+    background: var(--makia-gray-200);
+    color: var(--makia-gray-600);
+}
+
+.makia-badge-trial {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.makia-badge-expired {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.makia-badge-cancelled {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Plan info */
+.makia-plan-info {
+    margin-bottom: 16px;
+}
+
+.makia-plan-name {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--makia-primary);
+    margin-bottom: 4px;
+}
+
+.makia-plan-expiry {
+    color: var(--makia-gray-500);
+    font-size: 14px;
+}
+
+/* Usage stats */
+.makia-usage-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.makia-stat {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--makia-gray-100);
+}
+
+.makia-stat:last-child {
+    border-bottom: none;
+}
+
+.makia-stat-label {
+    font-size: 13px;
+    color: var(--makia-gray-500);
+    margin-bottom: 4px;
+}
+
+.makia-stat-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--makia-gray-900);
+}
+
+.makia-stat-limit {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--makia-gray-400);
+}
+
+/* Usage bar */
+.makia-usage-bar {
+    height: 8px;
+    background: var(--makia-gray-200);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.makia-usage-fill {
+    height: 100%;
+    background: var(--makia-primary);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.makia-usage-warning .makia-usage-fill {
+    background: var(--makia-warning);
+}
+
+.makia-usage-critical .makia-usage-fill {
+    background: var(--makia-danger);
+}
+
+/* Quick links */
+.makia-quick-links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.makia-quick-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--makia-gray-50);
+    border: 1px solid var(--makia-gray-200);
+    border-radius: 6px;
+    color: var(--makia-gray-700);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.makia-quick-link:hover {
+    background: var(--makia-primary);
+    border-color: var(--makia-primary);
+    color: white;
+}
+
+.makia-quick-link .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Notifications list */
+.makia-notifications-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.makia-notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--makia-gray-100);
+}
+
+.makia-notification-item:last-child {
+    border-bottom: none;
+}
+
+.makia-notification-item.unread {
+    background: #eff6ff;
+    margin: 0 -20px;
+    padding: 12px 20px;
+}
+
+.makia-notification-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.makia-notification-icon.feature {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.makia-notification-icon.improvement {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.makia-notification-icon.maintenance {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.makia-notification-icon.announcement {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+.makia-notification-content {
+    flex: 1;
+}
+
+.makia-notification-title {
+    font-weight: 500;
+    color: var(--makia-gray-900);
+    margin-bottom: 2px;
+}
+
+.makia-notification-date {
+    font-size: 12px;
+    color: var(--makia-gray-400);
+}
+
+.makia-view-all {
+    display: block;
+    margin-top: 12px;
+    color: var(--makia-primary);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.makia-view-all:hover {
+    text-decoration: underline;
+}
+
+/* Plans grid */
+.makia-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 1200px) {
+    .makia-plans-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .makia-plans-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.makia-plan-card {
+    position: relative;
+    background: white;
+    border: 2px solid var(--makia-gray-200);
+    border-radius: var(--makia-border-radius);
+    padding: 24px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.makia-plan-card:hover {
+    border-color: var(--makia-primary-light);
+    box-shadow: var(--makia-shadow-lg);
+}
+
+.makia-plan-card.makia-plan-current {
+    border-color: var(--makia-primary);
+    background: #f5f3ff;
+}
+
+.makia-plan-card.makia-plan-recommended {
+    border-color: var(--makia-primary);
+}
+
+.makia-recommended-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--makia-primary);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 9999px;
+}
+
+.makia-plan-card .makia-plan-header {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.makia-plan-card .makia-plan-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--makia-gray-900);
+    margin: 0 0 8px 0;
+}
+
+.makia-plan-price {
+    margin-bottom: 16px;
+}
+
+.makia-price-amount {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--makia-gray-900);
+}
+
+.makia-price-period {
+    color: var(--makia-gray-500);
+    font-size: 14px;
+}
+
+.makia-plan-card .makia-plan-features {
+    margin-bottom: 20px;
+}
+
+.makia-plan-card .makia-plan-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+.makia-plan-card .makia-plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--makia-gray-600);
+    border-bottom: 1px solid var(--makia-gray-100);
+}
+
+.makia-plan-card .makia-plan-features li:last-child {
+    border-bottom: none;
+}
+
+.makia-plan-card .makia-plan-features .dashicons {
+    color: var(--makia-success);
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.makia-plan-action {
+    margin-top: auto;
+}
+
+.makia-plan-action .button {
+    width: 100%;
+}
+
+/* Section */
+.makia-section {
+    margin-bottom: 32px;
+}
+
+.makia-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--makia-gray-900);
+    margin: 0 0 16px 0;
+}
+
+/* Info table */
+.makia-info-table {
+    width: 100%;
+}
+
+.makia-info-table th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--makia-gray-500);
+    padding: 8px 16px 8px 0;
+    width: 150px;
+}
+
+.makia-info-table td {
+    color: var(--makia-gray-900);
+    padding: 8px 0;
+}
+
+.makia-info-table code {
+    background: var(--makia-gray-100);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.makia-info-note {
+    margin-top: 16px;
+    padding: 12px;
+    background: var(--makia-gray-50);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--makia-gray-600);
+}
+
+/* Forms */
+.makia-form {
+    max-width: 600px;
+}
+
+.makia-form-row {
+    margin-bottom: 20px;
+}
+
+.makia-form-row label {
+    display: block;
+    font-weight: 500;
+    color: var(--makia-gray-700);
+    margin-bottom: 6px;
+}
+
+.makia-form-row input[type="text"],
+.makia-form-row input[type="email"],
+.makia-form-row select,
+.makia-form-row textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--makia-gray-300);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.makia-form-row input:focus,
+.makia-form-row select:focus,
+.makia-form-row textarea:focus {
+    outline: none;
+    border-color: var(--makia-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.makia-form-row textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Help resources */
+.makia-help-resources {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 1024px) {
+    .makia-help-resources {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .makia-help-resources {
+        grid-template-columns: 1fr;
+    }
+}
+
+.makia-resource-card {
+    display: block;
+    padding: 24px;
+    background: white;
+    border: 1px solid var(--makia-gray-200);
+    border-radius: var(--makia-border-radius);
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.makia-resource-card:hover {
+    border-color: var(--makia-primary);
+    box-shadow: var(--makia-shadow-lg);
+    transform: translateY(-2px);
+}
+
+.makia-resource-card .dashicons {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: var(--makia-primary);
+    margin-bottom: 12px;
+}
+
+.makia-resource-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--makia-gray-900);
+}
+
+.makia-resource-card p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--makia-gray-500);
+}
+
+/* Filters */
+.makia-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.makia-filters select {
+    padding: 8px 12px;
+    border: 1px solid var(--makia-gray-300);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Notifications container */
+.makia-notifications-container {
+    background: white;
+    border: 1px solid var(--makia-gray-200);
+    border-radius: var(--makia-border-radius);
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+/* Changelog */
+.makia-changelog {
+    background: white;
+    border: 1px solid var(--makia-gray-200);
+    border-radius: var(--makia-border-radius);
+    padding: 20px;
+}
+
+.makia-changelog-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--makia-gray-100);
+}
+
+.makia-changelog-item:last-child {
+    border-bottom: none;
+}
+
+.makia-changelog-version {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.makia-changelog-version strong {
+    font-size: 16px;
+    color: var(--makia-gray-900);
+}
+
+.makia-changelog-version span {
+    font-size: 12px;
+    color: var(--makia-gray-400);
+}
+
+.makia-changelog-changes {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.makia-changelog-changes li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 14px;
+    color: var(--makia-gray-600);
+}
+
+.makia-changelog-changes .makia-change-type {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.makia-change-type.feature {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.makia-change-type.fix {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.makia-change-type.improvement {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+/* Roadmap */
+.makia-roadmap {
+    background: white;
+    border: 1px solid var(--makia-gray-200);
+    border-radius: var(--makia-border-radius);
+    padding: 20px;
+}
+
+.makia-roadmap-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--makia-gray-100);
+}
+
+.makia-roadmap-item:last-child {
+    border-bottom: none;
+}
+
+.makia-roadmap-status {
+    flex-shrink: 0;
+    width: 100px;
+    text-align: center;
+}
+
+.makia-roadmap-status span {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.makia-roadmap-status .planned {
+    background: var(--makia-gray-200);
+    color: var(--makia-gray-600);
+}
+
+.makia-roadmap-status .in-progress {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.makia-roadmap-status .beta {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.makia-roadmap-content h4 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--makia-gray-900);
+}
+
+.makia-roadmap-content p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--makia-gray-500);
+}
+
+/* Loading */
+.makia-loading {
+    color: var(--makia-gray-400);
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Tables */
+#makia-invoices-table,
+#makia-tickets-table {
+    margin: 0;
+}
+
+#makia-invoices-table td,
+#makia-tickets-table td {
+    vertical-align: middle;
+}
+
+/* Payment method card */
+.makia-payment-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--makia-gray-50);
+    border-radius: 8px;
+}
+
+.makia-payment-card-icon {
+    font-size: 32px;
+}
+
+.makia-payment-card-info {
+    flex: 1;
+}
+
+.makia-payment-card-info strong {
+    display: block;
+    font-size: 16px;
+    color: var(--makia-gray-900);
+}
+
+.makia-payment-card-info span {
+    font-size: 14px;
+    color: var(--makia-gray-500);
+}
+
+/* Billing info form */
+.makia-billing-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 768px) {
+    .makia-billing-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+.makia-billing-form .full-width {
+    grid-column: 1 / -1;
+}
+
+/* Next invoice */
+.makia-next-invoice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--makia-gray-50);
+    border-radius: 8px;
+}
+
+.makia-next-invoice-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.makia-next-invoice-amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--makia-gray-900);
+}
+
+.makia-next-invoice-date {
+    font-size: 14px;
+    color: var(--makia-gray-500);
+}
+
+/* Toast messages */
+.makia-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    background: var(--makia-gray-900);
+    color: white;
+    border-radius: 8px;
+    box-shadow: var(--makia-shadow-lg);
+    z-index: 99999;
+    animation: makia-toast-in 0.3s ease;
+}
+
+.makia-toast.success {
+    background: var(--makia-success);
+}
+
+.makia-toast.error {
+    background: var(--makia-danger);
+}
+
+@keyframes makia-toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal */
+.makia-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99998;
+}
+
+.makia-modal {
+    background: white;
+    border-radius: var(--makia-border-radius);
+    box-shadow: var(--makia-shadow-lg);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.makia-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--makia-gray-200);
+}
+
+.makia-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.makia-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--makia-gray-400);
+}
+
+.makia-modal-close:hover {
+    color: var(--makia-gray-600);
+}
+
+.makia-modal-body {
+    padding: 20px;
+}
+
+.makia-modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 16px 20px;
+    border-top: 1px solid var(--makia-gray-200);
+}

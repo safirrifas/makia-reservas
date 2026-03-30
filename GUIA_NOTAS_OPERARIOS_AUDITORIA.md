@@ -1,4 +1,4 @@
-# 📝 Guía Completa: Notas, Operarios y Auditoría - MakIA Reservas v4.2.0
+# 📝 Guía Completa: Notas, Operarios y Auditoría - MakIA Restaurante v4.2.0
 
 ## 🎯 Introducción
 
@@ -147,7 +147,7 @@ Un **Operario** es un miembro del personal con permisos específicos para:
 
 ### Acceder a Operarios
 
-**Ruta:** `MakIA Reservas → Operarios`
+**Ruta:** `MakIA Restaurante → Operarios`
 
 **Panel incluye:**
 - Botón "➕ Añadir Operario"
@@ -165,7 +165,7 @@ Un **Operario** es un miembro del personal con permisos específicos para:
 
 ### Cómo Crear un Operario
 
-**Paso 1:** Ir a `MakIA Reservas → Operarios`
+**Paso 1:** Ir a `MakIA Restaurante → Operarios`
 
 **Paso 2:** Hacer clic en "➕ Añadir Operario"
 
@@ -210,7 +210,7 @@ Cuando un operario entra a WordPress ve:
 **Barra lateral izquierda:**
 ```
 🏠 Dashboard (limitado)
-📅 MakIA Reservas
+📅 MakIA Restaurante
    └─ Ver Reservas
 👤 Perfil (puede cambiar su contraseña)
 ```
@@ -230,7 +230,7 @@ Cuando un operario entra a WordPress ve:
 
 ### Cómo Eliminar un Operario
 
-**Paso 1:** Ir a `MakIA Reservas → Operarios`
+**Paso 1:** Ir a `MakIA Restaurante → Operarios`
 
 **Paso 2:** Buscar el operario en la lista
 
@@ -248,7 +248,7 @@ perderá los permisos de operario.
 
 **Resultado:**
 - El usuario se degrada a "Suscriptor"
-- Ya no puede acceder a MakIA Reservas
+- Ya no puede acceder a MakIA Restaurante
 - Su cuenta de WordPress permanece activa
 - Puede iniciar sesión pero solo ve su perfil
 - Todas sus acciones pasadas quedan en auditoría
@@ -341,7 +341,7 @@ La auditoría es un **registro completo** de todas las acciones realizadas en el
 **Existen 2 formas:**
 
 #### 1. Auditoría General
-**Ruta:** `MakIA Reservas → Auditoría`
+**Ruta:** `MakIA Restaurante → Auditoría`
 
 Muestra:
 - 📊 Dashboard con estadísticas generales
@@ -460,7 +460,7 @@ Solución:
 Objetivo: Ver rendimiento de operarios
 
 Solución:
-1. Ir a MakIA Reservas → Auditoría
+1. Ir a MakIA Restaurante → Auditoría
 2. Ver sección "Usuarios Más Activos"
 3. Comparar números de acciones
 4. Identificar quién está más involucrado
@@ -833,7 +833,7 @@ Al reportar un problema, incluir:
 
 ---
 
-**¡Disfruta de las nuevas funcionalidades de MakIA Reservas v4.2.0!** 🎉
+**¡Disfruta de las nuevas funcionalidades de MakIA Restaurante v4.2.0!** 🎉
 
 **Equipo MakIA Development**  
 **Enero 2026**

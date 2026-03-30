@@ -1,13 +1,13 @@
 # Configuración de WhatsApp Business API
 
-Esta guía te ayudará a configurar la integración de WhatsApp Business API con el plugin MakIA Reservas.
+Esta guía te ayudará a configurar la integración de WhatsApp Business API con el plugin MakIA Restaurante.
 
 ## Requisitos Previos
 
 - Cuenta de Meta (Facebook/Instagram)
 - Número de teléfono comercial verificado
 - Acceso a Meta Business Suite
-- WordPress con el plugin MakIA Reservas instalado
+- WordPress con el plugin MakIA Restaurante instalado
 
 ## Paso 1: Crear una Cuenta de Meta Business
 
@@ -21,7 +21,7 @@ Esta guía te ayudará a configurar la integración de WhatsApp Business API con
 2. Haz clic en "Mis Aplicaciones" → "Crear Aplicación"
 3. Selecciona "Empresarial" como tipo de aplicación
 4. Completa los detalles:
-   - **Nombre de la Aplicación:** MakIA Reservas WhatsApp
+   - **Nombre de la Aplicación:** MakIA Restaurante WhatsApp
    - **Correo de Contacto:** tu@email.com
    - **Propósito:** Integración de WhatsApp para reservas
 
@@ -49,7 +49,7 @@ Esta guía te ayudará a configurar la integración de WhatsApp Business API con
 ## Paso 4: Configurar en WordPress
 
 1. Accede al panel de administración de WordPress
-2. Ve a **MakIA Reservas** → **Configuración**
+2. Ve a **MakIA Restaurante** → **Configuración**
 3. Busca la sección **WhatsApp Business API**
 4. Completa los campos:
    - **Token de Acceso:** [Tu token de acceso]
@@ -73,7 +73,7 @@ Los webhooks permiten que WhatsApp envíe actualizaciones de estado a tu servido
 
 ### 5.2 Guardar Token de Verificación en WordPress
 
-1. Ve a **MakIA Reservas** → **Configuración**
+1. Ve a **MakIA Restaurante** → **Configuración**
 2. Busca **Token de Verificación de Webhook**
 3. Ingresa el token que creaste en el paso anterior
 4. Haz clic en **Guardar**
@@ -164,7 +164,7 @@ Meta revisará tus plantillas en 24-48 horas. Recibirás una notificación cuand
 
 ## Paso 8: Probar la Integración
 
-1. Ve a **MakIA Reservas** → **Operarios**
+1. Ve a **MakIA Restaurante** → **Operarios**
 2. Crea una nueva reserva de prueba
 3. Selecciona un cliente con número de WhatsApp
 4. Haz clic en **Enviar WhatsApp**
@@ -224,7 +224,7 @@ Consulta los [precios actuales de WhatsApp](https://www.whatsapp.com/business/pr
 
 Si tienes problemas con la integración:
 
-1. Revisa los logs en **MakIA Reservas** → **Logs**
+1. Revisa los logs en **MakIA Restaurante** → **Logs**
 2. Contacta al soporte de Meta en [Meta Help Center](https://www.facebook.com/help/)
 3. Abre un ticket en [MakIA Support](https://contacpro.app/support/)
 

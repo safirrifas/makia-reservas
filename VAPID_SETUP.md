@@ -67,7 +67,7 @@ define('MAKIA_VAPID_PRIVATE_KEY', getenv('MAKIA_VAPID_PRIVATE_KEY'));
 
 ### 1. Desde el Panel de Administración
 
-1. Ve a **MakIA Reservas > Configuración**
+1. Ve a **MakIA Restaurante > Configuración**
 2. Busca la sección "Web Push Notifications"
 3. Verifica que las claves estén configuradas correctamente
 

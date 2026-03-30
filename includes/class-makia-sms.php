@@ -32,20 +32,52 @@ class MakIA_SMS {
     }
 
     /**
-     * Inicializar cliente de Twilio
+     * Verificar si Twilio está disponible
+     *
+     * @return bool
+     */
+    public function is_twilio_available() {
+        return $this->twilio_client !== null && ! empty( $this->twilio_phone );
+    }
+
+    /**
+     * Inicializar cliente de Twilio (con degradación elegante)
      */
     private function init_twilio() {
         $twilio_sid = get_option( 'makia_twilio_account_sid' );
         $twilio_token = get_option( 'makia_twilio_auth_token' );
         $this->twilio_phone = get_option( 'makia_twilio_phone' );
 
-        if ( $twilio_sid && $twilio_token ) {
-            require_once dirname( __FILE__ ) . '/../vendor/autoload.php';
-            try {
-                $this->twilio_client = new \Twilio\Rest\Client( $twilio_sid, $twilio_token );
-            } catch ( Exception $e ) {
-                error_log( 'Error initializing Twilio: ' . $e->getMessage() );
+        // Si no hay credenciales, simplemente no inicializar (degradación elegante)
+        if ( empty( $twilio_sid ) || empty( $twilio_token ) ) {
+            return;
+        }
+
+        // Verificar si el autoloader de Twilio existe
+        $autoload_path = dirname( __FILE__ ) . '/../vendor/autoload.php';
+        if ( ! file_exists( $autoload_path ) ) {
+            // Twilio no está instalado, funcionar sin SMS
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                error_log( '[MakIA SMS] Twilio SDK not installed. SMS functionality disabled. Run: composer require twilio/sdk' );
             }
+            return;
+        }
+
+        try {
+            require_once $autoload_path;
+
+            // Verificar si la clase Twilio existe
+            if ( ! class_exists( '\Twilio\Rest\Client' ) ) {
+                if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                    error_log( '[MakIA SMS] Twilio class not found. SMS functionality disabled.' );
+                }
+                return;
+            }
+
+            $this->twilio_client = new \Twilio\Rest\Client( $twilio_sid, $twilio_token );
+        } catch ( Exception $e ) {
+            error_log( '[MakIA SMS] Error initializing Twilio: ' . $e->getMessage() );
+            $this->twilio_client = null;
         }
     }
 
@@ -133,7 +165,7 @@ class MakIA_SMS {
         // Reemplazar variables
         $message = $this->replace_variables( $template, $booking );
 
-        return $this->send_sms( $booking_id, $booking->customer_phone, $message, 'confirmation' );
+        return $this->send_sms( $booking_id, $booking->phone, $message, 'confirmation' );
     }
 
     /**
@@ -165,26 +197,31 @@ class MakIA_SMS {
         // Reemplazar variables
         $message = $this->replace_variables( $template, $booking );
 
-        return $this->send_sms( $booking_id, $booking->customer_phone, $message, 'reminder' );
+        return $this->send_sms( $booking_id, $booking->phone, $message, 'reminder' );
     }
 
     /**
      * Reemplazar variables en plantilla
-     * 
+     *
      * @param string $template Plantilla con variables
      * @param object $booking Objeto de reserva
-     * 
+     *
      * @return string
      */
     private function replace_variables( $template, $booking ) {
         $replacements = array(
-            '{customer_name}'  => $booking->customer_name,
-            '{customer_email}' => $booking->customer_email,
-            '{customer_phone}' => $booking->customer_phone,
+            // Nuevos nombres de columna (correctos)
+            '{name}'           => $booking->name ?? '',
+            '{email}'          => $booking->email ?? '',
+            '{phone}'          => $booking->phone ?? '',
+            // Mantener compatibilidad con plantillas antiguas
+            '{customer_name}'  => $booking->name ?? '',
+            '{customer_email}' => $booking->email ?? '',
+            '{customer_phone}' => $booking->phone ?? '',
             '{booking_date}'   => date( 'd/m/Y', strtotime( $booking->booking_date ) ),
-            '{booking_time}'   => date( 'H:i', strtotime( $booking->booking_date ) ),
-            '{guests}'         => $booking->guests,
-            '{status}'         => $booking->status,
+            '{booking_time}'   => isset( $booking->booking_time ) ? $booking->booking_time : date( 'H:i', strtotime( $booking->booking_date ) ),
+            '{guests}'         => $booking->guests ?? '',
+            '{status}'         => $booking->status ?? '',
         );
 
         return str_replace( array_keys( $replacements ), array_values( $replacements ), $template );

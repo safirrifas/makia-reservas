@@ -1,4 +1,4 @@
-# Changelog - MakIA Reservas
+# Changelog - MakIA Restaurante
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
@@ -66,13 +66,13 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 #### 🎨 Nuevas Páginas en Admin
 
-**MakIA Reservas → Operarios**
+**MakIA Restaurante → Operarios**
 - Panel completo de gestión de operarios
 - Formulario para crear nuevos operarios
 - Lista de operarios con estadísticas en tiempo real
 - Acciones: Añadir, Eliminar, Ver detalles
 
-**MakIA Reservas → Auditoría**
+**MakIA Restaurante → Auditoría**
 - Dashboard con estadísticas generales
 - Lista de acciones recientes (50 últimas)
 - Tabla de usuarios más activos

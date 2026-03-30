@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage
+coverage/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# WordPress specific
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+
+# Next.js
+.next/
+next-env.d.ts
+**/public/sw.js
+**/public/workbox-*.js
+
+# pnpm
+pnpm-lock.yaml
+
+# Deployment build artifacts
+deployment/operator-pwa/apps/
+deployment/operator-pwa/node_modules/
+deployment/operator-pwa/package.json

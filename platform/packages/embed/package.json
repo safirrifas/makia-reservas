@@ -1,0 +1,18 @@
+{
+  "name": "@makia/embed",
+  "version": "1.0.0",
+  "description": "MakIA Widget Embebible - Formulario de reservas para cualquier web",
+  "type": "module",
+  "main": "dist/widget.js",
+  "scripts": {
+    "build": "tsup src/widget.ts --format iife --globalName MakiaWidget --minify --clean",
+    "dev": "tsup src/widget.ts --format iife --globalName MakiaWidget --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.0"
+  }
+}

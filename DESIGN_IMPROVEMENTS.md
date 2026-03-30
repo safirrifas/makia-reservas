@@ -1,4 +1,4 @@
-# 🎨 MakIA Reservas - Mejoras de Diseño v3.4.0
+# 🎨 MakIA Restaurante - Mejoras de Diseño v3.4.0
 
 ## 📋 Resumen de Mejoras Implementadas
 
@@ -212,7 +212,7 @@ endif;
 ## 📝 Uso
 
 ### Activar una Plantilla
-1. Ir a **MakIA Reservas > Diseño**
+1. Ir a **MakIA Restaurante > Diseño**
 2. Navegar a pestaña **Plantillas**
 3. Hacer clic en **"Seleccionar"** en la plantilla deseada
 4. Confirmación automática de activación

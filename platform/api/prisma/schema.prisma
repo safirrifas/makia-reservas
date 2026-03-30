@@ -1,0 +1,568 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ORGANIZACIONES (Multi-tenant)
+// ============================================
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  email     String?
+  phone     String?
+  address   String?
+  timezone  String   @default("Europe/Madrid")
+  currency  String   @default("EUR")
+  plan      Plan     @default(FREE)
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  users                 User[]
+  apiKeys               ApiKey[]
+  bookings              Booking[]
+  businessHours         BusinessHours[]
+  specialDays           SpecialDay[]
+  blacklist             BlacklistEntry[]
+  webhooks              Webhook[]
+  notificationTemplates NotificationTemplate[]
+
+  @@map("organizations")
+}
+
+enum Plan {
+  FREE      // Chupito: 20 reservas/mes
+  STARTER   // Starter: 100 reservas/mes
+  PRO       // Pro: 500 reservas/mes
+  BUSINESS  // Business: ilimitadas
+}
+
+// ============================================
+// USUARIOS
+// ============================================
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String?   @map("password_hash")
+  name         String?
+  role         UserRole  @default(OPERATOR)
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  bookingNotes   BookingNote[]
+  auditLogs      AuditLog[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  OPERATOR
+}
+
+// ============================================
+// API KEYS
+// ============================================
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  keyHash    String    @unique @map("key_hash")
+  keyPrefix  String    @map("key_prefix") // Ej: "mk_live_abc..."
+  scopes     String[]  @default([])
+  lastUsedAt DateTime? @map("last_used_at")
+  expiresAt  DateTime? @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("api_keys")
+}
+
+// ============================================
+// RESERVAS
+// ============================================
+model Booking {
+  id              String        @id @default(cuid())
+  customerName    String        @map("customer_name")
+  customerEmail   String        @map("customer_email")
+  customerPhone   String?       @map("customer_phone")
+  bookingDate     DateTime      @map("booking_date") @db.Date
+  bookingTime     String        @map("booking_time") // "20:30"
+  guests          Int
+  occasion        String?
+  specialRequests String?       @map("special_requests")
+  status          BookingStatus @default(PENDING)
+  source          String        @default("web") // web, widget, api, mobile
+  editToken       String?       @unique @map("edit_token")
+  metadata        Json          @default("{}")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String        @map("organization_id")
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  notes          BookingNote[]
+
+  @@index([organizationId, bookingDate])
+  @@index([organizationId, status])
+  @@index([customerEmail])
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model BookingNote {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  bookingId String  @map("booking_id")
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  userId    String  @map("user_id")
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@map("booking_notes")
+}
+
+// ============================================
+// HORARIOS
+// ============================================
+model BusinessHours {
+  id        String  @id @default(cuid())
+  dayOfWeek Int     @map("day_of_week") // 0=domingo, 1=lunes...
+  isOpen    Boolean @default(true) @map("is_open")
+  slots     Json    @default("[]") // [{open: "09:00", close: "14:00"}, {open: "20:00", close: "23:00"}]
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, dayOfWeek])
+  @@map("business_hours")
+}
+
+model SpecialDay {
+  id        String          @id @default(cuid())
+  date      DateTime        @db.Date
+  type      SpecialDayType
+  name      String?
+  slots     Json?           @default("[]") // Horarios especiales si aplica
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, date])
+  @@map("special_days")
+}
+
+enum SpecialDayType {
+  CLOSED
+  SPECIAL_HOURS
+  HOLIDAY
+}
+
+// ============================================
+// LISTA NEGRA
+// ============================================
+model BlacklistEntry {
+  id          String   @id @default(cuid())
+  email       String?
+  phone       String?
+  reason      String
+  notes       String?
+  noShowCount Int      @default(0) @map("no_show_count")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, email])
+  @@index([organizationId, phone])
+  @@map("blacklist")
+}
+
+// ============================================
+// WEBHOOKS
+// ============================================
+model Webhook {
+  id        String   @id @default(cuid())
+  url       String
+  events    String[] @default([]) // ["booking.created", "booking.confirmed"]
+  secret    String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("webhooks")
+}
+
+// ============================================
+// AUDIT LOG
+// ============================================
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  oldData   Json?    @map("old_data")
+  newData   Json?    @map("new_data")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  userId String? @map("user_id")
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+// ============================================
+// PLANTILLAS DE NOTIFICACIÓN
+// ============================================
+model NotificationTemplate {
+  id           String               @id @default(cuid())
+  type         NotificationType
+  event        NotificationEvent
+  name         String               // "Confirmación de reserva"
+  subject      String?              // Solo para email
+  body         String               @db.Text
+  variables    Json                 @default("{}") // {"nombre": "Nombre del cliente", "fecha": "Fecha de la reserva"}
+  isActive     Boolean              @default(true) @map("is_active")
+  isDefault    Boolean              @default(false) @map("is_default")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, type, event])
+  @@map("notification_templates")
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH
+}
+
+enum NotificationEvent {
+  BOOKING_RECEIVED        // Reserva recibida (pendiente)
+  BOOKING_CONFIRMED       // Reserva confirmada
+  BOOKING_CANCELLED       // Reserva cancelada
+  BOOKING_REMINDER        // Recordatorio (24h antes)
+  BOOKING_MODIFIED        // Reserva modificada
+  ADMIN_NEW_BOOKING       // Notificación al admin de nueva reserva
+}
+
+// ============================================
+// LOGS DE NOTIFICACIONES
+// ============================================
+model NotificationLog {
+  id             String                 @id @default(cuid())
+  channel        NotificationType
+  event          NotificationEvent
+  recipient      String                 // email o teléfono
+  subject        String?
+  body           String                 @db.Text
+  status         NotificationStatus     @default(QUEUED)
+  error          String?                // mensaje de error si falló
+  attempts       Int                    @default(0)
+  metadata       Json                   @default("{}") // datos adicionales (message_id, etc)
+  scheduledFor   DateTime?              @map("scheduled_for") // para envíos programados
+  queuedAt       DateTime               @default(now()) @map("queued_at")
+  sentAt         DateTime?              @map("sent_at")
+  deliveredAt    DateTime?              @map("delivered_at")
+  openedAt       DateTime?              @map("opened_at")
+  failedAt       DateTime?              @map("failed_at")
+
+  // Relaciones
+  organizationId String                 @map("organization_id")
+  bookingId      String?                @map("booking_id")
+  templateId     String?                @map("template_id")
+
+  @@index([organizationId, status])
+  @@index([organizationId, channel])
+  @@index([bookingId])
+  @@index([scheduledFor, status])
+  @@map("notification_logs")
+}
+
+enum NotificationStatus {
+  QUEUED      // En cola, pendiente de envío
+  SENDING     // En proceso de envío
+  SENT        // Enviado al proveedor
+  DELIVERED   // Entregado al destinatario
+  OPENED      // Abierto (solo email)
+  CLICKED     // Click en enlace (solo email)
+  FAILED      // Fallo en el envío
+  CANCELLED   // Cancelado antes de enviar
+}
+
+// ============================================
+// PREFERENCIAS DE NOTIFICACIÓN
+// ============================================
+model NotificationPreference {
+  id             String   @id @default(cuid())
+  email          String?
+  phone          String?
+  optOutEmail    Boolean  @default(false) @map("opt_out_email")
+  optOutSms      Boolean  @default(false) @map("opt_out_sms")
+  optOutWhatsapp Boolean  @default(false) @map("opt_out_whatsapp")
+  optOutPush     Boolean  @default(false) @map("opt_out_push")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String   @map("organization_id")
+
+  @@unique([organizationId, email])
+  @@unique([organizationId, phone])
+  @@index([email])
+  @@index([phone])
+  @@map("notification_preferences")
+}
+
+// ============================================
+// TRABAJOS PROGRAMADOS (Scheduler)
+// ============================================
+model ScheduledJob {
+  id             String           @id @default(cuid())
+  type           ScheduledJobType
+  status         JobStatus        @default(PENDING)
+  payload        Json             @default("{}") // datos del trabajo
+  scheduledFor   DateTime         @map("scheduled_for")
+  executedAt     DateTime?        @map("executed_at")
+  error          String?
+  attempts       Int              @default(0)
+  maxAttempts    Int              @default(3) @map("max_attempts")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  // Relaciones
+  organizationId String           @map("organization_id")
+  bookingId      String?          @map("booking_id")
+
+  @@index([status, scheduledFor])
+  @@index([organizationId])
+  @@index([bookingId])
+  @@map("scheduled_jobs")
+}
+
+enum ScheduledJobType {
+  BOOKING_REMINDER      // Recordatorio de reserva
+  BOOKING_FOLLOWUP      // Seguimiento post-reserva
+  REPORT_DAILY          // Reporte diario
+  REPORT_WEEKLY         // Reporte semanal
+}
+
+enum JobStatus {
+  PENDING     // Pendiente de ejecutar
+  RUNNING     // En ejecución
+  COMPLETED   // Completado con éxito
+  FAILED      // Falló
+  CANCELLED   // Cancelado
+}
+
+// ============================================
+// CANALES SOCIALES (Configuración)
+// ============================================
+model SocialChannel {
+  id             String            @id @default(cuid())
+  type           SocialChannelType
+  isActive       Boolean           @default(false) @map("is_active")
+  config         Json              @default("{}") // Tokens, IDs, configuración específica
+  welcomeMessage String?           @map("welcome_message") @db.Text
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId String            @map("organization_id")
+  conversations  Conversation[]
+
+  @@unique([organizationId, type])
+  @@map("social_channels")
+}
+
+enum SocialChannelType {
+  WHATSAPP
+  TELEGRAM
+  MESSENGER
+  INSTAGRAM
+}
+
+// ============================================
+// CONVERSACIONES (Estado del chatbot)
+// ============================================
+model Conversation {
+  id             String             @id @default(cuid())
+  externalId     String             @map("external_id") // ID del chat en la plataforma
+  platform       SocialChannelType
+  status         ConversationStatus @default(ACTIVE)
+  step           ConversationStep   @default(GREETING)
+
+  // Datos recopilados durante la conversación
+  customerName   String?            @map("customer_name")
+  customerEmail  String?            @map("customer_email")
+  customerPhone  String?            @map("customer_phone")
+  bookingDate    DateTime?          @map("booking_date") @db.Date
+  bookingTime    String?            @map("booking_time")
+  guests         Int?
+  occasion       String?
+  specialRequests String?           @map("special_requests")
+
+  // Metadatos
+  metadata       Json               @default("{}") // Datos adicionales del usuario
+  lastActivityAt DateTime           @default(now()) @map("last_activity_at")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  // Relaciones
+  organizationId  String           @map("organization_id")
+  socialChannelId String           @map("social_channel_id")
+  socialChannel   SocialChannel    @relation(fields: [socialChannelId], references: [id])
+  bookingId       String?          @map("booking_id") // Reserva creada (si se completó)
+  messages        ConversationMessage[]
+
+  @@unique([organizationId, platform, externalId])
+  @@index([organizationId, status])
+  @@index([lastActivityAt])
+  @@map("conversations")
+}
+
+enum ConversationStatus {
+  ACTIVE      // Conversación en curso
+  COMPLETED   // Reserva completada
+  ABANDONED   // Usuario abandonó
+  CANCELLED   // Usuario canceló
+  EXPIRED     // Expiró por inactividad
+}
+
+enum ConversationStep {
+  GREETING        // Saludo inicial
+  ASK_DATE        // Preguntando fecha
+  ASK_TIME        // Preguntando hora
+  ASK_GUESTS      // Preguntando comensales
+  ASK_NAME        // Preguntando nombre
+  ASK_CONTACT     // Preguntando email/teléfono
+  ASK_OCCASION    // Preguntando ocasión (opcional)
+  ASK_NOTES       // Preguntando notas especiales (opcional)
+  CONFIRM         // Confirmando datos
+  COMPLETED       // Proceso completado
+  HELP            // Usuario pidió ayuda
+  CANCEL          // Usuario quiere cancelar
+}
+
+// ============================================
+// MENSAJES DE CONVERSACIÓN
+// ============================================
+model ConversationMessage {
+  id             String           @id @default(cuid())
+  direction      MessageDirection
+  content        String           @db.Text
+  messageType    MessageType      @default(TEXT) @map("message_type")
+  externalId     String?          @map("external_id") // ID del mensaje en la plataforma
+  metadata       Json             @default("{}") // Datos adicionales (botones, quick replies, etc)
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  // Relaciones
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("conversation_messages")
+}
+
+enum MessageDirection {
+  INBOUND   // Del usuario al bot
+  OUTBOUND  // Del bot al usuario
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  BUTTON
+  QUICK_REPLY
+  LOCATION
+}
+
+// ============================================
+// LICENCIAS
+// ============================================
+model License {
+  id                String        @id @default(cuid())
+  licenseKey        String        @unique @map("license_key")
+  domain            String        @unique
+  plan              LicensePlan   @default(CHUPITO)
+  status            LicenseStatus @default(ACTIVE)
+
+  // Datos del cliente
+  clientName        String?       @map("client_name")
+  clientEmail       String?       @map("client_email")
+  clientPhone       String?       @map("client_phone")
+
+  // Uso mensual
+  monthlyBookings   Int           @default(0) @map("monthly_bookings")
+  monthlyResetAt    DateTime      @default(now()) @map("monthly_reset_at")
+
+  // Fechas
+  activatedAt       DateTime?     @map("activated_at")
+  expiresAt         DateTime?     @map("expires_at")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  // Metadatos
+  notes             String?       @db.Text
+  metadata          Json          @default("{}")
+
+  @@index([status])
+  @@index([plan])
+  @@index([domain])
+  @@map("licenses")
+}
+
+enum LicensePlan {
+  CHUPITO   // 5 reservas/mes - Gratis
+  CANA      // 15 reservas/mes - 5€
+  MASCANA   // 100 reservas/mes - 15€
+  UNLIMITED // Sin límite - Precio personalizado
+}
+
+enum LicenseStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  EXPIRED
+  CANCELLED
+}
